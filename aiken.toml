@@ -1,0 +1,6 @@
+name = "aiken_stdlib"
+version = "0.0.0"
+licences = ["Apache-2.0"]
+description = "The Aiken Standard Library"
+
+[dependencies]
