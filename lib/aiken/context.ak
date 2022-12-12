@@ -9,10 +9,10 @@ pub type Hash<a> =
   ByteArray
 
 pub type ScriptPurpose {
-  Mint<PolicyId>
-  Spend<OutputReference>
-  Withdrawal<StakeCredential>
-  Certify<Certificate>
+  Mint(PolicyId)
+  Spend(OutputReference)
+  Withdrawal(StakeCredential)
+  Certify(Certificate)
 }
 
 pub type Redeemer =
@@ -20,7 +20,7 @@ pub type Redeemer =
 
 pub type BoundValue<value> {
   NegativeInfinity
-  Finite<value>
+  Finite(value)
   PositiveInfinity
 }
 
@@ -67,13 +67,13 @@ pub type PolicyId =
   ByteArray
 
 pub type StakeCredential {
-  StakeHash<Credential>
-  StakePointer<Int, Int, Int>
+  StakeHash(Credential)
+  StakePointer(Int, Int, Int)
 }
 
 pub type Credential {
-  PublicKeyCredential<PublicKeyHash>
-  ScriptCredential<ScriptHash>
+  PublicKeyCredential(PublicKeyHash)
+  ScriptCredential(ScriptHash)
 }
 
 pub type VerificationKey =
@@ -102,8 +102,8 @@ pub type Address {
 
 pub type DatumOption {
   NoDatum
-  DatumHash<Hash<Data>>
-  Datum<Data>
+  DatumHash(Hash<Data>)
+  Datum(Data)
 }
 
 pub type AssetName =
