@@ -21,7 +21,7 @@ use aiken/builtin
 /// test concat_3() {
 ///   concat([], [1,2,3]) == [1,2,3]
 /// }
-pub fn concat(left: List(a), right: List(a)) -> List(a) {
+pub fn concat(left: List<a>, right: List<a>) -> List<a> {
   foldr(left, fn(x, xs) { [x, ..xs] }, right)
 }
 
@@ -36,7 +36,7 @@ pub fn concat(left: List(a), right: List(a)) -> List(a) {
 /// test repeat_2() {
 ///   repeat(3, 14) == [14,14,14]
 /// }
-pub fn repeat(x: a, n: Int) -> List(a) {
+pub fn repeat(x: a, n: Int) -> List<a> {
   if n <= 0 {
     []
   } else {
@@ -51,7 +51,7 @@ pub fn repeat(x: a, n: Int) -> List(a) {
 /// test range_1() {
 ///   range(-1, 1) == [-1, 0, 1]
 /// }
-pub fn range(from: Int, to: Int) -> List(Int) {
+pub fn range(from: Int, to: Int) -> List<Int> {
   if from > to {
     []
   } else {
@@ -60,7 +60,7 @@ pub fn range(from: Int, to: Int) -> List(Int) {
 }
 
 /// Get the first element of a list
-pub fn head(xs: List(a)) -> Option(a) {
+pub fn head(xs: List<a>) -> Option<a> {
   when xs is {
     [] -> None
     _ -> Some(builtin.head_list(xs))
@@ -68,7 +68,7 @@ pub fn head(xs: List(a)) -> Option(a) {
 }
 
 /// Get elements of a list after the first one, if any
-pub fn tail(xs: List(a)) -> Option(List(a)) {
+pub fn tail(xs: List<a>) -> Option<List<a>> {
   when xs is {
     [] -> None
     [_, ..rest] -> Some(rest)
@@ -76,7 +76,7 @@ pub fn tail(xs: List(a)) -> Option(List(a)) {
 }
 
 /// Get the first `n` elements of a list.
-pub fn take(xs: List(a), n: Int) -> List(a) {
+pub fn take(xs: List<a>, n: Int) -> List<a> {
   if n <= 0 {
     []
   } else {
@@ -88,7 +88,7 @@ pub fn take(xs: List(a), n: Int) -> List(a) {
 }
 
 /// Drop the first `n` elements of a list.
-pub fn drop(xs: List(a), n: Int) -> List(a) {
+pub fn drop(xs: List<a>, n: Int) -> List<a> {
   if n <= 0 {
     xs
   } else {
@@ -110,7 +110,7 @@ pub fn drop(xs: List(a), n: Int) -> List(a) {
 /// test length_2() {
 ///     length([]) == 0
 /// }
-pub fn length(xs: List(a)) -> Int {
+pub fn length(xs: List<a>) -> Int {
   when xs is {
     [] -> 0
     [_, ..rest] -> 1 + length(rest)
@@ -128,7 +128,7 @@ pub fn length(xs: List(a)) -> Int {
 /// test reverse_2() {
 ///     length([]) == []
 /// }
-pub fn reverse(xs: List(a)) -> List(a) {
+pub fn reverse(xs: List<a>) -> List<a> {
   foldr(xs, fn(x, rest) { [x, ..rest] }, [])
 }
 
@@ -147,7 +147,7 @@ pub fn reverse(xs: List(a)) -> List(a) {
 /// test is_elem_3() {
 ///     is_elem([], 14) == False
 /// }
-pub fn is_elem(xs: List(a), x: a) -> Bool {
+pub fn is_elem(xs: List<a>, x: a) -> Bool {
   when xs is {
     [] -> False
     [y, ..rest] ->
@@ -174,7 +174,7 @@ pub fn is_elem(xs: List(a), x: a) -> Bool {
 /// test all_3() {
 ///     all([], fn(n) { n == 42 }) == True
 /// }
-pub fn all(xs: List(a), predicate: fn(a) -> Bool) -> Bool {
+pub fn all(xs: List<a>, predicate: fn(a) -> Bool) -> Bool {
   foldr(xs, fn(x, result) { predicate(x) && result }, True)
 }
 
@@ -193,7 +193,7 @@ pub fn all(xs: List(a), predicate: fn(a) -> Bool) -> Bool {
 /// test any_3() {
 ///     any([], fn(n) { n == 42 }) == False
 /// }
-pub fn any(xs: List(a), predicate: fn(a) -> Bool) -> Bool {
+pub fn any(xs: List<a>, predicate: fn(a) -> Bool) -> Bool {
   foldr(xs, fn(x, result) { predicate(x) || result }, True)
 }
 
@@ -208,7 +208,7 @@ pub fn any(xs: List(a), predicate: fn(a) -> Bool) -> Bool {
 /// test map_2() {
 ///   map([], fn(n) { n + 1 }) == []
 /// }
-pub fn map(xs: List(a), f: fn(a) -> b) -> List(b) {
+pub fn map(xs: List<a>, f: fn(a) -> b) -> List<b> {
   when xs is {
     [] -> []
     [x, ..rest] -> [f(x), ..map(rest, f)]
@@ -222,7 +222,7 @@ pub fn map(xs: List(a), f: fn(a) -> b) -> List(b) {
 /// test foldl_1() {
 ///   foldl([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
 /// }
-pub fn foldl(xs: List(a), f: fn(a, b) -> b, zero: b) -> b {
+pub fn foldl(xs: List<a>, f: fn(a, b) -> b, zero: b) -> b {
   when xs is {
     [] -> zero
     [x, ..rest] -> foldl(rest, f, f(x, zero))
@@ -236,7 +236,7 @@ pub fn foldl(xs: List(a), f: fn(a, b) -> b, zero: b) -> b {
 /// test foldr_1() {
 ///   foldr([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
 /// }
-pub fn foldr(xs: List(a), f: fn(a, b) -> b, zero: b) -> b {
+pub fn foldr(xs: List<a>, f: fn(a, b) -> b, zero: b) -> b {
   when xs is {
     [] -> zero
     [x, ..rest] -> f(x, foldr(rest, f, zero))
@@ -250,7 +250,7 @@ pub fn foldr(xs: List(a), f: fn(a, b) -> b, zero: b) -> b {
 /// test filter_1() {
 ///   filter([1, 2, 3, 4, 5, 6], fn(x) { builtin.modInteger(x, 2) == 0 }) == [2, 4, 6]
 /// }
-pub fn filter(xs: List(a), f: fn(a) -> Bool) -> List(a) {
+pub fn filter(xs: List<a>, f: fn(a) -> Bool) -> List<a> {
   foldr(
     xs,
     fn(x, ys) {
@@ -265,7 +265,7 @@ pub fn filter(xs: List(a), f: fn(a) -> Bool) -> List(a) {
 }
 
 /// Find a element satisfying the given predicate.
-pub fn find(xs: List(a), f: fn(a) -> Bool) -> Option(a) {
+pub fn find(xs: List<a>, f: fn(a) -> Bool) -> Option<a> {
   when xs is {
     [] -> None
     [x, ..rest] ->
@@ -284,7 +284,7 @@ pub fn find(xs: List(a), f: fn(a) -> Bool) -> Option(a) {
 /// test filter_map_1() {
 ///   filter_map([1, 2, 3, 4, 5, 6], fn(x) { if (builtin.modInteger(x, 2) != 0) { Some(3*x) } else { None } }) == [3, 9, 15]
 /// }
-pub fn filter_map(xs: List(a), f: fn(a) -> Option(b)) -> List(b) {
+pub fn filter_map(xs: List<a>, f: fn(a) -> Option<b>) -> List<b> {
   foldr(
     xs,
     fn(x, ys) {
@@ -298,6 +298,6 @@ pub fn filter_map(xs: List(a), f: fn(a) -> Option(b)) -> List(b) {
 }
 
 /// Map elements of a list into a new list and flatten the result.
-pub fn flat_map(xs: List(a), f: fn(a) -> List(b)) -> List(b) {
+pub fn flat_map(xs: List<a>, f: fn(a) -> List<b>) -> List<b> {
   foldr(xs, fn(x, ys) { concat(f(x), ys) }, [])
 }

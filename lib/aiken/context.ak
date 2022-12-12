@@ -1,56 +1,56 @@
 use aiken/map.{Map}
 
-pub type ScriptContext(purpose) {
+pub type ScriptContext {
   transaction: Transaction,
-  purpose: purpose,
+  purpose: ScriptPurpose,
 }
 
-pub type Hash(a) =
+pub type Hash<a> =
   ByteArray
 
 pub type ScriptPurpose {
-  Mint(PolicyId)
-  Spend(OutputReference)
-  Withdrawal(StakeCredential)
-  Certify(Certificate)
+  Mint<PolicyId>
+  Spend<OutputReference>
+  Withdrawal<StakeCredential>
+  Certify<Certificate>
 }
 
 pub type Redeemer =
   Data
 
-pub type BoundValue(value) {
+pub type BoundValue<value> {
   NegativeInfinity
-  Finite(value)
+  Finite<value>
   PositiveInfinity
 }
 
-pub type Bound(value) {
-  value: BoundValue(value),
+pub type Bound<value> {
+  value: BoundValue<value>,
   is_inclusive: Bool,
 }
 
-pub type Interval(value) {
-  lower_bound: Bound(value),
-  upper_bound: Bound(value),
+pub type Interval<value> {
+  lower_bound: Bound<value>,
+  upper_bound: Bound<value>,
 }
 
 pub type Transaction {
-  inputs: List(Input),
-  reference_inputs: List(Input),
-  outputs: List(Output),
+  inputs: List<Input>,
+  reference_inputs: List<Input>,
+  outputs: List<Output>,
   fee: Value,
   mint: Value,
-  certificates: List(Certificate),
-  withdrawals: Map(StakeCredential, Int),
-  validity_range: Interval(Int),
-  extra_signatories: List(PublicKeyHash),
-  redeemers: Map(ScriptPurpose, Redeemer),
-  datums: Map(Hash(Data), Data),
+  certificates: List<Certificate>,
+  withdrawals: Map<StakeCredential, Int>,
+  validity_range: Interval<Int>,
+  extra_signatories: List<PublicKeyHash>,
+  redeemers: Map<ScriptPurpose, Redeemer>,
+  datums: Map<Hash<Data>, Data>,
   id: TransactionId,
 }
 
 pub type TransactionId {
-  hash: Hash(Transaction),
+  hash: Hash<Transaction>,
 }
 
 pub type Input {
@@ -67,13 +67,13 @@ pub type PolicyId =
   ByteArray
 
 pub type StakeCredential {
-  StakeHash(Credential)
-  StakePointer(Int, Int, Int)
+  StakeHash<Credential>
+  StakePointer<Int, Int, Int>
 }
 
 pub type Credential {
-  PublicKeyCredential(PublicKeyHash)
-  ScriptCredential(ScriptHash)
+  PublicKeyCredential<PublicKeyHash>
+  ScriptCredential<ScriptHash>
 }
 
 pub type VerificationKey =
@@ -83,40 +83,40 @@ pub type ScriptHash =
   ByteArray
 
 pub type PublicKeyHash =
-  Hash(VerificationKey)
+  Hash<VerificationKey>
 
 pub type PoolId =
-  Hash(VerificationKey)
+  Hash<VerificationKey>
 
 pub type Output {
   address: Address,
   value: Value,
   datum: DatumOption,
-  reference_script: Option(ScriptHash),
+  reference_script: Option<ScriptHash>,
 }
 
 pub type Address {
   payment_credential: Credential,
-  stake_credential: Option(StakeCredential),
+  stake_credential: Option<StakeCredential>,
 }
 
 pub type DatumOption {
   NoDatum
-  DatumHash(Hash(Data))
-  Datum(Data)
+  DatumHash<Hash<Data>>
+  Datum<Data>
 }
 
 pub type AssetName =
   ByteArray
 
 pub type Value =
-  Map(PolicyId, Map(AssetName, Int))
+  Map<PolicyId, Map<AssetName, Int>>
 
 pub type Certificate {
   CredentialRegistration { delegator: StakeCredential }
   CredentialDeregistration { delegator: StakeCredential }
   CredentialDelegation { delegator: StakeCredential, delegatee: PoolId }
-  PoolRegistration { pool_id: PoolId, vrf: Hash(VerificationKey) }
+  PoolRegistration { pool_id: PoolId, vrf: Hash<VerificationKey> }
   PoolDeregistration { pool_id: PoolId, epoch: Int }
   Governance
   TreasuryMovement

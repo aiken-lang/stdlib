@@ -1,5 +1,5 @@
-pub opaque type Map(key, value) {
-  inner: List(#(key, value)),
+pub opaque type Map<key, value> {
+  inner: List<(key, value)>,
 }
 
 /// Create a new map
@@ -8,7 +8,7 @@ pub fn new() {
 }
 
 /// Get the inner list holding the map data
-pub fn to_list(m: Map(key, value)) -> List(#(key, value)) {
+pub fn to_list(m: Map<key, value>) -> List<(key, value)> {
   m.inner
 }
 
@@ -21,14 +21,14 @@ pub fn to_list(m: Map(key, value)) -> List(#(key, value)) {
 /// 
 /// asset Some(x) = map.get(in: info, by: "key")
 /// ```
-pub fn get(in m: Map(key, value), by k: key) -> Option(value) {
+pub fn get(in m: Map<key, value>, by k: key) -> Option<value> {
   do_get(m.inner, k)
 }
 
-fn do_get(elems: List(#(key, value)), k: key) -> Option(value) {
+fn do_get(elems: List<(key, value)>, k: key) -> Option<value> {
   when elems is {
     [] -> None
-    [#(first, second), ..xs] ->
+    [(first, second), ..xs] ->
       if first == k {
         Some(second)
       } else {
@@ -45,14 +45,14 @@ fn do_get(elems: List(#(key, value)), k: key) -> Option(value) {
 /// map.new() |> map.insert(key: "name", value: "Aiken")
 /// ```
 pub fn insert(
-  in m: Map(key, value),
+  in m: Map<key, value>,
   key k: key,
   value v: value,
-) -> Map(key, value) {
+) -> Map<key, value> {
   if contains(m, k) {
     m
   } else {
-    Map { inner: [#(k, v), ..m.inner] }
+    Map { inner: [(k, v), ..m.inner] }
   }
 }
 
@@ -65,14 +65,14 @@ pub fn insert(
 /// 
 /// asset Some(x) = map.contains(in: info, key: "key")
 /// ```
-pub fn contains(in m: Map(key, value), key k: key) -> Bool {
+pub fn contains(in m: Map<key, value>, key k: key) -> Bool {
   do_contains(m.inner, k)
 }
 
-fn do_contains(elems: List(#(key, value)), k: key) -> Bool {
+fn do_contains(elems: List<(key, value)>, k: key) -> Bool {
   when elems is {
     [] -> False
-    [#(first, _), ..xs] ->
+    [(first, _), ..xs] ->
       if first == k {
         True
       } else {
