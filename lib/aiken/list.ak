@@ -48,7 +48,7 @@ test range_1() {
 }
 
 test range_2() {
-  range(0 - 1, 1) == [0 - 1, 0, 1]
+  range(-1, 1) == [-1, 0, 1]
 }
 
 /// Combine two lists together.
@@ -88,13 +88,15 @@ pub fn unzip(xs: List<#(a, b)>) -> #(List<a>, List<b>) {
   }
 }
 
-test unzip_1() {
-  unzip([]) == #([], [])
-}
-
-test unzip_2() {
-  unzip([#(1, "a"), #(2, "b")]) == #([1, 2], ["a", "b"])
-}
+// TODO: acceptance_test 015
+//
+//test unzip_1() {
+//  unzip([]) == #([], [])
+//}
+//
+//test unzip_2() {
+//  unzip([#(1, "a"), #(2, "b")]) == #([1, 2], ["a", "b"])
+//}
 
 /// Get the number of elements in the given list.
 pub fn reverse(xs: List<a>) -> List<a> {
@@ -130,14 +132,14 @@ pub fn head(xs: List<a>) -> Option<a> {
   }
 }
 
-// TODO: acceptance_test 005
-//
-// test head_1() {
-//   head([1, 2, 3]) == Some(1)
-// }
-// test head_2() {
-//   head([]) == None
-// }
+test head_1() {
+  head([1, 2, 3]) == Some(1)
+}
+
+test head_2() {
+  head([]) == None
+}
+
 /// Get elements of a list after the first one, if any
 pub fn tail(xs: List<a>) -> Option<List<a>> {
   when xs is {
@@ -146,14 +148,14 @@ pub fn tail(xs: List<a>) -> Option<List<a>> {
   }
 }
 
-// TODO: acceptance_test 005
-//
-// test tail_1() {
-//   tail([1, 2, 3]) == Some([2, 3])
-// }
-// test tail_2() {
-//   tail([]) == None
-// }
+test tail_1() {
+  tail([1, 2, 3]) == Some([2, 3])
+}
+
+test tail_2() {
+  tail([]) == None
+}
+
 /// Get the first `n` elements of a list.
 pub fn take(xs: List<a>, n: Int) -> List<a> {
   if n <= 0 {
@@ -380,19 +382,18 @@ pub fn find(xs: List<a>, f: fn(a) -> Bool) -> Option<a> {
   }
 }
 
-// TODO: acceptance_test 005
-//
-// test find_1() {
-//   find([1, 2, 3], fn(x) { x == 1 }) == Some(1)
-// }
-//
-// test find_2() {
-//   find([1, 2, 3], fn(x) { x > 42 }) == None
-// }
-//
-// test find_3() {
-//   find([], fn(_) { True }) == None
-// }
+test find_1() {
+  find([1, 2, 3], fn(x) { x == 1 }) == Some(1)
+}
+
+test find_2() {
+  find([1, 2, 3], fn(x) { x > 42 }) == None
+}
+
+test find_3() {
+  find([], fn(_) { True }) == None
+}
+
 /// Produce a list from elements that statisfy a predicate.
 pub fn filter_map(xs: List<a>, f: fn(a) -> Option<b>) -> List<b> {
   foldr(

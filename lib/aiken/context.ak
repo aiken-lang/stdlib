@@ -1,4 +1,4 @@
-use aiken/map.{Map}
+use aiken/assoc_list.{AssocList}
 
 pub type ScriptContext {
   transaction: Transaction,
@@ -41,11 +41,11 @@ pub type Transaction {
   fee: Value,
   mint: Value,
   certificates: List<Certificate>,
-  withdrawals: Map<StakeCredential, Int>,
+  withdrawals: AssocList<StakeCredential, Int>,
   validity_range: Interval<Int>,
   extra_signatories: List<PublicKeyHash>,
-  redeemers: Map<ScriptPurpose, Redeemer>,
-  datums: Map<Hash<Data>, Data>,
+  redeemers: AssocList<ScriptPurpose, Redeemer>,
+  datums: AssocList<Hash<Data>, Data>,
   id: TransactionId,
 }
 
@@ -110,7 +110,7 @@ pub type AssetName =
   ByteArray
 
 pub type Value =
-  Map<PolicyId, Map<AssetName, Int>>
+  AssocList<PolicyId, AssocList<AssetName, Int>>
 
 pub type Certificate {
   CredentialRegistration { delegator: StakeCredential }
