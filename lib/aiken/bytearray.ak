@@ -32,7 +32,7 @@ test length_2() {
 
 /// Returns `True` is the given ByteArray is empty.
 pub fn is_empty(bytes: ByteArray) -> Bool {
-  length(bytes) == 0
+  builtin.length_of_bytearray(bytes) == 0
 }
 
 test is_empty_1() {

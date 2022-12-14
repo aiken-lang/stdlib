@@ -5,16 +5,18 @@ pub fn concat(left: List<a>, right: List<a>) -> List<a> {
   foldr(left, fn(x, xs) { [x, ..xs] }, right)
 }
 
-// TODO
-// test concat_1() {
-//   concat([1, 2, 3], [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
-// }
-// test concat_2() {
-//   concat([1, 2, 3], []) == [1, 2, 3]
-// }
-// test concat_3() {
-//   concat([], [1, 2, 3]) == [1, 2, 3]
-// }
+test concat_1() {
+  concat([1, 2, 3], [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
+}
+
+test concat_2() {
+  concat([1, 2, 3], []) == [1, 2, 3]
+}
+
+test concat_3() {
+  concat([], [1, 2, 3]) == [1, 2, 3]
+}
+
 /// Construct a list filled with n copies of a value.
 pub fn repeat(x: a, n: Int) -> List<a> {
   if n <= 0 {
@@ -72,42 +74,41 @@ test zip_2() {
 }
 
 test zip_3() {
-  zip([1, 2], ["a", "b", "c"]) == [(1, "a"), (2, "b")]
+  zip([1, 2], ["a", "b", "c"]) == [#(1, "a"), #(2, "b")]
 }
 
 /// Decompose a list of tuples into a tuple of lists.
-pub fn unzip(xs: List<(a, b)>) -> (List<a>, List<b>) {
+pub fn unzip(xs: List<#(a, b)>) -> #(List<a>, List<b>) {
   when xs is {
-    [] -> ([], [])
-    [(a, b), ..rest] -> {
-      let (a_tail, b_tail) = unzip(rest)
-      let result = ([a, ..a_tail], [b, ..b_tail])
-      result
+    [] -> #([], [])
+    [#(a, b), ..rest] -> {
+      let #(a_tail, b_tail) = unzip(rest)
+      #([a, ..a_tail], [b, ..b_tail])
     }
   }
 }
 
-// TODO
-// test unzip_1() {
-//   unzip([]) == ([], [])
-// }
-//
-// test unzip_2() {
-//   unzip([(1, "a"), (2, "b")]) == ([1, 2], ["a", "b"])
-// }
-/// Get the number of elements in the given list.
-pub fn reverse(xs: List<a>) -> List<a> {
-  foldr(xs, fn(x, rest) { [x, ..rest] }, [])
+test unzip_1() {
+  unzip([]) == #([], [])
 }
 
-// TODO
-// test reverse_1() {
-//   reverse([]) == []
-// }
-//
-// test reverse_2() {
-//   reverse([1, 2, 3]) == [3, 2, 1]
-// }
+test unzip_2() {
+  unzip([#(1, "a"), #(2, "b")]) == #([1, 2], ["a", "b"])
+}
+
+/// Get the number of elements in the given list.
+pub fn reverse(xs: List<a>) -> List<a> {
+  foldl(xs, fn(x, rest) { [x, ..rest] }, [])
+}
+
+test reverse_1() {
+  reverse([]) == []
+}
+
+test reverse_2() {
+  reverse([1, 2, 3]) == [3, 2, 1]
+}
+
 /// Figures out whether a list contain the given element.
 pub fn is_elem(xs: List<a>, x: a) -> Bool {
   when xs is {
@@ -129,7 +130,8 @@ pub fn head(xs: List<a>) -> Option<a> {
   }
 }
 
-// TODO
+// TODO: acceptance_test 005
+//
 // test head_1() {
 //   head([1, 2, 3]) == Some(1)
 // }
@@ -144,7 +146,8 @@ pub fn tail(xs: List<a>) -> Option<List<a>> {
   }
 }
 
-// TODO
+// TODO: acceptance_test 005
+//
 // test tail_1() {
 //   tail([1, 2, 3]) == Some([2, 3])
 // }
@@ -229,41 +232,41 @@ pub fn all(xs: List<a>, predicate: fn(a) -> Bool) -> Bool {
   }
 }
 
-// TODO
-// test all_1() {
-//   all([1, 2, 3], fn(n) { n > 0 }) == True
-// }
-//
-// test all_2() {
-//   all([1, 2, 3], fn(n) { n > 42 }) == False
-// }
-//
-// test all_3() {
-//   all([], fn(n) { n == 42 }) == True
-// }
+test all_1() {
+  all([1, 2, 3], fn(n) { n > 0 }) == True
+}
+
+test all_2() {
+  all([1, 2, 3], fn(n) { n > 42 }) == False
+}
+
+test all_3() {
+  all([], fn(n) { n == 42 }) == True
+}
+
 /// Determine if at least one element of the list satisfies the given predicate.
 ///
 /// Note: an empty list always satisfies the predicate.
 pub fn any(xs: List<a>, predicate: fn(a) -> Bool) -> Bool {
   when xs is {
-    [] -> True
+    [] -> False
     // TODO: compare cost with an if-then-else approach that only recurses if the predicate is false.
-    [x, ..rest] -> predicate(x) || all(rest, predicate)
+    [x, ..rest] -> predicate(x) || any(rest, predicate)
   }
 }
 
-// TODO
-// test any_1() {
-//   any([1, 2, 3], fn(n) { n > 0 }) == True
-// }
-//
-// test any_2() {
-//   any([1, 2, 3], fn(n) { n > 42 }) == False
-// }
-//
-// test any_3() {
-//   any([], fn(n) { n == 42 }) == False
-// }
+test any_1() {
+  any([1, 2, 3], fn(n) { n > 0 }) == True
+}
+
+test any_2() {
+  any([1, 2, 3], fn(n) { n > 42 }) == False
+}
+
+test any_3() {
+  any([], fn(n) { n == 42 }) == False
+}
+
 /// Apply a function to each element of a list.
 pub fn map(xs: List<a>, f: fn(a) -> result) -> List<result> {
   when xs is {
@@ -272,10 +275,12 @@ pub fn map(xs: List<a>, f: fn(a) -> result) -> List<result> {
   }
 }
 
-// TODO
+// TODO: acceptance_test 011
+//
 // test map_1() {
 //   map([], fn(n) { n + 1 }) == []
 // }
+//
 // test map_2() {
 //   map([1, 2, 3, 4], fn(n) { n + 1 }) == [2, 3, 4, 5]
 // }
@@ -324,10 +329,10 @@ pub fn foldl(xs: List<a>, f: fn(a, b) -> b, zero: b) -> b {
   }
 }
 
-// TODO
-// test foldl_1() {
-//   foldl([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
-// }
+test foldl_1() {
+  foldl([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
+}
+
 /// Reduce a list from right to left.
 pub fn foldr(xs: List<a>, f: fn(a, b) -> b, zero: b) -> b {
   when xs is {
@@ -336,10 +341,10 @@ pub fn foldr(xs: List<a>, f: fn(a, b) -> b, zero: b) -> b {
   }
 }
 
-// TODO
-// test foldr_1() {
-//   foldr([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
-// }
+test foldr_1() {
+  foldr([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
+}
+
 /// Produce a list from elements that statisfy a predicate.
 pub fn filter(xs: List<a>, f: fn(a) -> Bool) -> List<a> {
   when xs is {
@@ -353,7 +358,7 @@ pub fn filter(xs: List<a>, f: fn(a) -> Bool) -> List<a> {
   }
 }
 
-// TODO
+// TODO: acceptance_test 012
 // test filter_1() {
 //   filter([], fn(x) { x > 0 }) == []
 // }
@@ -375,7 +380,8 @@ pub fn find(xs: List<a>, f: fn(a) -> Bool) -> Option<a> {
   }
 }
 
-// TODO
+// TODO: acceptance_test 005
+//
 // test find_1() {
 //   find([1, 2, 3], fn(x) { x == 1 }) == Some(1)
 // }
@@ -401,10 +407,12 @@ pub fn filter_map(xs: List<a>, f: fn(a) -> Option<b>) -> List<b> {
   )
 }
 
-// TODO
+// TODO: acceptance_test 010
+//
 // test filter_map_1() {
 //   filter_map([], fn(_) { Some(42) }) == []
 // }
+//
 // test filter_map_2() {
 //   filter_map(
 //     [1, 2, 3, 4, 5, 6],

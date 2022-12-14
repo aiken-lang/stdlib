@@ -6,7 +6,8 @@ pub fn or_else(opt: Option<a>, default: a) -> a {
   }
 }
 
-// TODO
+// TODO: acceptance_test 010
+//
 // test or_else_1() {
 //   or_else(None, "aiken") == "aiken"
 // }
@@ -22,7 +23,7 @@ pub fn map(opt: Option<a>, f: fn(a) -> result) -> Option<result> {
   }
 }
 
-// TODO
+// TODO: acceptance_test 010
 // test map_1() {
 //   map(None, fn(_) { Nil }) == None
 // }
@@ -46,7 +47,8 @@ pub fn map2(
   }
 }
 
-// TODO
+// TODO: acceptance_test 010
+//
 // test map2_1() {
 //   map2(None, Some(42), fn(_, _) { Nil }) == None
 // }
@@ -78,7 +80,8 @@ pub fn map3(
   }
 }
 
-// TODO
+// TODO: acceptance_test 010
+//
 // test map3_1() {
 //   map2(None, Some(42), None, fn(_, _, _) { Nil }) == None
 // }
@@ -97,7 +100,9 @@ pub fn and_then(opt: Option<a>, f: fn(a) -> Option<result>) -> Option<result> {
     Some(a) -> f(a)
   }
 }
-// TODO
+
+// TODO: acceptance_test 010
+//
 // fn try_decrement(n: Int) -> Option<Int> {
 //   if n > 0 {
 //     Some(n - 1)
