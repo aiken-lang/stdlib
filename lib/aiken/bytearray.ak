@@ -83,3 +83,53 @@ test prepend_3() {
   let x = 257
   prepend(#[2, 3], x) == #[1, 2, 3]
 }
+
+/// Returns the suffix of a ByteArray after n elements.
+pub fn drop(bytes: ByteArray, n: Int) -> ByteArray {
+  slice(bytes, n, length(bytes) - n)
+}
+
+test drop_1() {
+  let x = #[1, 2, 3, 4, 5, 6, 7]
+  drop(x, 2) == #[3, 4, 5, 6, 7]
+}
+
+test drop_2() {
+  let x = #[1, 2, 3, 4, 5, 6, 7]
+  drop(x, 0) == x
+}
+
+test drop_3() {
+  let x = #[1]
+  drop(x, 1) == #[]
+}
+
+test drop_4() {
+  let x = #[]
+  drop(x, 2) == #[]
+}
+
+/// Returns the n length prefix of a ByteArray.
+pub fn take(bytes: ByteArray, n: Int) -> ByteArray {
+  slice(bytes, 0, n)
+}
+
+test take_1() {
+  let x = #[1, 2, 3, 4, 5, 6, 7]
+  take(x, 2) == #[1, 2]
+}
+
+test take_2() {
+  let x = #[1, 2, 3, 4, 5, 6, 7]
+  take(x, 0) == #[]
+}
+
+test take_3() {
+  let x = #[1]
+  take(x, 1) == x
+}
+
+test take_4() {
+  let x = #[1, 2, 3]
+  take(x, 0) == #[]
+}
