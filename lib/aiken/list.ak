@@ -52,13 +52,13 @@ test range_2() {
 /// Combine two lists together.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
-pub fn zip(xs: List<a>, ys: List<b>) -> List<(a, b)> {
+pub fn zip(xs: List<a>, ys: List<b>) -> List<#(a, b)> {
   when xs is {
     [] -> []
     [x, ..rest_x] ->
       when ys is {
         [] -> []
-        [y, ..rest_y] -> [(x, y), ..zip(rest_x, rest_y)]
+        [y, ..rest_y] -> [#(x, y), ..zip(rest_x, rest_y)]
       }
   }
 }

@@ -18,7 +18,7 @@ pub fn to_list(m: Map<key, value>) -> List<#(key, value)> {
 /// use aiken/map
 ///
 /// let info = map.new() |> map.insert(key: "name", value: "Aiken")
-/// 
+///
 /// asset Some(x) = map.get(in: info, by: "key")
 /// ```
 pub fn get(in m: Map<key, value>, by k: key) -> Option<value> {
@@ -62,7 +62,7 @@ pub fn insert(
 /// use aiken/map
 ///
 /// let info = map.new() |> map.insert(key: "name", value: "Aiken")
-/// 
+///
 /// asset Some(x) = map.contains(in: info, key: "key")
 /// ```
 pub fn contains(in m: Map<key, value>, key k: key) -> Bool {
