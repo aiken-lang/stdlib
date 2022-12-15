@@ -18,6 +18,6 @@ jobs:
     - name: 💾 Cache dependencies
       uses: Swatinem/rust-cache@v2
     - name: 🧰 Install Aiken
-      run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git
+      run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git --branch some-interesting-test-cases
     - name: 🔬 Run tests
       run: aiken check

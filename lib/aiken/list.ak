@@ -277,15 +277,16 @@ pub fn map(xs: List<a>, f: fn(a) -> result) -> List<result> {
   }
 }
 
-// TODO: acceptance_test 011
-//
-// test map_1() {
-//   map([], fn(n) { n + 1 }) == []
-// }
+test map_1() {
+  map([], fn(n) { n + 1 }) == []
+}
+
+// TODO: acceptance_test 020
 //
 // test map_2() {
 //   map([1, 2, 3, 4], fn(n) { n + 1 }) == [2, 3, 4, 5]
 // }
+
 /// Apply a function of two arguments, combining elements from two lists.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
@@ -408,24 +409,23 @@ pub fn filter_map(xs: List<a>, f: fn(a) -> Option<b>) -> List<b> {
   )
 }
 
-// TODO: acceptance_test 010
-//
-// test filter_map_1() {
-//   filter_map([], fn(_) { Some(42) }) == []
-// }
-//
-// test filter_map_2() {
-//   filter_map(
-//     [1, 2, 3, 4, 5, 6],
-//     fn(x) {
-//       if (builtin.mod_integer(x, 2) != 0) {
-//         Some(3 * x)
-//       } else {
-//         None
-//       }
-//     },
-//   ) == [3, 9, 15]
-// }
+test filter_map_1() {
+  filter_map([], fn(_) { Some(42) }) == []
+}
+
+test filter_map_2() {
+  filter_map(
+    [1, 2, 3, 4, 5, 6],
+    fn(x) {
+      if builtin.mod_integer(x, 2) != 0 {
+        Some(3 * x)
+      } else {
+        None
+      }
+    },
+  ) == [3, 9, 15]
+}
+
 /// Map elements of a list into a new list and flatten the result.
 pub fn flat_map(xs: List<a>, f: fn(a) -> List<b>) -> List<b> {
   foldr(xs, fn(x, ys) { concat(f(x), ys) }, [])
