@@ -23,17 +23,17 @@ pub fn to_list(m: AssocList<key, value>) -> List<#(key, value)> {
   m.inner
 }
 
-fn fixture_1() {
-  new()
-  |> insert("foo", 42)
-  |> insert("bar", 14)
-}
-
-fn fixture_2() {
-  new()
-  |> insert("foo", 1337)
-  |> insert("baz", 42)
-}
+// fn fixture_1() {
+//   new()
+//   |> insert("foo", 42)
+//   |> insert("bar", 14)
+// }
+//
+// fn fixture_2() {
+//   new()
+//   |> insert("foo", 1337)
+//   |> insert("baz", 42)
+// }
 
 // TODO: acceptance_test 015
 //

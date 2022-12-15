@@ -86,7 +86,7 @@ test prepend_3() {
 
 /// Returns the suffix of a ByteArray after n elements.
 pub fn drop(bytes: ByteArray, n: Int) -> ByteArray {
-  slice(bytes, n, length(bytes) - n)
+  builtin.slice_bytearray(n, builtin.length_of_bytearray(bytes) - n, bytes)
 }
 
 test drop_1() {
@@ -111,7 +111,7 @@ test drop_4() {
 
 /// Returns the n length prefix of a ByteArray.
 pub fn take(bytes: ByteArray, n: Int) -> ByteArray {
-  slice(bytes, 0, n)
+  builtin.slice_bytearray(0, n, bytes)
 }
 
 test take_1() {
