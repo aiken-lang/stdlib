@@ -1,0 +1,23 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v3
+    - name: 💾 Cache dependencies
+      uses: Swatinem/rust-cache@v2
+    - name: 🧰 Install Aiken
+      run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git
+    - name: 🔬 Run tests
+      run: aiken check
