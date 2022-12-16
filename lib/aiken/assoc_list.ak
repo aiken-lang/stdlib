@@ -51,7 +51,7 @@ pub fn from_list(xs: List<#(key, value)>) -> AssocList<key, value> {
   AssocList { inner: do_from_list(xs) }
 }
 
-pub fn do_from_list(xs: List<#(key, value)>) -> List<#(key, value)> {
+fn do_from_list(xs: List<#(key, value)>) -> List<#(key, value)> {
   when xs is {
     [] -> []
     [#(k, v), ..rest] -> do_insert(do_from_list(rest), k, v)
