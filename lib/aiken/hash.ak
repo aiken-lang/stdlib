@@ -33,17 +33,21 @@ pub type Hash<alg, a> =
   ByteArray
 
 /// A blake2b-224 hash algorithm.
-pub type Blake2b_224 =
-  Nil
+pub opaque type Blake2b_224 {
+  Blake2b_224
+}
 
 /// A blake2b-256 hash algorithm.
-pub type Blake2b_256 =
-  Nil
+pub opaque type Blake2b_256 {
+  Blake2b_256
+}
 
 /// A SHA-256 hash algorithm.
-pub type Sha256 =
-  Nil
+pub opaque type Sha256 {
+  Sha256
+}
 
 /// A SHA-512 hash algorithm.
-pub type Sha512 =
-  Nil
+pub opaque type Sha512 {
+  Sha512
+}
