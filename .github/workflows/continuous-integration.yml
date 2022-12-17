@@ -1,6 +1,7 @@
 name: Continuous Integration
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
@@ -9,15 +10,52 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: 📥 Checkout repository
       uses: actions/checkout@v3
+
     - name: 💾 Cache dependencies
       uses: Swatinem/rust-cache@v2
+
+    - name: 🧰 Setup Pages
+      uses: actions/configure-pages@v2
+
     - name: 🧰 Install Aiken
       run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git --branch some-interesting-test-cases
+
     - name: 🔬 Run tests
       run: aiken check
+
+    - name: 📘 Generate documentation
+      shell: bash
+      working-directory: .
+      run: aiken docs -d . -o docs
+
+    - name: 📦 Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: 'docs/'
+
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
