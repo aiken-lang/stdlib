@@ -1,7 +1,16 @@
 use aiken/builtin
 
-/// Extract a ByteArray as a slice of another ByteArray.
-pub fn slice(bytes: ByteArray, start: Int, end: Int) -> ByteArray {
+/// Extract a `ByteArray` as a slice of another `ByteArray`.
+///
+/// Indexes are 0-based and inclusive.
+///
+/// ```aiken
+/// use aiken.bytearray
+///
+/// bytearray.slice(#[0,1,2,3,4,5,6], start: 1, end: 3)
+/// // #[1,2,3]
+/// ```
+pub fn slice(bytes: ByteArray, start start: Int, end end: Int) -> ByteArray {
   builtin.slice_bytearray(start, end, bytes)
 }
 
@@ -17,7 +26,14 @@ test slice_3() {
   slice(#[1, 2, 3], 0, 42) == #[1, 2, 3]
 }
 
-/// Returns the number of bytes in a ByteArray.
+/// Returns the number of bytes in a `ByteArray`.
+///
+/// ```aiken
+/// use aiken.bytearray
+///
+/// bytearray.length(#[1,2,3))
+/// // 3
+/// ```
 pub fn length(bytes: ByteArray) -> Int {
   builtin.length_of_bytearray(bytes)
 }
@@ -30,7 +46,7 @@ test length_2() {
   length(#[1, 2, 3]) == 3
 }
 
-/// Returns `True` is the given ByteArray is empty.
+/// Returns `True` when the given `ByteArray` is empty.
 pub fn is_empty(bytes: ByteArray) -> Bool {
   builtin.length_of_bytearray(bytes) == 0
 }
@@ -43,9 +59,16 @@ test is_empty_2() {
   is_empty(#[1]) == False
 }
 
-/// Combine two ByteArray together.
-pub fn concat(left front: ByteArray, right back: ByteArray) -> ByteArray {
-  builtin.append_bytearray(front, back)
+/// Combine two `ByteArray` together.
+///
+/// ```aiken
+/// use aiken.bytearray
+///
+/// bytearray.concat(left: #[1,2,3], right: #[4,5,6])
+/// // #[1,2,3,4,5,6]
+/// ```
+pub fn concat(left left: ByteArray, right right: ByteArray) -> ByteArray {
+  builtin.append_bytearray(left, right)
 }
 
 test concat_1() {
@@ -64,10 +87,11 @@ test concat_4() {
   concat(#[1, 2], #[3, 4]) == #[1, 2, 3, 4]
 }
 
-/// Add a byte element in front of a ByteArray.
+/// Add a byte element in front of a `ByteArray`.
 ///
-/// Note: when the given byte is greater than 255, it wraps-around. So `256` is mapped to `0`, `257` to 1, and so forth.
-pub fn prepend(rest: ByteArray, byte: Int) -> ByteArray {
+/// > **Note:**
+/// > When the given byte is greater than 255, it wraps-around. So 256 is mapped to 0, 257 to 1, and so forth.
+pub fn prepend(rest: ByteArray, byte byte: Int) -> ByteArray {
   builtin.cons_bytearray(byte, rest)
 }
 
@@ -84,8 +108,15 @@ test prepend_3() {
   prepend(#[2, 3], x) == #[1, 2, 3]
 }
 
-/// Returns the suffix of a ByteArray after n elements.
-pub fn drop(bytes: ByteArray, n: Int) -> ByteArray {
+/// Returns the suffix of a `ByteArray` after `n` elements.
+///
+/// ```aiken
+/// use aiken.bytearray
+///
+/// bytearray.drop(#[1,2,3], n: 2)
+/// // #[3]
+/// ```
+pub fn drop(bytes: ByteArray, n n: Int) -> ByteArray {
   builtin.slice_bytearray(n, builtin.length_of_bytearray(bytes) - n, bytes)
 }
 
@@ -109,8 +140,15 @@ test drop_4() {
   drop(x, 2) == #[]
 }
 
-/// Returns the n length prefix of a ByteArray.
-pub fn take(bytes: ByteArray, n: Int) -> ByteArray {
+/// Returns the n-length prefix of a `ByteArray`.
+///
+/// ```aiken
+/// use aiken.bytearray
+///
+/// bytearray.take(#[1,2,3], n: 2)
+/// // #[1,2]
+/// ```
+pub fn take(bytes: ByteArray, n n: Int) -> ByteArray {
   builtin.slice_bytearray(0, n, bytes)
 }
 
