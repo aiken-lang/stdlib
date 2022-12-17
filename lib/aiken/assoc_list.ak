@@ -4,11 +4,13 @@
 //// which preserve some invariants. In particular, each key is only present
 //// once in the list.
 ////
-//// Note however that they aren't proper maps or dictionnaries! So, two
-//// lists constructed in a different order may not be equal (in the sense
+//// Note however that they aren't proper maps or dictionnaries! So, **two
+//// lists constructed in a different order may not be equal** (in the sense
 //// of the equality operator `==`) even though they have the exact same
 //// elements.
 
+/// An opaque `AssocList`. The type is opaque because the module maintains some
+/// invariant, namely: there's only one occurence of a given key in the list.
 pub opaque type AssocList<key, value> {
   inner: List<#(key, value)>,
 }
@@ -18,7 +20,7 @@ pub fn new() -> AssocList<key, value> {
   AssocList { inner: [] }
 }
 
-/// Get the inner list holding the map data
+/// Get the inner list holding the map data.
 pub fn to_list(m: AssocList<key, value>) -> List<#(key, value)> {
   m.inner
 }
@@ -72,6 +74,18 @@ fn do_from_list(xs: List<#(key, value)>) -> List<#(key, value)> {
 //   from_list([#("foo", 42), #("bar", 14), #("foo", 1337)]) == fixture_1()
 // }
 
+/// Extract all the keys present in a given `AssocList`.
+///
+/// ```aiken
+/// use aiken.assoc_list
+///
+/// assoc_list.new()
+/// |> assoc_list.insert("foo", 14)
+/// |> assoc_list.insert("bar", 42)
+/// |> assoc_list.insert("foo", 1337)
+/// |> assoc_list.keys()
+/// // ["foo", "bar"]
+/// ```
 pub fn keys(m: AssocList<key, value>) -> List<key> {
   do_keys(m.inner)
 }
@@ -97,6 +111,18 @@ fn do_keys(elems: List<#(key, value)>) -> List<key> {
 //   ) == [1, 2]
 // }
 
+/// Extract all the values present in a given `AssocList`.
+///
+/// ```aiken
+/// use aiken.assoc_list
+///
+/// assoc_list.new()
+/// |> assoc_list.insert("foo", 14)
+/// |> assoc_list.insert("bar", 42)
+/// |> assoc_list.insert("foo", 1337)
+/// |> assoc_list.values()
+/// // [42, 1337]
+/// ```
 pub fn values(m: AssocList<key, value>) -> List<value> {
   do_values(m.inner)
 }
@@ -122,9 +148,9 @@ fn do_values(elems: List<#(key, value)>) -> List<value> {
 //   ) == [3, 4]
 // }
 
-/// Return the number of key-value pairs in the map.
-pub fn size(m: AssocList<key, value>) -> Int {
-  do_size(m.inner)
+/// Return the number of key-value pairs in the assoc-list.
+pub fn size(xs: AssocList<key, value>) -> Int {
+  do_size(xs.inner)
 }
 
 fn do_size(elems: List<#(key, value)>) -> Int {
@@ -155,14 +181,15 @@ fn do_size(elems: List<#(key, value)>) -> Int {
 //   ) == 2
 // }
 
-/// Get a value in the map by a key
+/// Get a value in the assoc_list by its key.
 ///
 /// ```aiken
-/// use aiken/map
+/// use aiken/assoc_list
 ///
-/// let info = map.new() |> map.insert(key: "name", value: "Aiken")
-///
-/// assert Some(x) = map.get(in: info, key: "key")
+/// assoc_list.new()
+/// |> assoc_list.insert(key: "name", value: "Aiken")
+/// |> assoc_list.get(key: "name")
+/// // Some("Aiken")
 /// ```
 pub fn get(in m: AssocList<key, value>, key k: key) -> Option<value> {
   do_get(m.inner, k)
@@ -202,12 +229,16 @@ fn do_get(elems: List<#(key, value)>, k: key) -> Option<value> {
 //   get(m, key: "foo") == None
 // }
 
-/// Insert a value in the map by key. If the key already exists, its value is overridden.
+/// Insert a value in the assoc-list at a given key key. If the key already exists, its value is **overridden**.
 ///
 /// ```aiken
-/// use aiken/map
+/// use aiken/assoc_list
 ///
-/// map.new() |> map.insert(key: "name", value: "Aiken")
+/// assoc_list.new()
+/// |> assoc_list.insert(key: "name", value: "Foo")
+/// |> assoc_list.insert(key: "name", value: "Aiken")
+/// |> assoc_list.to_list()
+/// // [#("name", "Aiken")]
 /// ```
 pub fn insert(
   in m: AssocList<key, value>,
@@ -255,55 +286,56 @@ fn do_insert(
 //   insert(m1, "bar", 14) == insert(m2, "foo", 42)
 // }
 
-/// Check if a key exists in the map
+/// Check if a key exists in the list.
 ///
 /// ```aiken
-/// use aiken/map
+/// use aiken/assoc_list
 ///
-/// let info = map.new() |> map.insert(key: "name", value: "Aiken")
-///
-/// assert Some(x) = map.contains(in: info, key: "key")
+/// assoc_list.new()
+/// |> assoc_list.insert(key: "name", value: "Aiken")
+/// |> assoc_list.has_key("name")
+/// // True
 /// ```
-pub fn contains(in m: AssocList<key, value>, key k: key) -> Bool {
-  do_contains(m.inner, k)
+pub fn has_key(in m: AssocList<key, value>, key k: key) -> Bool {
+  do_has_key(m.inner, k)
 }
 
-fn do_contains(elems: List<#(key, value)>, k: key) -> Bool {
+fn do_has_key(elems: List<#(key, value)>, k: key) -> Bool {
   when elems is {
     [] -> False
     [#(k2, _), ..rest] ->
       if k2 == k {
         True
       } else {
-        do_contains(rest, k)
+        do_has_key(rest, k)
       }
   }
 }
 
 // TODO: acceptance_test 013
 //
-// test contains_1() {
-//   !contains(new(), "foo")
+// test has_key_1() {
+//   !has_key(new(), "foo")
 // }
 //
-// test contains_2() {
-//   contains(
+// test has_key_2() {
+//   has_key(
 //     new()
 //     |> insert("foo", 14),
 //     "foo",
 //   )
 // }
 //
-// test contains_3() {
-//   !contains(
+// test has_key_3() {
+//   !has_key(
 //     new()
 //     |> insert("foo", 14),
 //     "bar",
 //   )
 // }
 //
-// test contains_4() {
-//   contains(
+// test has_key_4() {
+//   has_key(
 //     new()
 //     |> insert("foo", 14)
 //     |> insert("bar", 42),
@@ -311,7 +343,76 @@ fn do_contains(elems: List<#(key, value)>, k: key) -> Bool {
 //   )
 // }
 
-/// Remove a key-value pair from a map. If the key is not found, no changes are made.
+/// Finds a value in the list, and returns the first key found to have that value.
+///
+/// ```aiken
+/// use aiken/assoc_list
+///
+/// assoc_list.new()
+/// |> assoc_list.insert(key: "foo", value: 42)
+/// |> assoc_list.insert(key: "bar", value: 14)
+/// |> assoc_list.find(42)
+/// // Some("foo")
+/// ```
+pub fn find(in m: AssocList<key, value>, v: value) -> Option<key> {
+  do_find(m.inner, v)
+}
+
+fn do_find(elems: List<#(key, value)>, v: value) -> Option<key> {
+  when elems is {
+    [] -> None
+    [#(k, v2), ..rest] ->
+      if v == v2 {
+        Some(k)
+      } else {
+        do_find(rest, v)
+      }
+  }
+}
+
+// TODO: acceptance_test 013
+//
+// test find_1() {
+//   find(new(), "foo") == None
+// }
+//
+// test find_2() {
+//   find(
+//     new()
+//     |> insert("foo", 14),
+//     14,
+//   ) == Some("foo")
+// }
+//
+// test find_3() {
+//   find(
+//     new()
+//     |> insert("foo", 14),
+//     42,
+//   ) == None
+// }
+//
+// test find_4() {
+//   find(
+//     new()
+//     |> insert("foo", 14)
+//     |> insert("bar", 42)
+//     |> insert("baz", 14),
+//     14,
+//   ) == Some("foo")
+// }
+
+/// Remove a key-value pair from the list. If the key is not found, no changes are made.
+///
+/// ```aiken
+/// use aiken/assoc_list
+///
+/// assoc_list.new()
+/// |> assoc_list.insert(key: "foo", value: 42)
+/// |> assoc_list.delete(key: "foo")
+/// |> assoc_list.get("foo")
+/// // None
+/// ```
 pub fn delete(in m: AssocList<key, value>, key k: key) -> AssocList<key, value> {
   AssocList { inner: do_delete(m.inner, k) }
 }
@@ -367,12 +468,10 @@ fn do_delete(elems: List<#(key, value)>, k: key) -> List<#(key, value)> {
 /// Apply a function to all key-value pairs in a map.
 ///
 /// ```aiken
-/// use aiken/map
+/// use aiken/assoc_list
 ///
-/// let info = map.new() |> map.insert(key: "age", value: 14)
-///
-/// pub fn celebrate_birthday(m: AssocList<String, Int>, key: String) {
-///   map.map(in: m, with: fn(_key, value) { value + 1 })
+/// pub fn celebrate_birthday(xs: AssocList<String, Int>, key: String) {
+///   xs.map(in: m, with: fn(_key, value) { value + 1 })
 /// }
 /// ```
 pub fn map(
@@ -408,7 +507,7 @@ fn do_map(
 //   get(result, "foo") == Some(43) && size(result) == size(fixture_1())
 // }
 
-/// Fold over the key-value pairs in a map.
+/// Fold over the key-value pairs in a list.
 pub fn fold(
   m: AssocList<key, value>,
   with with: fn(key, value, result) -> result,
@@ -481,8 +580,8 @@ fn do_filter(
 //   filter(fixture_1(), fn(k, _) { k == "bar" }) == expected
 // }
 
-/// Combine two maps. If the same key exist in both the left and right maps,
-/// values from the left are preferred (i.e. left-biaised).
+/// Combine two associate lists. If the same key exist in both the left and
+/// right lists, values from the left are preferred (i.e. left-biaised).
 pub fn union(
   left left: AssocList<key, value>,
   right right: AssocList<key, value>,
@@ -500,8 +599,8 @@ fn do_union(
   }
 }
 
-/// Combine two maps using the provided strategy for combining values when the same
-/// key is found in both maps.
+/// Combine two lists using the provided strategy for combining values when the same
+/// key is found in both lists.
 pub fn union_with(
   left left: AssocList<key, value>,
   right right: AssocList<key, value>,
