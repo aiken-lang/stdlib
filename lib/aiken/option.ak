@@ -10,11 +10,9 @@ test or_else_1() {
   or_else(None, "aiken") == "aiken"
 }
 
-// TODO: acceptance test 018
-//
-// test or_else_2() {
-//   or_else(Some(42), 14) == 42
-// }
+test or_else_2() {
+  or_else(Some(42), 14) == 42
+}
 
 /// Apply a function to the inner value of an Option
 pub fn map(opt: Option<a>, f: fn(a) -> result) -> Option<result> {
@@ -24,10 +22,8 @@ pub fn map(opt: Option<a>, f: fn(a) -> result) -> Option<result> {
   }
 }
 
-// TODO: acceptance_test 019
-// Change all '14' to 'Nil'
 test map_1() {
-  map(None, fn(_) { 14 }) == None
+  map(None, fn(_) { Nil }) == None
 }
 
 // TODO: acceptance test 020
@@ -107,8 +103,6 @@ pub fn and_then(opt: Option<a>, f: fn(a) -> Option<result>) -> Option<result> {
     Some(a) -> f(a)
   }
 }
-
-// TODO: acceptance_test 010
 
 fn try_decrement(n: Int) -> Option<Int> {
   if n > 0 {

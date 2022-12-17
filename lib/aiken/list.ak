@@ -361,15 +361,14 @@ pub fn filter(xs: List<a>, f: fn(a) -> Bool) -> List<a> {
   }
 }
 
-// TODO: acceptance_test 012
-// test filter_1() {
-//   filter([], fn(x) { x > 0 }) == []
-// }
-//
-// test filter_2() {
-//   filter([1,
-//       2, 3, 4, 5, 6], fn(x) { builtin.mod_integer(x, 2) == 0 }) == [2, 4, 6]
-// }
+test filter_1() {
+  filter([], fn(x) { x > 0 }) == []
+}
+
+test filter_2() {
+  filter([1,
+      2, 3, 4, 5, 6], fn(x) { builtin.mod_integer(x, 2) == 0 }) == [2, 4, 6]
+}
 /// Find the first element satisfying the given predicate, if any.
 pub fn find(xs: List<a>, f: fn(a) -> Bool) -> Option<a> {
   when xs is {
@@ -409,22 +408,24 @@ pub fn filter_map(xs: List<a>, f: fn(a) -> Option<b>) -> List<b> {
   )
 }
 
-test filter_map_1() {
-  filter_map([], fn(_) { Some(42) }) == []
-}
-
-test filter_map_2() {
-  filter_map(
-    [1, 2, 3, 4, 5, 6],
-    fn(x) {
-      if builtin.mod_integer(x, 2) != 0 {
-        Some(3 * x)
-      } else {
-        None
-      }
-    },
-  ) == [3, 9, 15]
-}
+// TODO: acceptance_test 022
+//
+// test filter_map_1() {
+//   filter_map([], fn(_) { Some(42) }) == []
+// }
+//
+// test filter_map_2() {
+//   filter_map(
+//     [1, 2, 3, 4, 5, 6],
+//     fn(x) {
+//       if builtin.mod_integer(x, 2) != 0 {
+//         Some(3 * x)
+//       } else {
+//         None
+//       }
+//     },
+//   ) == [3, 9, 15]
+// }
 
 /// Map elements of a list into a new list and flatten the result.
 pub fn flat_map(xs: List<a>, f: fn(a) -> List<b>) -> List<b> {
