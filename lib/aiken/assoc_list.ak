@@ -127,7 +127,7 @@ pub fn size(m: AssocList<key, value>) -> Int {
   do_size(m.inner)
 }
 
-pub fn do_size(elems: List<#(key, value)>) -> Int {
+fn do_size(elems: List<#(key, value)>) -> Int {
   when elems is {
     [] -> 0
     [_, ..rest] -> 1 + do_size(rest)

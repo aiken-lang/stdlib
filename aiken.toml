@@ -1,6 +1,9 @@
-name = "aiken_stdlib"
+name = "stdlib"
 version = "0.0.0"
 licences = ["Apache-2.0"]
 description = "The Aiken Standard Library"
 
-[dependencies]
+[repository]
+user = "aiken-lang"
+project = "stdlib"
+platform = "Github"
