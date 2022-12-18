@@ -31,7 +31,7 @@ test slice_3() {
 /// ```aiken
 /// use aiken.bytearray
 ///
-/// bytearray.length(#[1,2,3))
+/// bytearray.length(#[1,2,3])
 /// // 3
 /// ```
 pub fn length(bytes: ByteArray) -> Int {
@@ -170,4 +170,30 @@ test take_3() {
 test take_4() {
   let x = #[1, 2, 3]
   take(x, 0) == #[]
+}
+
+/// Convert a `String` into a `ByteArray`.
+pub fn from_string(str: String) -> ByteArray {
+  builtin.encode_utf8(str)
+}
+
+test from_string_1() {
+  from_string("") == #[]
+}
+
+test from_string_2() {
+  from_string("ABC") == #[65, 66, 67]
+}
+
+/// Convert a `ByteArray` into a `String`.
+pub fn to_string(bytes: ByteArray) -> String {
+  builtin.decode_utf8(bytes)
+}
+
+test to_string_1() {
+  to_string(#[]) == ""
+}
+
+test to_string_2() {
+  to_string(#[65, 66, 67]) == "ABC"
 }
