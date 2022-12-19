@@ -37,14 +37,14 @@ pub fn to_list(m: AssocList<key, value>) -> List<#(key, value)> {
 //   |> insert("baz", 42)
 // }
 
-// TODO: acceptance_test 015
-//
-// test to_list_1() {
-//   to_list(new()) == []
-// }
+test to_list_1() {
+  to_list(new()) == []
+}
+
+// TODO: acceptance_test 023
 //
 // test to_list_2() {
-//   to_list(fixture_1()) == [("foo", 42), ("bar", 14)]
+//   to_list(fixture_1()) == [#("foo", 42), #("bar", 14)]
 // }
 
 /// Construct an associative list from a list of key-value pairs. Note that when a key is present
@@ -527,7 +527,7 @@ fn do_fold(
   }
 }
 
-// TODO: acceptance_test 015
+// TODO: acceptance_test 023
 //
 // test fold_2() {
 //   fold(fixture_1(), with: fn(_, v, total) { v + total }, zero: 0) == 56

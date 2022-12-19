@@ -26,11 +26,9 @@ test map_1() {
   map(None, fn(_) { Nil }) == None
 }
 
-// TODO: acceptance test 020
-//
-// test map_2() {
-//   map(Some(14), fn(n) { n + 1 }) == Some(15)
-// }
+test map_2() {
+  map(Some(14), fn(n) { n + 1 }) == Some(15)
+}
 
 /// Combine two 'Option' together.
 pub fn map2(
@@ -56,7 +54,7 @@ test map2_2() {
   map2(Some(42), None, fn(_, _) { 14 }) == None
 }
 
-// TODO: acceptance_test 020
+// TODO: acceptance_test 024
 //
 // test map2_3() {
 //   map2(Some(14), Some(42), fn(a, b) { #(a, b) }) == Some(#(14, 42))
@@ -90,11 +88,9 @@ test map3_2() {
   map3(Some(42), None, None, fn(_, _, _) { 14 }) == None
 }
 
-// TODO: acceptance_test 020
-//
-// test map3_3() {
-//   map3(Some(14), Some(42), Some(1337), fn(a, b, c) { c - (a + b) }) == Some(1281)
-// }
+test map3_3() {
+  map3(Some(14), Some(42), Some(1337), fn(a, b, c) { c - a + b }) == Some(1365)
+}
 
 /// Chain together many computations that may fail.
 pub fn and_then(opt: Option<a>, f: fn(a) -> Option<result>) -> Option<result> {
@@ -118,18 +114,17 @@ test and_then_1() {
     |> and_then(try_decrement)
   result == None
 }
-// TODO: acceptance_test 020
-//
-// test and_then_2() {
-//   let result =
-//     Some(14)
-//     |> and_then(try_decrement)
-//   result == Some(13)
-// }
-//
-// test and_then_3() {
-//   let result =
-//     Some(0)
-//     |> and_then(try_decrement)
-//   result == None
-// }
+
+test and_then_2() {
+  let result =
+    Some(14)
+    |> and_then(try_decrement)
+  result == Some(13)
+}
+
+test and_then_3() {
+  let result =
+    Some(0)
+    |> and_then(try_decrement)
+  result == None
+}

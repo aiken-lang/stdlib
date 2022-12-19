@@ -88,7 +88,7 @@ pub fn unzip(xs: List<#(a, b)>) -> #(List<a>, List<b>) {
   }
 }
 
-// TODO: acceptance_test 015
+// TODO: acceptance_test 013
 //
 //test unzip_1() {
 //  unzip([]) == #([], [])
@@ -281,11 +281,9 @@ test map_1() {
   map([], fn(n) { n + 1 }) == []
 }
 
-// TODO: acceptance_test 020
-//
-// test map_2() {
-//   map([1, 2, 3, 4], fn(n) { n + 1 }) == [2, 3, 4, 5]
-// }
+test map_2() {
+  map([1, 2, 3, 4], fn(n) { n + 1 }) == [2, 3, 4, 5]
+}
 
 /// Apply a function of two arguments, combining elements from two lists.
 ///
@@ -369,6 +367,7 @@ test filter_2() {
   filter([1,
       2, 3, 4, 5, 6], fn(x) { builtin.mod_integer(x, 2) == 0 }) == [2, 4, 6]
 }
+
 /// Find the first element satisfying the given predicate, if any.
 pub fn find(xs: List<a>, f: fn(a) -> Bool) -> Option<a> {
   when xs is {
@@ -408,24 +407,22 @@ pub fn filter_map(xs: List<a>, f: fn(a) -> Option<b>) -> List<b> {
   )
 }
 
-// TODO: acceptance_test 022
-//
-// test filter_map_1() {
-//   filter_map([], fn(_) { Some(42) }) == []
-// }
-//
-// test filter_map_2() {
-//   filter_map(
-//     [1, 2, 3, 4, 5, 6],
-//     fn(x) {
-//       if builtin.mod_integer(x, 2) != 0 {
-//         Some(3 * x)
-//       } else {
-//         None
-//       }
-//     },
-//   ) == [3, 9, 15]
-// }
+test filter_map_1() {
+  filter_map([], fn(_) { Some(42) }) == []
+}
+
+test filter_map_2() {
+  filter_map(
+    [1, 2, 3, 4, 5, 6],
+    fn(x) {
+      if builtin.mod_integer(x, 2) != 0 {
+        Some(3 * x)
+      } else {
+        None
+      }
+    },
+  ) == [3, 9, 15]
+}
 
 /// Map elements of a list into a new list and flatten the result.
 pub fn flat_map(xs: List<a>, f: fn(a) -> List<b>) -> List<b> {
