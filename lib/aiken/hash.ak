@@ -29,6 +29,8 @@
 ////
 //// Both are strictly equivalent, but the second reads much better.
 
+use aiken/builtin
+
 /// A `Hash` is nothing more than a `ByteArray`, but it carries extra
 /// information for readability.
 pub type Hash<alg, a> =
@@ -41,6 +43,7 @@ pub type Hash<alg, a> =
 /// - [`Credential`](../aiken/transaction/credential.html#Credential)
 /// - [`PolicyId`](../aiken/transaction/value.html#PolicyId)
 ///
+/// Note: there's no function to calculate blake2b-224 hash digests on-chain.
 pub opaque type Blake2b_224 {
   Blake2b_224
 }
@@ -55,12 +58,29 @@ pub opaque type Blake2b_256 {
   Blake2b_256
 }
 
-/// A SHA-256 hash algorithm.
-pub opaque type Sha256 {
-  Sha256
+/// Compute the blake2b-256 hash digest of some data.
+pub fn blake2b_256(bytes: ByteArray) -> Hash<Blake2b_256, a> {
+  builtin.blake2b_256(bytes)
 }
 
-/// A SHA-512 hash algorithm.
-pub opaque type Sha512 {
-  Sha512
+/// A SHA2-256 hash algorithm.
+pub opaque type Sha2_256 {
+  Sha2_256
 }
+
+/// Compute the sha2-256 hash digest of some data.
+pub fn sha2_256(bytes: ByteArray) -> Hash<Sha2_256, a> {
+  builtin.sha2_256(bytes)
+}
+
+
+/// A SHA3-256 hash algorithm.
+pub opaque type Sha3_256 {
+  Sha3_256
+}
+
+/// Compute the sha3-256 hash digest of some data.
+pub fn sha3_256(bytes: ByteArray) -> Hash<Sha3_256, a> {
+  builtin.sha3_256(bytes)
+}
+
