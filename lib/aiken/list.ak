@@ -397,11 +397,9 @@ test map2_2() {
   map2([1, 2, 3], [1, 2], fn(a, b) { a + b }) == [2, 4]
 }
 
-// TODO: acceptance_test 024
-//
-// test map2_3() {
-//   map2([42], [1, 2, 3], fn(_a, b) { Some(b) }) == [Some(1)]
-// }
+test map2_3() {
+  map2([42], [1, 2, 3], fn(_a, b) { Some(b) }) == [Some(1)]
+}
 
 /// Apply a function of three arguments, combining elements from three lists.
 ///

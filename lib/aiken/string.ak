@@ -2,8 +2,6 @@ use aiken/builtin.{
   append_bytearray, decode_utf8, encode_utf8, length_of_bytearray,
 }
 
-// TODO: acceptance_test 027
-//
 /// Combine two `String` together.
 ///
 /// ```aiken

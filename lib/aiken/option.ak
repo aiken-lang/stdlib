@@ -54,11 +54,9 @@ test map2_2() {
   map2(Some(42), None, fn(_, _) { 14 }) == None
 }
 
-// TODO: acceptance_test 024
-//
-// test map2_3() {
-//   map2(Some(14), Some(42), fn(a, b) { #(a, b) }) == Some(#(14, 42))
-// }
+test map2_3() {
+  map2(Some(14), Some(42), fn(a, b) { #(a, b) }) == Some(#(14, 42))
+}
 
 pub fn map3(
   opt_a: Option<a>,
