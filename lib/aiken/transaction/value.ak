@@ -32,7 +32,35 @@ pub const ada_asset_name = #[]
 pub type Value =
   AssocList<PolicyId, AssocList<AssetName, Int>>
 
-/// Construct a 'Value' from an asset identifier (i.e. `PolicyId` + `AssetName`)
+/// Combine two `Value` together.
+pub fn add(v0: Value, v1: Value) {
+  assoc_list.union_with(
+    v0,
+    v1,
+    fn(_, a0, a1) { assoc_list.union_with(a0, a1, fn(_, q0, q1) { q0 + q1 }) },
+  )
+}
+
+/// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
+///
+/// Handy to manipulate values as uniform lists.
+pub fn flatten(value: Value) -> List<#(PolicyId, AssetName, Int)> {
+  assoc_list.fold(
+    value,
+    fn(policy_id, asset, assets) {
+      assoc_list.fold(
+        asset,
+        fn(asset_name, quantity, xs) {
+          [#(policy_id, asset_name, quantity), ..xs]
+        },
+        assets,
+      )
+    },
+    [],
+  )
+}
+
+/// Construct a `Value` from an asset identifier (i.e. `PolicyId` + `AssetName`)
 /// and a given quantity.
 pub fn from_asset(policy_id: PolicyId, asset_name: AssetName, quantity: Int) {
   let asset =
@@ -42,7 +70,7 @@ pub fn from_asset(policy_id: PolicyId, asset_name: AssetName, quantity: Int) {
   |> assoc_list.insert(policy_id, asset)
 }
 
-/// Construct a 'Value' from a lovelace quantity.
+/// Construct a `Value` from a lovelace quantity.
 ///
 /// Friendly reminder: 1 Ada = 1.000.000 Lovelace
 pub fn from_lovelace(quantity: Int) -> Value {
@@ -64,23 +92,4 @@ pub fn quantity_of(
 /// A specialized version of `quantity_of` for the Ada currency.
 pub fn lovelace_of(value: Value) -> Int {
   quantity_of(value, ada_policy_id, ada_asset_name)
-}
-
-/// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
-///
-/// Handy to manipulate values as uniform lists.
-pub fn flatten(value: Value) -> List<#(PolicyId, AssetName, Int)> {
-  assoc_list.fold(
-    value,
-    fn(policy_id, asset, assets) {
-      assoc_list.fold(
-        asset,
-        fn(asset_name, quantity, xs) {
-          [#(policy_id, asset_name, quantity), ..xs]
-        },
-        assets,
-      )
-    },
-    [],
-  )
 }
