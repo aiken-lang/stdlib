@@ -84,3 +84,27 @@ pub fn flatten(value: Value) -> List<#(PolicyId, AssetName, Int)> {
     [],
   )
 }
+
+/// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity) and filter it by a predicate.
+pub fn flatten_filter(
+  value: Value,
+  f: fn(PolicyId, AssetName, Int) -> Bool,
+) -> List<#(PolicyId, AssetName, Int)> {
+  assoc_list.fold(
+    value,
+    fn(policy_id, asset, assets) {
+      assoc_list.fold(
+        asset,
+        fn(asset_name, quantity, xs) {
+          if f(policy_id, asset_name, quantity) {
+            [#(policy_id, asset_name, quantity), ..xs]
+          } else {
+            xs
+          }
+        },
+        assets,
+      )
+    },
+    [],
+  )
+}
