@@ -1,26 +1,5 @@
 use aiken/builtin
 
-/// Add a byte element in front of a `ByteArray`.
-///
-/// > **Note:**
-/// > When the given byte is greater than 255, it wraps-around. So 256 is mapped to 0, 257 to 1, and so forth.
-pub fn add_front(rest: ByteArray, byte byte: Int) -> ByteArray {
-  builtin.cons_bytearray(byte, rest)
-}
-
-test add_front_1() {
-  add_front(#[], 0) == #[0]
-}
-
-test add_front_2() {
-  add_front(#[2, 3], 1) == #[1, 2, 3]
-}
-
-test add_front_3() {
-  let x = 257
-  add_front(#[2, 3], x) == #[1, 2, 3]
-}
-
 /// Combine two `ByteArray` together.
 ///
 /// ```aiken
@@ -125,6 +104,27 @@ test from_string_1() {
 
 test from_string_2() {
   from_string("ABC") == #[65, 66, 67]
+}
+
+/// Add a byte element in front of a `ByteArray`.
+///
+/// > **Note:**
+/// > When the given byte is greater than 255, it wraps-around. So 256 is mapped to 0, 257 to 1, and so forth.
+pub fn push(rest: ByteArray, byte byte: Int) -> ByteArray {
+  builtin.cons_bytearray(byte, rest)
+}
+
+test push_1() {
+  push(#[], 0) == #[0]
+}
+
+test push_2() {
+  push(#[2, 3], 1) == #[1, 2, 3]
+}
+
+test push_3() {
+  let x = 257
+  push(#[2, 3], x) == #[1, 2, 3]
 }
 
 /// Extract a `ByteArray` as a slice of another `ByteArray`.

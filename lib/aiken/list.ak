@@ -1,25 +1,5 @@
 use aiken/builtin
 
-/// Add an element in front of the list. Sometimes useful when combined with
-/// other functions.
-///
-/// ```aiken
-/// use aiken/list
-///
-/// list.add_front([2, 3], 1) == [1, ..[2, 3]] == [1, 2, 3]
-/// ```
-pub fn add_front(xs: List<a>, x: a) -> List<a> {
-  [x, ..xs]
-}
-
-test add_front_1() {
-  add_front([], 0) == [0]
-}
-
-test add_front_2() {
-  add_front([2, 3], 1) == [1, 2, 3]
-}
-
 /// Determine if all elements of the list satisfy the given predicate.
 ///
 /// Note: an empty list always satisfies the predicate.
@@ -452,6 +432,26 @@ test map3_1() {
 
 test map3_2() {
   map3([1, 2, 3], [1, 2], [1, 2, 3], fn(a, b, c) { a + b + c }) == [3, 6]
+}
+
+/// Add an element in front of the list. Sometimes useful when combined with
+/// other functions.
+///
+/// ```aiken
+/// use aiken/list
+///
+/// list.push([2, 3], 1) == [1, ..[2, 3]] == [1, 2, 3]
+/// ```
+pub fn push(xs: List<a>, x: a) -> List<a> {
+  [x, ..xs]
+}
+
+test push_1() {
+  push([], 0) == [0]
+}
+
+test push_2() {
+  push([2, 3], 1) == [1, 2, 3]
 }
 
 /// Construct a list of a integer from a given range.
