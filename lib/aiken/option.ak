@@ -23,7 +23,7 @@ pub fn map(opt: Option<a>, f: fn(a) -> result) -> Option<result> {
 }
 
 test map_1() {
-  map(None, fn(_) { Nil }) == None
+  map(None, fn(_) { #() }) == None
 }
 
 test map_2() {
