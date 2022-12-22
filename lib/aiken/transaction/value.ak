@@ -33,7 +33,7 @@ pub type Value =
   AssocList<PolicyId, AssocList<AssetName, Int>>
 
 /// Combine two `Value` together.
-pub fn add(v0: Value, v1: Value) {
+pub fn add(left v0: Value, right v1: Value) -> Value {
   assoc_list.union_with(
     v0,
     v1,
@@ -44,9 +44,9 @@ pub fn add(v0: Value, v1: Value) {
 /// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
 ///
 /// Handy to manipulate values as uniform lists.
-pub fn flatten(value: Value) -> List<#(PolicyId, AssetName, Int)> {
+pub fn flatten(self: Value) -> List<#(PolicyId, AssetName, Int)> {
   assoc_list.fold(
-    value,
+    self,
     fn(policy_id, asset, assets) {
       assoc_list.fold(
         asset,
@@ -62,7 +62,11 @@ pub fn flatten(value: Value) -> List<#(PolicyId, AssetName, Int)> {
 
 /// Construct a `Value` from an asset identifier (i.e. `PolicyId` + `AssetName`)
 /// and a given quantity.
-pub fn from_asset(policy_id: PolicyId, asset_name: AssetName, quantity: Int) {
+pub fn from_asset(
+  policy_id: PolicyId,
+  asset_name: AssetName,
+  quantity: Int,
+) -> Value {
   let asset =
     assoc_list.new()
     |> assoc_list.insert(asset_name, quantity)
@@ -79,17 +83,17 @@ pub fn from_lovelace(quantity: Int) -> Value {
 
 /// Extract the quantity of a given asset.
 pub fn quantity_of(
-  value: Value,
+  self: Value,
   policy_id: PolicyId,
   asset_name: AssetName,
 ) -> Int {
-  value
+  self
   |> assoc_list.get(policy_id)
   |> option.and_then(assoc_list.get(_, asset_name))
   |> option.or_else(0)
 }
 
 /// A specialized version of `quantity_of` for the Ada currency.
-pub fn lovelace_of(value: Value) -> Int {
-  quantity_of(value, ada_policy_id, ada_asset_name)
+pub fn lovelace_of(self: Value) -> Int {
+  quantity_of(self, ada_policy_id, ada_asset_name)
 }

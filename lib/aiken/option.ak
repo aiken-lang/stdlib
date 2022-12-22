@@ -1,6 +1,6 @@
 /// Provide a default value, turning an optional value into a normal value.
-pub fn or_else(opt: Option<a>, default: a) -> a {
-  when opt is {
+pub fn or_else(self: Option<a>, default: a) -> a {
+  when self is {
     None -> default
     Some(a) -> a
   }
@@ -15,10 +15,10 @@ test or_else_2() {
 }
 
 /// Apply a function to the inner value of an Option
-pub fn map(opt: Option<a>, f: fn(a) -> result) -> Option<result> {
-  when opt is {
+pub fn map(self: Option<a>, with: fn(a) -> result) -> Option<result> {
+  when self is {
     None -> None
-    Some(a) -> Some(f(a))
+    Some(a) -> Some(with(a))
   }
 }
 
@@ -34,14 +34,14 @@ test map_2() {
 pub fn map2(
   opt_a: Option<a>,
   opt_b: Option<b>,
-  f: fn(a, b) -> result,
+  with: fn(a, b) -> result,
 ) -> Option<result> {
   when opt_a is {
     None -> None
     Some(a) ->
       when opt_b is {
         None -> None
-        Some(b) -> Some(f(a, b))
+        Some(b) -> Some(with(a, b))
       }
   }
 }
@@ -62,7 +62,7 @@ pub fn map3(
   opt_a: Option<a>,
   opt_b: Option<b>,
   opt_c: Option<c>,
-  f: fn(a, b, c) -> result,
+  with: fn(a, b, c) -> result,
 ) -> Option<result> {
   when opt_a is {
     None -> None
@@ -72,7 +72,7 @@ pub fn map3(
         Some(b) ->
           when opt_c is {
             None -> None
-            Some(c) -> Some(f(a, b, c))
+            Some(c) -> Some(with(a, b, c))
           }
       }
   }
@@ -91,10 +91,13 @@ test map3_3() {
 }
 
 /// Chain together many computations that may fail.
-pub fn and_then(opt: Option<a>, f: fn(a) -> Option<result>) -> Option<result> {
-  when opt is {
+pub fn and_then(
+  self: Option<a>,
+  then: fn(a) -> Option<result>,
+) -> Option<result> {
+  when self is {
     None -> None
-    Some(a) -> f(a)
+    Some(a) -> then(a)
   }
 }
 

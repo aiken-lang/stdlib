@@ -3,10 +3,10 @@ use aiken/builtin
 /// Determine if all elements of the list satisfy the given predicate.
 ///
 /// Note: an empty list always satisfies the predicate.
-pub fn all(xs: List<a>, predicate: fn(a) -> Bool) -> Bool {
-  when xs is {
+pub fn all(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
+  when self is {
     [] -> True
-    [x, ..rest] -> predicate(x) && all(rest, predicate)
+    [x, ..xs] -> predicate(x) && all(xs, predicate)
   }
 }
 
@@ -25,10 +25,10 @@ test all_3() {
 /// Determine if at least one element of the list satisfies the given predicate.
 ///
 /// Note: an empty list always satisfies the predicate.
-pub fn any(xs: List<a>, predicate: fn(a) -> Bool) -> Bool {
-  when xs is {
+pub fn any(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
+  when self is {
     [] -> False
-    [x, ..rest] -> predicate(x) || any(rest, predicate)
+    [x, ..xs] -> predicate(x) || any(xs, predicate)
   }
 }
 
@@ -62,13 +62,13 @@ test concat_3() {
 }
 
 /// Drop the first `n` elements of a list.
-pub fn drop(xs: List<a>, n: Int) -> List<a> {
+pub fn drop(self: List<a>, n: Int) -> List<a> {
   if n <= 0 {
-    xs
+    self
   } else {
-    when xs is {
+    when self is {
     [] -> []
-    [_x, ..rest] -> drop(rest, n - 1)
+    [_x, ..xs] -> drop(xs, n - 1)
   }
   }
 }
@@ -81,15 +81,15 @@ test drop_2() {
   drop([1, 2, 3], 2) == [3]
 }
 
-/// Produce a list from elements that statisfy a predicate.
-pub fn filter(xs: List<a>, f: fn(a) -> Bool) -> List<a> {
-  when xs is {
+/// Produce a list of elements that statisfy a predicate.
+pub fn filter(self: List<a>, predicate: fn(a) -> Bool) -> List<a> {
+  when self is {
     [] -> []
-    [x, ..rest] ->
-      if f(x) {
-        [x, ..filter(rest, f)]
+    [x, ..xs] ->
+      if predicate(x) {
+        [x, ..filter(xs, predicate)]
       } else {
-        filter(rest, f)
+        filter(xs, predicate)
       }
   }
 }
@@ -123,14 +123,14 @@ test filter_3() {
   filter_foldr([1, 2, 3], is_odd) == filter([1, 2, 3], is_odd)
 }
 
-/// Produce a list from elements that statisfy a predicate.
-pub fn filter_map(xs: List<a>, f: fn(a) -> Option<b>) -> List<b> {
-  when xs is {
+/// Produce a list of transformed elements that statisfy a predicate.
+pub fn filter_map(self: List<a>, predicate: fn(a) -> Option<b>) -> List<b> {
+  when self is {
     [] -> []
-    [x, ..rest] ->
-      when f(x) is {
-        None -> filter_map(rest, f)
-        Some(y) -> [y, ..filter_map(rest, f)]
+    [x, ..xs] ->
+      when predicate(x) is {
+        None -> filter_map(xs, predicate)
+        Some(y) -> [y, ..filter_map(xs, predicate)]
       }
   }
 }
@@ -153,14 +153,14 @@ test filter_map_2() {
 }
 
 /// Find the first element satisfying the given predicate, if any.
-pub fn find(xs: List<a>, f: fn(a) -> Bool) -> Option<a> {
-  when xs is {
+pub fn find(self: List<a>, predicate: fn(a) -> Bool) -> Option<a> {
+  when self is {
     [] -> None
-    [x, ..rest] ->
-      if f(x) {
+    [x, ..xs] ->
+      if predicate(x) {
         Some(x)
       } else {
-        find(rest, f)
+        find(xs, predicate)
       }
   }
 }
@@ -178,8 +178,8 @@ test find_3() {
 }
 
 /// Map elements of a list into a new list and flatten the result.
-pub fn flat_map(xs: List<a>, f: fn(a) -> List<b>) -> List<b> {
-  foldr(xs, fn(x, ys) { concat(f(x), ys) }, [])
+pub fn flat_map(self: List<a>, with: fn(a) -> List<b>) -> List<b> {
+  foldr(self, fn(x, xs) { concat(with(x), xs) }, [])
 }
 
 test flat_map_1() {
@@ -191,10 +191,10 @@ test flat_map_2() {
 }
 
 /// Reduce a list from left to right.
-pub fn foldl(xs: List<a>, f: fn(a, b) -> b, zero: b) -> b {
-  when xs is {
+pub fn foldl(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
+  when self is {
     [] -> zero
-    [x, ..rest] -> foldl(rest, f, f(x, zero))
+    [x, ..xs] -> foldl(xs, with, with(x, zero))
   }
 }
 
@@ -211,10 +211,10 @@ test foldl_3() {
 }
 
 /// Reduce a list from right to left.
-pub fn foldr(xs: List<a>, f: fn(a, b) -> b, zero: b) -> b {
-  when xs is {
+pub fn foldr(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
+  when self is {
     [] -> zero
-    [x, ..rest] -> f(x, foldr(rest, f, zero))
+    [x, ..xs] -> with(x, foldr(xs, with, zero))
   }
 }
 
@@ -240,11 +240,36 @@ test foldr_3() {
   foldr([1, 2, 3, 4], fn(x, xs) { [x, ..xs] }, []) == [1, 2, 3, 4]
 }
 
+/// Figures out whether a list contain the given element.
+pub fn has(self: List<a>, elem: a) -> Bool {
+  when self is {
+    [] -> False
+    [x, ..xs] ->
+      if x == elem {
+        True
+      } else {
+        has(xs, elem)
+      }
+  }
+}
+
+test has_1() {
+  has([1, 2, 3], 1) == True
+}
+
+test has_2() {
+  has([1, 2, 3], 14) == False
+}
+
+test has_3() {
+  has([], 14) == False
+}
+
 /// Get the first element of a list
-pub fn head(xs: List<a>) -> Option<a> {
-  when xs is {
+pub fn head(self: List<a>) -> Option<a> {
+  when self is {
     [] -> None
-    _ -> Some(builtin.head_list(xs))
+    _ -> Some(builtin.head_list(self))
   }
 }
 
@@ -257,22 +282,22 @@ test head_2() {
 }
 
 pub fn indexed_foldr(
-  xs: List<a>,
-  f: fn(Int, a, result) -> result,
+  self: List<a>,
+  with: fn(Int, a, result) -> result,
   zero: result,
 ) -> result {
-  do_indexed_foldr(0, xs, f, zero)
+  do_indexed_foldr(0, self, with, zero)
 }
 
 fn do_indexed_foldr(
   n: Int,
-  xs: List<a>,
-  f: fn(Int, a, result) -> result,
+  self: List<a>,
+  with: fn(Int, a, result) -> result,
   zero: result,
 ) -> result {
-  when xs is {
+  when self is {
     [] -> zero
-    [x, ..rest] -> f(n, x, do_indexed_foldr(n + 1, rest, f, zero))
+    [x, ..xs] -> with(n, x, do_indexed_foldr(n + 1, xs, with, zero))
   }
 }
 
@@ -290,14 +315,18 @@ test indexed_foldr_2() {
 }
 
 /// Apply a function to each element of a list.
-pub fn indexed_map(xs: List<a>, f: fn(Int, a) -> result) -> List<result> {
-  do_indexed_map(0, xs, f)
+pub fn indexed_map(self: List<a>, with: fn(Int, a) -> result) -> List<result> {
+  do_indexed_map(0, self, with)
 }
 
-fn do_indexed_map(n: Int, xs: List<a>, f: fn(Int, a) -> result) -> List<result> {
-  when xs is {
+fn do_indexed_map(
+  n: Int,
+  self: List<a>,
+  with: fn(Int, a) -> result,
+) -> List<result> {
+  when self is {
     [] -> []
-    [x, ..rest] -> [f(n, x), ..do_indexed_map(n + 1, rest, f)]
+    [x, ..xs] -> [with(n, x), ..do_indexed_map(n + 1, xs, with)]
   }
 }
 
@@ -318,36 +347,11 @@ test indexed_map_2() {
   ) == [0, 8, 2, 3]
 }
 
-/// Figures out whether a list contain the given element.
-pub fn is_elem(xs: List<a>, x: a) -> Bool {
-  when xs is {
-    [] -> False
-    [y, ..rest] ->
-      if x == y {
-        True
-      } else {
-        is_elem(rest, x)
-      }
-  }
-}
-
-test is_elem_1() {
-  is_elem([1, 2, 3], 1) == True
-}
-
-test is_elem_2() {
-  is_elem([1, 2, 3], 14) == False
-}
-
-test is_elem_3() {
-  is_elem([], 14) == False
-}
-
 /// Get the number of elements in the given list.
-pub fn length(xs: List<a>) -> Int {
-  when xs is {
+pub fn length(self: List<a>) -> Int {
+  when self is {
     [] -> 0
-    [_, ..rest] -> 1 + length(rest)
+    [_, ..xs] -> 1 + length(xs)
   }
 }
 
@@ -360,10 +364,10 @@ test length_2() {
 }
 
 /// Apply a function to each element of a list.
-pub fn map(xs: List<a>, f: fn(a) -> result) -> List<result> {
-  when xs is {
+pub fn map(self: List<a>, with: fn(a) -> result) -> List<result> {
+  when self is {
     [] -> []
-    [x, ..rest] -> [f(x), ..map(rest, f)]
+    [x, ..xs] -> [with(x), ..map(xs, with)]
   }
 }
 
@@ -378,13 +382,17 @@ test map_2() {
 /// Apply a function of two arguments, combining elements from two lists.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
-pub fn map2(xs: List<a>, ys: List<b>, f: fn(a, b) -> result) -> List<result> {
-  when xs is {
+pub fn map2(
+  self: List<a>,
+  bs: List<b>,
+  with: fn(a, b) -> result,
+) -> List<result> {
+  when self is {
     [] -> []
-    [x, ..rest_x] ->
-      when ys is {
+    [x, ..xs] ->
+      when bs is {
         [] -> []
-        [y, ..rest_y] -> [f(x, y), ..map2(rest_x, rest_y, f)]
+        [y, ..ys] -> [with(x, y), ..map2(xs, ys, with)]
       }
   }
 }
@@ -405,20 +413,20 @@ test map2_3() {
 ///
 /// Note: if one list is longer, the extra elements are dropped.
 pub fn map3(
-  xs: List<a>,
-  ys: List<b>,
-  zs: List<c>,
-  f: fn(a, b, c) -> result,
+  self: List<a>,
+  bs: List<b>,
+  cs: List<c>,
+  with: fn(a, b, c) -> result,
 ) -> List<result> {
-  when xs is {
+  when self is {
     [] -> []
-    [x, ..rest_x] ->
-      when ys is {
+    [x, ..xs] ->
+      when bs is {
         [] -> []
-        [y, ..rest_y] ->
-          when zs is {
+        [y, ..ys] ->
+          when cs is {
             [] -> []
-            [z, ..rest_z] -> [f(x, y, z), ..map3(rest_x, rest_y, rest_z, f)]
+            [z, ..zs] -> [with(x, y, z), ..map3(xs, ys, zs, with)]
           }
       }
   }
@@ -440,8 +448,8 @@ test map3_2() {
 ///
 /// list.push([2, 3], 1) == [1, ..[2, 3]] == [1, 2, 3]
 /// ```
-pub fn push(xs: List<a>, x: a) -> List<a> {
-  [x, ..xs]
+pub fn push(self: List<a>, elem: a) -> List<a> {
+  [elem, ..self]
 }
 
 test push_1() {
@@ -470,11 +478,11 @@ test range_2() {
 }
 
 /// Construct a list filled with n copies of a value.
-pub fn repeat(x: a, n: Int) -> List<a> {
-  if n <= 0 {
+pub fn repeat(elem: a, n_times: Int) -> List<a> {
+  if n_times <= 0 {
     []
   } else {
-    [x, ..repeat(x, n - 1)]
+    [elem, ..repeat(elem, n_times - 1)]
   }
 }
 
@@ -487,8 +495,8 @@ test repeat_2() {
 }
 
 /// Get the number of elements in the given list.
-pub fn reverse(xs: List<a>) -> List<a> {
-  foldl(xs, fn(x, rest) { [x, ..rest] }, [])
+pub fn reverse(self: List<a>) -> List<a> {
+  foldl(self, fn(x, xs) { [x, ..xs] }, [])
 }
 
 test reverse_1() {
@@ -500,10 +508,10 @@ test reverse_2() {
 }
 
 /// Get elements of a list after the first one, if any
-pub fn tail(xs: List<a>) -> Option<List<a>> {
-  when xs is {
+pub fn tail(self: List<a>) -> Option<List<a>> {
+  when self is {
     [] -> None
-    [_, ..rest] -> Some(rest)
+    [_, ..xs] -> Some(xs)
   }
 }
 
@@ -516,13 +524,13 @@ test tail_2() {
 }
 
 /// Get the first `n` elements of a list.
-pub fn take(xs: List<a>, n: Int) -> List<a> {
+pub fn take(self: List<a>, n: Int) -> List<a> {
   if n <= 0 {
     []
   } else {
-    when xs is {
+    when self is {
     [] -> []
-    [x, ..rest] -> [x, ..take(rest, n - 1)]
+    [x, ..xs] -> [x, ..take(xs, n - 1)]
   }
   }
 }
@@ -543,10 +551,10 @@ test take_2() {
 // /// list.unique([1,2,3,1])
 // /// // [1,2,3]
 // /// ```
-// pub fn unique(xs: List<a>) -> List<a> {
-//   when xs is {
+// pub fn unique(self: List<a>) -> List<a> {
+//   when self is {
 //     [] -> []
-//     [x, ..rest] -> [x, ..unique(filter(rest, fn(y) { y != x }))]
+//     [x, ..xs] -> [x, ..unique(filter(xs, fn(y) { y != x }))]
 //   }
 // }
 //
@@ -562,11 +570,11 @@ test take_2() {
 // }
 
 /// Decompose a list of tuples into a tuple of lists.
-pub fn unzip(xs: List<#(a, b)>) -> #(List<a>, List<b>) {
-  when xs is {
+pub fn unzip(self: List<#(a, b)>) -> #(List<a>, List<b>) {
+  when self is {
     [] -> #([], [])
-    [#(a, b), ..rest] -> {
-      let #(a_tail, b_tail) = unzip(rest)
+    [#(a, b), ..xs] -> {
+      let #(a_tail, b_tail) = unzip(xs)
       #([a, ..a_tail], [b, ..b_tail])
     }
   }
@@ -585,13 +593,13 @@ pub fn unzip(xs: List<#(a, b)>) -> #(List<a>, List<b>) {
 /// Combine two lists together.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
-pub fn zip(xs: List<a>, ys: List<b>) -> List<#(a, b)> {
-  when xs is {
+pub fn zip(self: List<a>, bs: List<b>) -> List<#(a, b)> {
+  when self is {
     [] -> []
-    [x, ..rest_x] ->
-      when ys is {
+    [x, ..xs] ->
+      when bs is {
         [] -> []
-        [y, ..rest_y] -> [#(x, y), ..zip(rest_x, rest_y)]
+        [y, ..ys] -> [#(x, y), ..zip(xs, ys)]
       }
   }
 }

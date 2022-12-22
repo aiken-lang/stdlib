@@ -29,11 +29,11 @@
 /// math.abs(14)
 /// // 14
 /// ```
-pub fn abs(a: Int) -> Int {
-  if a < 0 {
-    0 - a
+pub fn abs(self: Int) -> Int {
+  if self < 0 {
+    0 - self
   } else {
-    a
+    self
   }
 }
 
@@ -53,14 +53,14 @@ test abs_2() {
 /// math.clamp(14, min: 0, max: 10)
 /// // 10
 /// ```
-pub fn clamp(n: Int, min min: Int, max max: Int) -> Int {
-  if n < min {
+pub fn clamp(self: Int, min: Int, max: Int) -> Int {
+  if self < min {
     min
   } else {
-    if n > max {
+    if self > max {
     max
   } else {
-    n
+    self
   }
   }
 }

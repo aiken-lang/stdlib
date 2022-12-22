@@ -73,7 +73,6 @@ pub fn sha2_256(bytes: ByteArray) -> Hash<Sha2_256, a> {
   builtin.sha2_256(bytes)
 }
 
-
 /// A SHA3-256 hash algorithm.
 pub opaque type Sha3_256 {
   Sha3_256
@@ -83,4 +82,3 @@ pub opaque type Sha3_256 {
 pub fn sha3_256(bytes: ByteArray) -> Hash<Sha3_256, a> {
   builtin.sha3_256(bytes)
 }
-

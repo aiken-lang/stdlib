@@ -43,9 +43,9 @@ pub type Signature =
 /// Verify an Ed25519 signature using the given verification key.
 /// Returns `True` when the signature is valid.
 pub fn verify_signature(
-  key key: VerificationKey,
-  msg msg: ByteArray,
-  sig sig: Signature,
+  key: VerificationKey,
+  msg: ByteArray,
+  sig: Signature,
 ) -> Bool {
   builtin.verify_ed25519_signature(key, msg, sig)
 }

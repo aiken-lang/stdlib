@@ -43,18 +43,18 @@ pub fn new() -> AssocList<key, value> {
 /// |> assoc_list.get("foo")
 /// // None
 /// ```
-pub fn delete(in m: AssocList<key, value>, key k: key) -> AssocList<key, value> {
-  AssocList { inner: do_delete(m.inner, k) }
+pub fn delete(self: AssocList<key, value>, key k: key) -> AssocList<key, value> {
+  AssocList { inner: do_delete(self.inner, k) }
 }
 
-fn do_delete(elems: List<#(key, value)>, k: key) -> List<#(key, value)> {
-  when elems is {
+fn do_delete(self: List<#(key, value)>, key k: key) -> List<#(key, value)> {
+  when self is {
     [] -> []
-    [#(k2, v), ..rest] ->
+    [#(k2, value), ..rest] ->
       if k == k2 {
         rest
       } else {
-        [#(k2, v), ..do_delete(rest, k)]
+        [#(k2, value), ..do_delete(rest, k2)]
       }
   }
 }
@@ -97,17 +97,17 @@ fn do_delete(elems: List<#(key, value)>, k: key) -> List<#(key, value)> {
 
 /// Keep only the key-value pairs that pass the given predicate.
 pub fn filter(
-  m: AssocList<key, value>,
-  with with: fn(key, value) -> Bool,
+  self: AssocList<key, value>,
+  with: fn(key, value) -> Bool,
 ) -> AssocList<key, value> {
-  AssocList { inner: do_filter(m.inner, with) }
+  AssocList { inner: do_filter(self.inner, with) }
 }
 
 fn do_filter(
-  elems: List<#(key, value)>,
+  self: List<#(key, value)>,
   with: fn(key, value) -> Bool,
 ) -> List<#(key, value)> {
-  when elems is {
+  when self is {
     [] -> []
     [#(k, v), ..rest] ->
       if with(k, v) {
@@ -149,16 +149,16 @@ fn do_filter(
 /// |> assoc_list.find(42)
 /// // Some("foo")
 /// ```
-pub fn find(in m: AssocList<key, value>, v: value) -> Option<key> {
-  do_find(m.inner, v)
+pub fn find(self: AssocList<key, value>, value v: value) -> Option<key> {
+  do_find(self.inner, v)
 }
 
-fn do_find(elems: List<#(key, value)>, v: value) -> Option<key> {
-  when elems is {
+fn do_find(self: List<#(key, value)>, value v: value) -> Option<key> {
+  when self is {
     [] -> None
-    [#(k, v2), ..rest] ->
+    [#(k2, v2), ..rest] ->
       if v == v2 {
-        Some(k)
+        Some(k2)
       } else {
         do_find(rest, v)
       }
@@ -199,21 +199,21 @@ fn do_find(elems: List<#(key, value)>, v: value) -> Option<key> {
 
 /// Fold over the key-value pairs in a list.
 pub fn fold(
-  m: AssocList<key, value>,
-  with with: fn(key, value, result) -> result,
-  zero zero: result,
-) -> result {
-  do_fold(m.inner, with, zero)
-}
-
-fn do_fold(
-  elems: List<#(key, value)>,
+  self: AssocList<key, value>,
   with: fn(key, value, result) -> result,
   zero: result,
 ) -> result {
-  when elems is {
+  do_fold(self.inner, with, zero)
+}
+
+fn do_fold(
+  self: List<#(key, value)>,
+  with: fn(key, value, result) -> result,
+  zero: result,
+) -> result {
+  when self is {
     [] -> zero
-    [#(k, v), ..rest] -> with(k, v, do_fold(rest, with, zero))
+    [#(key, value), ..rest] -> with(key, value, do_fold(rest, with, zero))
   }
 }
 
@@ -235,14 +235,14 @@ fn do_fold(
 
 /// Construct an associative list from a list of key-value pairs. Note that when a key is present
 /// multiple times, the first occurence prevails.
-pub fn from_list(xs: List<#(key, value)>) -> AssocList<key, value> {
-  AssocList { inner: do_from_list(xs) }
+pub fn from_list(self: List<#(key, value)>) -> AssocList<key, value> {
+  AssocList { inner: do_from_list(self) }
 }
 
 fn do_from_list(xs: List<#(key, value)>) -> List<#(key, value)> {
   when xs is {
     [] -> []
-    [#(k, v), ..rest] -> do_insert(do_from_list(rest), k, v)
+    [#(key, value), ..rest] -> do_insert(do_from_list(rest), key, value)
   }
 }
 
@@ -270,18 +270,18 @@ fn do_from_list(xs: List<#(key, value)>) -> List<#(key, value)> {
 /// |> assoc_list.get(key: "name")
 /// // Some("Aiken")
 /// ```
-pub fn get(in m: AssocList<key, value>, key k: key) -> Option<value> {
-  do_get(m.inner, k)
+pub fn get(self: AssocList<key, value>, key k: key) -> Option<value> {
+  do_get(self.inner, k)
 }
 
-fn do_get(elems: List<#(key, value)>, k: key) -> Option<value> {
-  when elems is {
+fn do_get(self: List<#(key, value)>, key k: key) -> Option<value> {
+  when self is {
     [] -> None
-    [#(first, second), ..xs] ->
-      if first == k {
-        Some(second)
+    [#(k2, v), ..rest] ->
+      if k == k2 {
+        Some(v)
       } else {
-        do_get(xs, k)
+        do_get(rest, k)
       }
   }
 }
@@ -318,15 +318,15 @@ fn do_get(elems: List<#(key, value)>, k: key) -> Option<value> {
 /// |> assoc_list.has_key("name")
 /// // True
 /// ```
-pub fn has_key(in m: AssocList<key, value>, key k: key) -> Bool {
-  do_has_key(m.inner, k)
+pub fn has_key(self: AssocList<key, value>, key k: key) -> Bool {
+  do_has_key(self.inner, k)
 }
 
-fn do_has_key(elems: List<#(key, value)>, k: key) -> Bool {
-  when elems is {
+fn do_has_key(self: List<#(key, value)>, key k: key) -> Bool {
+  when self is {
     [] -> False
     [#(k2, _), ..rest] ->
-      if k2 == k {
+      if k == k2 {
         True
       } else {
         do_has_key(rest, k)
@@ -377,25 +377,25 @@ fn do_has_key(elems: List<#(key, value)>, k: key) -> Bool {
 /// // [#("name", "Aiken")]
 /// ```
 pub fn insert(
-  in m: AssocList<key, value>,
+  self: AssocList<key, value>,
   key k: key,
   value v: value,
 ) -> AssocList<key, value> {
-  AssocList { inner: do_insert(m.inner, k, v) }
+  AssocList { inner: do_insert(self.inner, k, v) }
 }
 
 fn do_insert(
-  elems: List<#(key, value)>,
-  k: key,
-  v: value,
+  self: List<#(key, value)>,
+  key k: key,
+  value v: value,
 ) -> List<#(key, value)> {
-  when elems is {
+  when self is {
     [] -> [#(k, v)]
-    [#(k2, v2), ..rest] ->
+    [#(k2, v), ..rest] ->
       if k == k2 {
         [#(k, v), ..rest]
       } else {
-        [#(k2, v2), ..do_insert(rest, k, v)]
+        [#(k2, v), ..do_insert(rest, k, v)]
       }
   }
 }
@@ -434,12 +434,12 @@ fn do_insert(
 /// |> assoc_list.keys()
 /// // ["foo", "bar"]
 /// ```
-pub fn keys(m: AssocList<key, value>) -> List<key> {
-  do_keys(m.inner)
+pub fn keys(self: AssocList<key, value>) -> List<key> {
+  do_keys(self.inner)
 }
 
-fn do_keys(elems: List<#(key, value)>) -> List<key> {
-  when elems is {
+fn do_keys(self: List<#(key, value)>) -> List<key> {
+  when self is {
     [] -> []
     [#(k, _), ..rest] -> [k, ..do_keys(rest)]
   }
@@ -469,17 +469,17 @@ fn do_keys(elems: List<#(key, value)>) -> List<key> {
 /// }
 /// ```
 pub fn map(
-  in m: AssocList<key, value>,
-  with with: fn(key, value) -> result,
+  self: AssocList<key, value>,
+  with: fn(key, value) -> result,
 ) -> AssocList<key, result> {
-  AssocList { inner: do_map(m.inner, with) }
+  AssocList { inner: do_map(self.inner, with) }
 }
 
 fn do_map(
-  elems: List<#(key, value)>,
+  self: List<#(key, value)>,
   with: fn(key, value) -> result,
 ) -> List<#(key, result)> {
-  when elems is {
+  when self is {
     [] -> []
     [#(k, v), ..rest] -> [#(k, with(k, v)), ..do_map(rest, with)]
   }
@@ -502,8 +502,8 @@ fn do_map(
 // }
 
 /// Get the inner list holding the map data.
-pub fn to_list(m: AssocList<key, value>) -> List<#(key, value)> {
-  m.inner
+pub fn to_list(self: AssocList<key, value>) -> List<#(key, value)> {
+  self.inner
 }
 
 test to_list_1() {
@@ -511,12 +511,12 @@ test to_list_1() {
 }
 
 /// Return the number of key-value pairs in the assoc-list.
-pub fn size(xs: AssocList<key, value>) -> Int {
-  do_size(xs.inner)
+pub fn size(self: AssocList<key, value>) -> Int {
+  do_size(self.inner)
 }
 
-fn do_size(elems: List<#(key, value)>) -> Int {
-  when elems is {
+fn do_size(self: List<#(key, value)>) -> Int {
+  when self is {
     [] -> 0
     [_, ..rest] -> 1 + do_size(rest)
   }
@@ -546,8 +546,8 @@ fn do_size(elems: List<#(key, value)>) -> Int {
 /// Combine two associate lists. If the same key exist in both the left and
 /// right lists, values from the left are preferred (i.e. left-biaised).
 pub fn union(
-  left left: AssocList<key, value>,
-  right right: AssocList<key, value>,
+  left: AssocList<key, value>,
+  right: AssocList<key, value>,
 ) -> AssocList<key, value> {
   AssocList { inner: do_union(left.inner, right.inner) }
 }
@@ -597,9 +597,9 @@ fn do_union(
 /// Combine two lists using the provided strategy for combining values when the same
 /// key is found in both lists.
 pub fn union_with(
-  left left: AssocList<key, value>,
-  right right: AssocList<key, value>,
-  with with: fn(key, value, value) -> value,
+  left: AssocList<key, value>,
+  right: AssocList<key, value>,
+  with: fn(key, value, value) -> value,
 ) -> AssocList<key, value> {
   AssocList { inner: do_union_with(left.inner, right.inner, with) }
 }
@@ -607,7 +607,7 @@ pub fn union_with(
 fn do_union_with(
   left: List<#(key, value)>,
   right: List<#(key, value)>,
-  with with: fn(key, value, value) -> value,
+  with: fn(key, value, value) -> value,
 ) -> List<#(key, value)> {
   when left is {
     [] -> right
@@ -617,12 +617,12 @@ fn do_union_with(
 }
 
 fn do_insert_with(
-  elems: List<#(key, value)>,
-  k: key,
-  v: value,
+  self: List<#(key, value)>,
+  key k: key,
+  value v: value,
   with: fn(key, value, value) -> value,
 ) -> List<#(key, value)> {
-  when elems is {
+  when self is {
     [] -> [#(k, v)]
     [#(k2, v2), ..rest] ->
       if k == k2 {
@@ -645,14 +645,14 @@ fn do_insert_with(
 /// |> assoc_list.values()
 /// // [42, 1337]
 /// ```
-pub fn values(m: AssocList<key, value>) -> List<value> {
-  do_values(m.inner)
+pub fn values(self: AssocList<key, value>) -> List<value> {
+  do_values(self.inner)
 }
 
-fn do_values(elems: List<#(key, value)>) -> List<value> {
-  when elems is {
+fn do_values(self: List<#(key, value)>) -> List<value> {
+  when self is {
     [] -> []
-    [#(_, value), ..rest] -> [value, ..do_values(rest)]
+    [#(_, v), ..rest] -> [v, ..do_values(rest)]
   }
 }
 // TODO: acceptance_test 013

@@ -36,8 +36,8 @@ test concat_4() {
 /// bytearray.drop(#[1,2,3], n: 2)
 /// // #[3]
 /// ```
-pub fn drop(bytes: ByteArray, n n: Int) -> ByteArray {
-  builtin.slice_bytearray(n, builtin.length_of_bytearray(bytes) - n, bytes)
+pub fn drop(self: ByteArray, n: Int) -> ByteArray {
+  builtin.slice_bytearray(n, builtin.length_of_bytearray(self) - n, self)
 }
 
 test drop_1() {
@@ -68,8 +68,8 @@ test drop_4() {
 /// bytearray.length(#[1,2,3])
 /// // 3
 /// ```
-pub fn length(bytes: ByteArray) -> Int {
-  builtin.length_of_bytearray(bytes)
+pub fn length(self: ByteArray) -> Int {
+  builtin.length_of_bytearray(self)
 }
 
 test length_1() {
@@ -81,8 +81,8 @@ test length_2() {
 }
 
 /// Returns `True` when the given `ByteArray` is empty.
-pub fn is_empty(bytes: ByteArray) -> Bool {
-  builtin.length_of_bytearray(bytes) == 0
+pub fn is_empty(self: ByteArray) -> Bool {
+  builtin.length_of_bytearray(self) == 0
 }
 
 test is_empty_1() {
@@ -110,8 +110,8 @@ test from_string_2() {
 ///
 /// > **Note:**
 /// > When the given byte is greater than 255, it wraps-around. So 256 is mapped to 0, 257 to 1, and so forth.
-pub fn push(rest: ByteArray, byte byte: Int) -> ByteArray {
-  builtin.cons_bytearray(byte, rest)
+pub fn push(self: ByteArray, byte: Int) -> ByteArray {
+  builtin.cons_bytearray(byte, self)
 }
 
 test push_1() {
@@ -137,8 +137,8 @@ test push_3() {
 /// bytearray.slice(#[0,1,2,3,4,5,6], start: 1, end: 3)
 /// // #[1,2,3]
 /// ```
-pub fn slice(bytes: ByteArray, start start: Int, end end: Int) -> ByteArray {
-  builtin.slice_bytearray(start, end, bytes)
+pub fn slice(self: ByteArray, start: Int, end: Int) -> ByteArray {
+  builtin.slice_bytearray(start, end, self)
 }
 
 test slice_1() {
@@ -161,8 +161,8 @@ test slice_3() {
 /// bytearray.take(#[1,2,3], n: 2)
 /// // #[1,2]
 /// ```
-pub fn take(bytes: ByteArray, n n: Int) -> ByteArray {
-  builtin.slice_bytearray(0, n, bytes)
+pub fn take(self: ByteArray, n: Int) -> ByteArray {
+  builtin.slice_bytearray(0, n, self)
 }
 
 test take_1() {
@@ -186,8 +186,8 @@ test take_4() {
 }
 
 /// Convert a `ByteArray` into a `String`.
-pub fn to_string(bytes: ByteArray) -> String {
-  builtin.decode_utf8(bytes)
+pub fn to_string(self: ByteArray) -> String {
+  builtin.decode_utf8(self)
 }
 
 test to_string_1() {
