@@ -55,14 +55,14 @@ pub fn from_int(n: Int) -> String {
 fn do_from_int(i: Int, digits: ByteArray) -> ByteArray {
   if i == 0 {
     if builtin.length_of_bytearray(digits) == 0 {
-    #[48]
-  } else {
-    digits
-  }
+      #[48]
+    } else {
+      digits
+    }
   } else {
     let r = builtin.remainder_integer(i, 10)
-  let q = builtin.quotient_integer(i, 10)
-  do_from_int(q, builtin.cons_bytearray(r + 48, digits))
+    let q = builtin.quotient_integer(i, 10)
+    do_from_int(q, builtin.cons_bytearray(r + 48, digits))
   }
 }
 

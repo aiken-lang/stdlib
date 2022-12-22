@@ -8,7 +8,7 @@ use aiken/builtin
 /// bytearray.concat(left: #[1,2,3], right: #[4,5,6])
 /// // #[1,2,3,4,5,6]
 /// ```
-pub fn concat(left left: ByteArray, right right: ByteArray) -> ByteArray {
+pub fn concat(left: ByteArray, right: ByteArray) -> ByteArray {
   builtin.append_bytearray(left, right)
 }
 

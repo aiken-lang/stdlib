@@ -67,9 +67,9 @@ pub fn drop(self: List<a>, n: Int) -> List<a> {
     self
   } else {
     when self is {
-    [] -> []
-    [_x, ..xs] -> drop(xs, n - 1)
-  }
+      [] -> []
+      [_x, ..xs] -> drop(xs, n - 1)
+    }
   }
 }
 
@@ -529,9 +529,9 @@ pub fn take(self: List<a>, n: Int) -> List<a> {
     []
   } else {
     when self is {
-    [] -> []
-    [x, ..xs] -> [x, ..take(xs, n - 1)]
-  }
+      [] -> []
+      [x, ..xs] -> [x, ..take(xs, n - 1)]
+    }
   }
 }
 
