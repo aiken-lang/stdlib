@@ -41,7 +41,7 @@ jobs:
     - name: 📘 Generate documentation
       shell: bash
       working-directory: .
-      run: aiken docs -d . -o docs
+      run: aiken docs -o docs
 
     - name: 📦 Upload artifact
       uses: actions/upload-pages-artifact@v1
