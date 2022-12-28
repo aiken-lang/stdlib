@@ -349,6 +349,22 @@ test indexed_map_2() {
   ) == [0, 8, 2, 3]
 }
 
+/// Checks whether a list is empty.
+pub fn is_empty(self: List<a>) -> Bool {
+  when self is {
+    [] -> True
+    _ -> False
+  }
+}
+
+test is_empty_1() {
+  is_empty([]) == True
+}
+
+test is_empty_2() {
+  is_empty([1, 2, 3]) == False
+}
+
 /// Get the number of elements in the given list.
 pub fn length(self: List<a>) -> Int {
   when self is {

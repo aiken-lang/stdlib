@@ -412,6 +412,18 @@ test insert_2() {
   insert(m1, bar, 14) == insert(m2, foo, 42)
 }
 
+/// Efficiently checks whether a dictionnary is empty.
+pub fn is_empty(self: Dict<key, value>) -> Bool {
+  when self.inner is {
+    [] -> True
+    _ -> False
+  }
+}
+
+test is_empty_1() {
+  is_empty(new())
+}
+
 /// Extract all the keys present in a given `Dict`.
 ///
 /// ```aiken
