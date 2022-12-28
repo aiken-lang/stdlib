@@ -1,4 +1,4 @@
-use aiken/assoc_list.{AssocList}
+use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
 use aiken/interval.{Interval}
 use aiken/transaction/certificate.{Certificate}
@@ -61,11 +61,11 @@ pub type Transaction {
   fee: Value,
   mint: Value,
   certificates: List<Certificate>,
-  withdrawals: AssocList<StakeCredential, Int>,
+  withdrawals: Dict<StakeCredential, Int>,
   validity_range: ValidityRange,
   extra_signatories: List<Hash<Blake2b_224, VerificationKey>>,
-  redeemers: AssocList<ScriptPurpose, Redeemer>,
-  datums: AssocList<Hash<Blake2b_256, Data>, Data>,
+  redeemers: Dict<ScriptPurpose, Redeemer>,
+  datums: Dict<Hash<Blake2b_256, Data>, Data>,
   id: TransactionId,
 }
 

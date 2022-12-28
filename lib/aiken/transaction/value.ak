@@ -1,4 +1,4 @@
-use aiken/assoc_list.{AssocList}
+use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/option
 use aiken/transaction/credential.{Script}
@@ -30,14 +30,14 @@ pub const ada_asset_name = #[]
 /// and the second layer represents assets within that policy with their
 /// respective quantities.
 pub type Value =
-  AssocList<PolicyId, AssocList<AssetName, Int>>
+  Dict<PolicyId, Dict<AssetName, Int>>
 
 /// Combine two `Value` together.
 pub fn add(left v0: Value, right v1: Value) -> Value {
-  assoc_list.union_with(
+  dict.union_with(
     v0,
     v1,
-    fn(_, a0, a1) { assoc_list.union_with(a0, a1, fn(_, q0, q1) { q0 + q1 }) },
+    fn(_, a0, a1) { dict.union_with(a0, a1, fn(_, q0, q1) { q0 + q1 }) },
   )
 }
 
@@ -45,10 +45,10 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
 ///
 /// Handy to manipulate values as uniform lists.
 pub fn flatten(self: Value) -> List<#(PolicyId, AssetName, Int)> {
-  assoc_list.fold(
+  dict.fold(
     self,
     fn(policy_id, asset, assets) {
-      assoc_list.fold(
+      dict.fold(
         asset,
         fn(asset_name, quantity, xs) {
           [#(policy_id, asset_name, quantity), ..xs]
@@ -68,10 +68,10 @@ pub fn from_asset(
   quantity: Int,
 ) -> Value {
   let asset =
-    assoc_list.new()
-    |> assoc_list.insert(asset_name, quantity)
-  assoc_list.new()
-  |> assoc_list.insert(policy_id, asset)
+    dict.new()
+    |> dict.insert(asset_name, quantity)
+  dict.new()
+  |> dict.insert(policy_id, asset)
 }
 
 /// Construct a `Value` from a lovelace quantity.
@@ -88,8 +88,8 @@ pub fn quantity_of(
   asset_name: AssetName,
 ) -> Int {
   self
-  |> assoc_list.get(policy_id)
-  |> option.and_then(assoc_list.get(_, asset_name))
+  |> dict.get(policy_id)
+  |> option.and_then(dict.get(_, asset_name))
   |> option.or_else(0)
 }
 
