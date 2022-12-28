@@ -465,8 +465,8 @@ test keys_2() {
 /// ```aiken
 /// use aiken/dict
 ///
-/// pub fn celebrate_birthday(xs: Dict<String, Int>, key: Strin) {
-///   xs.map(in: m, with: fn(_key, value) { value + 1 })
+/// pub fn celebrate_birthday(self: Dict<ByteArray, Int>, key: ByteArray) {
+///   self.map(in: m, with: fn(_key, value) { value + 1 })
 /// }
 /// ```
 pub fn map(self: Dict<key, a>, with: fn(ByteArray, a) -> b) -> Dict<key, b> {
@@ -590,10 +590,14 @@ test union_4() {
   union(left, right) == from_list([#(foo, 14), #(bar, 42)])
 }
 
+/// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
+/// in both dictionnaries.
+///
+/// When passing `None`, the value is removed and not present in the union.
 pub fn union_with(
   left: Dict<key, value>,
   right: Dict<key, value>,
-  with: fn(ByteArray, value, value) -> value,
+  with: fn(ByteArray, value, value) -> Option<value>,
 ) -> Dict<key, value> {
   Dict { inner: do_union_with(left.inner, right.inner, with) }
 }
@@ -601,7 +605,7 @@ pub fn union_with(
 fn do_union_with(
   left: List<#(ByteArray, value)>,
   right: List<#(ByteArray, value)>,
-  with: fn(ByteArray, value, value) -> value,
+  with: fn(ByteArray, value, value) -> Option<value>,
 ) -> List<#(ByteArray, value)> {
   when left is {
     [] -> right
@@ -614,18 +618,40 @@ fn do_insert_with(
   self: List<#(ByteArray, value)>,
   key k: ByteArray,
   value v: value,
-  with: fn(ByteArray, value, value) -> value,
+  with: fn(ByteArray, value, value) -> Option<value>,
 ) -> List<#(ByteArray, value)> {
   when self is {
     [] -> [#(k, v)]
     [#(k2, v2), ..rest] ->
-      if k == k2 {
-        [#(k, with(k, v, v2)), ..rest]
+      if less_than_bytearray(k, k2) {
+        [#(k, v), ..self]
       } else {
-        [#(k2, v2), ..do_insert_with(rest, k, v, with)]
+        if k == k2 {
+          when with(k, v, v2) is {
+            Some(combined) -> [#(k, combined), ..rest]
+            None -> rest
+          }
+        } else {
+          [#(k2, v2), ..do_insert_with(rest, k, v, with)]
+        }
       }
   }
 }
+
+// TODO: acceptance_test 035
+//
+// test union_with_1() {
+//   let left =
+//     new()
+//     |> insert(foo, 14)
+//   let right =
+//     new()
+//     |> insert(bar, 42)
+//     |> insert(foo, 1337)
+//   union_with(left, right, with: fn(_, l, r) { Some(l + r) }) == from_list(
+//   [#(foo, 1351), #(bar, 42)])
+//
+// }
 
 /// Combine two dictionnaries using the provided strategy for combining values when the same
 /// key is found in both dictionnaries.

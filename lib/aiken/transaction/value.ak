@@ -24,40 +24,17 @@ pub type AssetName =
 /// By convention, it is an empty `ByteArray`.
 pub const ada_asset_name = #[]
 
-/// An output `Value`, as a key-value pairs of key-value pairs.
+/// A multi-asset output `Value`. Contains tokens indexed by [PolicyId](#PolicyId) and [AssetName](#AssetName).
 ///
-/// The first level represents policies id (or simply, scripts hashes),
-/// and the second layer represents assets within that policy with their
-/// respective quantities.
-pub type Value =
-  Dict<PolicyId, Dict<AssetName, Int>>
-
-/// Combine two `Value` together.
-pub fn add(left v0: Value, right v1: Value) -> Value {
-  dict.union_with(
-    v0,
-    v1,
-    fn(_, a0, a1) { dict.union_with(a0, a1, fn(_, q0, q1) { q0 + q1 }) },
-  )
+/// This type maintain some invariants by construction; in particular, a `Value` will never contain a
+/// zero quantity of a particular token.
+pub opaque type Value {
+  inner: Dict<PolicyId, Dict<AssetName, Int>>,
 }
 
-/// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
-///
-/// Handy to manipulate values as uniform lists.
-pub fn flatten(self: Value) -> List<#(PolicyId, AssetName, Int)> {
-  dict.fold(
-    self,
-    fn(policy_id, asset, assets) {
-      dict.fold(
-        asset,
-        fn(asset_name, quantity, xs) {
-          [#(policy_id, asset_name, quantity), ..xs]
-        },
-        assets,
-      )
-    },
-    [],
-  )
+/// Construct an empty `Value` with nothing in it.
+pub fn zero() -> Value {
+  Value { inner: dict.new() }
 }
 
 /// Construct a `Value` from an asset identifier (i.e. `PolicyId` + `AssetName`)
@@ -72,6 +49,7 @@ pub fn from_asset(
     |> dict.insert(asset_name, quantity)
   dict.new()
   |> dict.insert(policy_id, asset)
+  |> Value
 }
 
 /// Construct a `Value` from a lovelace quantity.
@@ -81,13 +59,118 @@ pub fn from_lovelace(quantity: Int) -> Value {
   from_asset(ada_policy_id, ada_asset_name, quantity)
 }
 
+/// Negates quantities of all tokens (including Ada) in that `Value`.
+///
+/// ```
+/// use aiken/transaction/value
+///
+/// v1
+/// |> value.negate
+/// |> value.add
+/// |> value.is_zero
+/// // True
+/// ```
+pub fn negate(self: Value) -> Value {
+  dict.map(self.inner, fn(_, a) { dict.map(a, fn(_, q) { 0 - q }) })
+  |> Value
+}
+
+/// Combine two `Value` together.
+pub fn add(left v0: Value, right v1: Value) -> Value {
+  dict.union_with(
+    v0.inner,
+    v1.inner,
+    fn(_, a0, a1) {
+      let result =
+        dict.union_with(
+          a0,
+          a1,
+          fn(_, q0, q1) {
+            let q = q0 + q1
+            if q == 0 {
+              None
+            } else {
+              Some(q)
+            }
+          },
+        )
+
+      if dict.is_empty(result) {
+        None
+      } else {
+        Some(result)
+      }
+    },
+  )
+  |> Value
+}
+
+// TODO: acceptance_test 035
+//
+// test add_1() {
+//   let v1 = from_lovelace(1)
+//   let v2 = from_lovelace(-1)
+//   add(v1, v2) == zero()
+// }
+//
+// test add_2() {
+//   let v1 = from_asset(#[0], #[], 1)
+//   let v2 = from_asset(#[1], #[], 2)
+//   let v3 = from_asset(#[2], #[], 3)
+//   let v =
+//     from_lovelace(42)
+//     |> add(v3)
+//     |> add(v1)
+//     |> add(v2)
+//
+//   flatten(v) == [
+//     #(#[], #[], 42),
+//     #(#[0], #[], 1),
+//     #(#[1], #[], 2),
+//     #(#[2], #[], 3),
+//   ]
+// }
+//
+// test add_3() {
+//   let v1 = from_asset(#[0], #[], 1)
+//   let v2 = from_asset(#[0], #[], -1)
+//   let v3 = from_asset(#[1], #[], 1)
+//
+//   let v =
+//     zero()
+//     |> add(v1)
+//     |> add(v2)
+//     |> add(v3)
+//
+//   flatten(v) == [#(#[1], 1)]
+// }
+
+/// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
+///
+/// Handy to manipulate values as uniform lists.
+pub fn flatten(self: Value) -> List<#(PolicyId, AssetName, Int)> {
+  dict.fold(
+    self.inner,
+    fn(policy_id, asset, assets) {
+      dict.fold(
+        asset,
+        fn(asset_name, quantity, xs) {
+          [#(policy_id, asset_name, quantity), ..xs]
+        },
+        assets,
+      )
+    },
+    [],
+  )
+}
+
 /// Extract the quantity of a given asset.
 pub fn quantity_of(
   self: Value,
   policy_id: PolicyId,
   asset_name: AssetName,
 ) -> Int {
-  self
+  self.inner
   |> dict.get(policy_id)
   |> option.and_then(dict.get(_, asset_name))
   |> option.or_else(0)
@@ -96,4 +179,16 @@ pub fn quantity_of(
 /// A specialized version of `quantity_of` for the Ada currency.
 pub fn lovelace_of(self: Value) -> Int {
   quantity_of(self, ada_policy_id, ada_asset_name)
+}
+
+/// Get all tokens associated with a given policy.
+pub fn tokens(self: Value, policy_id: PolicyId) -> Dict<AssetName, Int> {
+  self.inner
+  |> dict.get(policy_id)
+  |> option.or_else(dict.new())
+}
+
+/// A list of all token policies in that Value with non-zero tokens.
+pub fn policies(self: Value) -> List<PolicyId> {
+  dict.keys(self.inner)
 }
