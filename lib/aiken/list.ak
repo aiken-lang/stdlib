@@ -182,13 +182,15 @@ pub fn flat_map(self: List<a>, with: fn(a) -> List<b>) -> List<b> {
   foldr(self, fn(x, xs) { concat(with(x), xs) }, [])
 }
 
-test flat_map_1() {
-  flat_map([], fn(a) { [a] }) == []
-}
-
-test flat_map_2() {
-  flat_map([1, 2, 3], fn(a) { [a, a] }) == [1, 1, 2, 2, 3, 3]
-}
+// TODO: acceptance_test 034
+//
+// test flat_map_1() {
+//   flat_map([], fn(a) { [a] }) == []
+// }
+//
+// test flat_map_2() {
+//   flat_map([1, 2, 3], fn(a) { [a, a] }) == [1, 1, 2, 2, 3, 3]
+// }
 
 /// Reduce a list from left to right.
 pub fn foldl(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
@@ -543,31 +545,29 @@ test take_2() {
   take([1, 2, 3], 2) == [1, 2]
 }
 
-// /// Removes duplicate elements from a list.
-// ///
-// /// ```aiken
-// /// use aiken/list
-// ///
-// /// list.unique([1,2,3,1])
-// /// // [1,2,3]
-// /// ```
-// pub fn unique(self: List<a>) -> List<a> {
-//   when self is {
-//     [] -> []
-//     [x, ..xs] -> [x, ..unique(filter(xs, fn(y) { y != x }))]
-//   }
-// }
-//
-// TODO: acceptance test 028
-//
-// test unique_1() {
-//   unique([]) == []
-// }
-//
-// test unique_2() {
-//   let xs = [1, 2, 3, 1, 1, 3, 4, 1, 2, 3, 2, 4, 5, 6, 7, 8, 9, 10, 9]
-//   unique(xs) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-// }
+/// Removes duplicate elements from a list.
+///
+/// ```aiken
+/// use aiken/list
+///
+/// list.unique([1,2,3,1])
+/// // [1,2,3]
+/// ```
+pub fn unique(self: List<a>) -> List<a> {
+  when self is {
+    [] -> []
+    [x, ..xs] -> [x, ..unique(filter(xs, fn(y) { y != x }))]
+  }
+}
+
+test unique_1() {
+  unique([]) == []
+}
+
+test unique_2() {
+  let xs = [1, 2, 3, 1, 1, 3, 4, 1, 2, 3, 2, 4, 5, 6, 7, 8, 9, 10, 9]
+  unique(xs) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+}
 
 /// Decompose a list of tuples into a tuple of lists.
 pub fn unzip(self: List<#(a, b)>) -> #(List<a>, List<b>) {
@@ -580,15 +580,13 @@ pub fn unzip(self: List<#(a, b)>) -> #(List<a>, List<b>) {
   }
 }
 
-// TODO: acceptance_test 013
-//
-//test unzip_1() {
-//  unzip([]) == #([], [])
-//}
-//
-//test unzip_2() {
-//  unzip([#(1, "a"), #(2, "b")]) == #([1, 2], ["a", "b"])
-//}
+test unzip_1() {
+  unzip([]) == #([], [])
+}
+
+test unzip_2() {
+  unzip([#(1, "a"), #(2, "b")]) == #([1, 2], ["a", "b"])
+}
 
 /// Combine two lists together.
 ///

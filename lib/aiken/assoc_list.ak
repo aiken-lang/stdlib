@@ -20,17 +20,11 @@ pub fn new() -> AssocList<key, value> {
   AssocList { inner: [] }
 }
 
-// fn fixture_1() {
-//   new()
-//   |> insert("foo", 42)
-//   |> insert("bar", 14)
-// }
-//
-// fn fixture_2() {
-//   new()
-//   |> insert("foo", 1337)
-//   |> insert("baz", 42)
-// }
+fn fixture_1() {
+  new()
+  |> insert("foo", 42)
+  |> insert("bar", 14)
+}
 
 /// Remove a key-value pair from the list. If the key is not found, no changes are made.
 ///
@@ -59,41 +53,39 @@ fn do_delete(self: List<#(key, value)>, key k: key) -> List<#(key, value)> {
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test delete_1() {
-//   delete(new(), "foo") == new()
-// }
-//
-// test delete_2() {
-//   let m =
-//     new()
-//     |> insert("foo", 14)
-//   delete(m, "foo") == new()
-// }
-//
-// test delete_3() {
-//   let m =
-//     new()
-//     |> insert("foo", 14)
-//   delete(m, "bar") == m
-// }
-//
-// test delete_4() {
-//   let m =
-//     new()
-//     |> insert("foo", 14)
-//     |> insert("bar", 14)
-//   !has_key(delete(m, "foo"), "foo")
-// }
-//
-// test delete_5() {
-//   let m =
-//     new()
-//     |> insert("foo", 14)
-//     |> insert("bar", 14)
-//   has_key(delete(m, "bar"), "foo")
-// }
+test delete_1() {
+  delete(new(), "foo") == new()
+}
+
+test delete_2() {
+  let m =
+    new()
+    |> insert("foo", 14)
+  delete(m, "foo") == new()
+}
+
+test delete_3() {
+  let m =
+    new()
+    |> insert("foo", 14)
+  delete(m, "bar") == m
+}
+
+test delete_4() {
+  let m =
+    new()
+    |> insert("foo", 14)
+    |> insert("bar", 14)
+  !has_key(delete(m, "foo"), "foo")
+}
+
+test delete_5() {
+  let m =
+    new()
+    |> insert("foo", 14)
+    |> insert("bar", 14)
+  has_key(delete(m, "bar"), "foo")
+}
 
 /// Keep only the key-value pairs that pass the given predicate.
 pub fn filter(
@@ -118,25 +110,23 @@ fn do_filter(
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test filter_1() {
-//   filter(new(), fn(_, _) { True }) == new()
-// }
-//
-// test filter_2() {
-//   let expected =
-//     new()
-//     |> insert("foo", 42)
-//   filter(fixture_1(), fn(_, v) { v > 14 }) == expected
-// }
-//
-// test filter_3() {
-//   let expected =
-//     new()
-//     |> insert("bar", 14)
-//   filter(fixture_1(), fn(k, _) { k == "bar" }) == expected
-// }
+test filter_1() {
+  filter(new(), fn(_, _) { True }) == new()
+}
+
+test filter_2() {
+  let expected =
+    new()
+    |> insert("foo", 42)
+  filter(fixture_1(), fn(_, v) { v > 14 }) == expected
+}
+
+test filter_3() {
+  let expected =
+    new()
+    |> insert("bar", 14)
+  filter(fixture_1(), fn(k, _) { k == "bar" }) == expected
+}
 
 /// Finds a value in the list, and returns the first key found to have that value.
 ///
@@ -165,37 +155,35 @@ fn do_find(self: List<#(key, value)>, value v: value) -> Option<key> {
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test find_1() {
-//   find(new(), "foo") == None
-// }
-//
-// test find_2() {
-//   find(
-//     new()
-//     |> insert("foo", 14),
-//     14,
-//   ) == Some("foo")
-// }
-//
-// test find_3() {
-//   find(
-//     new()
-//     |> insert("foo", 14),
-//     42,
-//   ) == None
-// }
-//
-// test find_4() {
-//   find(
-//     new()
-//     |> insert("foo", 14)
-//     |> insert("bar", 42)
-//     |> insert("baz", 14),
-//     14,
-//   ) == Some("foo")
-// }
+test find_1() {
+  find(new(), "foo") == None
+}
+
+test find_2() {
+  find(
+    new()
+    |> insert("foo", 14),
+    14,
+  ) == Some("foo")
+}
+
+test find_3() {
+  find(
+    new()
+    |> insert("foo", 14),
+    42,
+  ) == None
+}
+
+test find_4() {
+  find(
+    new()
+    |> insert("foo", 14)
+    |> insert("bar", 42)
+    |> insert("baz", 14),
+    14,
+  ) == Some("foo")
+}
 
 /// Fold over the key-value pairs in a list.
 pub fn fold(
@@ -217,21 +205,13 @@ fn do_fold(
   }
 }
 
-// TODO: acceptance_test 023
-//
-// test fold_2() {
-//   fold(fixture_1(), with: fn(_, v, total) { v + total }, zero: 0) == 56
-// }
-//
-// test fold_1() {
-//   fold(new(), fn(_, _, _) { 42 }, 14) == 14
-// }
+test fold_2() {
+  fold(fixture_1(), with: fn(_, v, total) { v + total }, zero: 0) == 56
+}
 
-// TODO: acceptance_test 023
-//
-// test to_list_2() {
-//   to_list(fixture_1()) == [#("foo", 42), #("bar", 14)]
-// }
+test fold_1() {
+  fold(new(), fn(_, _, _) { 42 }, 14) == 14
+}
 
 /// Construct an associative list from a list of key-value pairs. Note that when a key is present
 /// multiple times, the first occurence prevails.
@@ -246,19 +226,23 @@ fn do_from_list(xs: List<#(key, value)>) -> List<#(key, value)> {
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test from_list_1() {
-//   from_list([]) == new()
-// }
-//
+test from_list_1() {
+  from_list([]) == new()
+}
+
+// TODO: specialize to ByteArray
 // test from_list_2() {
+//   from_list([#("foo", 42), #("bar", 14)]) == from_list([#("bar", 14), #("foo", 42)])
+// }
+
+// TODO: specialize to ByteArray
+// test from_list_3() {
 //   from_list([#("foo", 42), #("bar", 14)]) == fixture_1()
 // }
-//
-// test from_list_3() {
-//   from_list([#("foo", 42), #("bar", 14), #("foo", 1337)]) == fixture_1()
-// }
+
+test from_list_4() {
+  from_list([#("foo", 42), #("bar", 14), #("foo", 1337)]) == fixture_1()
+}
 
 /// Get a value in the assoc_list by its key.
 ///
@@ -286,27 +270,25 @@ fn do_get(self: List<#(key, value)>, key k: key) -> Option<value> {
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test get_1() {
-//   get(new(), 14) == None
-// }
-//
-// test get_2() {
-//   let m =
-//     new()
-//     |> insert(key: "name", value: "Aiken")
-//     |> insert(key: "trait", value: "awesome")
-//   get(m, key: "name") == Some("Aiken")
-// }
-//
-// test get_3() {
-//   let m =
-//     new()
-//     |> insert(key: "name", value: "Aiken")
-//     |> insert(key: "trait", value: "awesome")
-//   get(m, key: "foo") == None
-// }
+test get_1() {
+  get(new(), 14) == None
+}
+
+test get_2() {
+  let m =
+    new()
+    |> insert(key: "name", value: "Aiken")
+    |> insert(key: "trait", value: "awesome")
+  get(m, key: "name") == Some("Aiken")
+}
+
+test get_3() {
+  let m =
+    new()
+    |> insert(key: "name", value: "Aiken")
+    |> insert(key: "trait", value: "awesome")
+  get(m, key: "foo") == None
+}
 
 /// Check if a key exists in the list.
 ///
@@ -334,36 +316,34 @@ fn do_has_key(self: List<#(key, value)>, key k: key) -> Bool {
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test has_key_1() {
-//   !has_key(new(), "foo")
-// }
-//
-// test has_key_2() {
-//   has_key(
-//     new()
-//     |> insert("foo", 14),
-//     "foo",
-//   )
-// }
-//
-// test has_key_3() {
-//   !has_key(
-//     new()
-//     |> insert("foo", 14),
-//     "bar",
-//   )
-// }
-//
-// test has_key_4() {
-//   has_key(
-//     new()
-//     |> insert("foo", 14)
-//     |> insert("bar", 42),
-//     "bar",
-//   )
-// }
+test has_key_1() {
+  !has_key(new(), "foo")
+}
+
+test has_key_2() {
+  has_key(
+    new()
+    |> insert("foo", 14),
+    "foo",
+  )
+}
+
+test has_key_3() {
+  !has_key(
+    new()
+    |> insert("foo", 14),
+    "bar",
+  )
+}
+
+test has_key_4() {
+  has_key(
+    new()
+    |> insert("foo", 14)
+    |> insert("bar", 42),
+    "bar",
+  )
+}
 
 /// Insert a value in the assoc-list at a given key key. If the key already exists, its value is **overridden**.
 ///
@@ -391,26 +371,26 @@ fn do_insert(
 ) -> List<#(key, value)> {
   when self is {
     [] -> [#(k, v)]
-    [#(k2, v), ..rest] ->
+    [#(k2, v2), ..rest] ->
       if k == k2 {
         [#(k, v), ..rest]
       } else {
-        [#(k2, v), ..do_insert(rest, k, v)]
+        [#(k2, v2), ..do_insert(rest, k, v)]
       }
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test insert_1() {
-//   let m1 =
-//     new()
-//     |> insert("foo", 42)
-//   let m2 =
-//     new()
-//     |> insert("foo", 14)
-//   insert(m1, "foo", 14) == m2
-// }
+test insert_1() {
+  let m1 =
+    new()
+    |> insert("foo", 42)
+  let m2 =
+    new()
+    |> insert("foo", 14)
+  insert(m1, "foo", 14) == m2
+}
+
+// TODO: Specialize assoc_list to value to 'ByteArray' to allow that.
 //
 // test insert_2() {
 //   let m1 =
@@ -445,19 +425,17 @@ fn do_keys(self: List<#(key, value)>) -> List<key> {
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test keys_1() {
-//   keys(new()) == []
-// }
-//
-// test keys_2() {
-//   keys(
-//     new()
-//     |> insert(1, 0)
-//     |> insert(2, 0),
-//   ) == [1, 2]
-// }
+test keys_1() {
+  keys(new()) == []
+}
+
+test keys_2() {
+  keys(
+    new()
+    |> insert(1, 0)
+    |> insert(2, 0),
+  ) == [1, 2]
+}
 
 /// Apply a function to all key-value pairs in a map.
 ///
@@ -485,21 +463,19 @@ fn do_map(
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test map_1() {
-//   let result =
-//     fixture_1()
-//     |> map(with: fn(k, _) { k })
-//   get(result, "foo") == Some("foo")
-// }
-//
-// test map_2() {
-//   let result =
-//     fixture_1()
-//     |> map(with: fn(_, v) { v + 1 })
-//   get(result, "foo") == Some(43) && size(result) == size(fixture_1())
-// }
+test map_1() {
+  let result =
+    fixture_1()
+    |> map(with: fn(k, _) { k })
+  get(result, "foo") == Some("foo")
+}
+
+test map_2() {
+  let result =
+    fixture_1()
+    |> map(with: fn(_, v) { v + 1 })
+  get(result, "foo") == Some(43) && size(result) == size(fixture_1())
+}
 
 /// Get the inner list holding the map data.
 pub fn to_list(self: AssocList<key, value>) -> List<#(key, value)> {
@@ -508,6 +484,10 @@ pub fn to_list(self: AssocList<key, value>) -> List<#(key, value)> {
 
 test to_list_1() {
   to_list(new()) == []
+}
+
+test to_list_2() {
+  to_list(fixture_1()) == [#("foo", 42), #("bar", 14)]
 }
 
 /// Return the number of key-value pairs in the assoc-list.
@@ -522,26 +502,24 @@ fn do_size(self: List<#(key, value)>) -> Int {
   }
 }
 
-// TODO: acceptance_test 013
-//
-// test size_1() {
-//   size(new()) == 0
-// }
-//
-// test size_2() {
-//   size(
-//     new()
-//     |> insert("foo", 14),
-//   ) == 1
-// }
-//
-// test size_3() {
-//   size(
-//     new()
-//     |> insert("foo", 14)
-//     |> insert("bar", 42),
-//   ) == 2
-// }
+test size_1() {
+  size(new()) == 0
+}
+
+test size_2() {
+  size(
+    new()
+    |> insert("foo", 14),
+  ) == 1
+}
+
+test size_3() {
+  size(
+    new()
+    |> insert("foo", 14)
+    |> insert("bar", 42),
+  ) == 2
+}
 
 /// Combine two associate lists. If the same key exist in both the left and
 /// right lists, values from the left are preferred (i.e. left-biaised).
@@ -562,37 +540,35 @@ fn do_union(
   }
 }
 
-// TODO: acceptance_test 029
-//
-// test union_1() {
-//   union(fixture_1(), new()) == fixture_1()
-// }
-//
-// test union_2() {
-//   union(new(), fixture_1()) == fixture_1()
-// }
-//
-// test union_3() {
-//   let left =
-//     new()
-//     |> insert("foo", 14)
-//   let right =
-//     new()
-//     |> insert("bar", 42)
-//     |> insert("baz", 1337)
-//   union(left, right) == from_list([#("foo", 14), #("bar", 42), #("baz", 1337)])
-// }
-//
-// test union_4() {
-//   let left =
-//     new()
-//     |> insert("foo", 14)
-//   let right =
-//     new()
-//     |> insert("bar", 42)
-//     |> insert("foo", 1337)
-//   union(left, right) == from_list([#("foo", 14), #("bar", 42)])
-// }
+test union_1() {
+  union(fixture_1(), new()) == fixture_1()
+}
+
+test union_2() {
+  union(new(), fixture_1()) == fixture_1()
+}
+
+test union_3() {
+  let left =
+    new()
+    |> insert("foo", 14)
+  let right =
+    new()
+    |> insert("bar", 42)
+    |> insert("baz", 1337)
+  union(left, right) == from_list([#("foo", 14), #("baz", 1337), #("bar", 42)])
+}
+
+test union_4() {
+  let left =
+    new()
+    |> insert("foo", 14)
+  let right =
+    new()
+    |> insert("bar", 42)
+    |> insert("foo", 1337)
+  union(left, right) == from_list([#("foo", 14), #("bar", 42)])
+}
 
 /// Combine two lists using the provided strategy for combining values when the same
 /// key is found in both lists.
@@ -655,16 +631,15 @@ fn do_values(self: List<#(key, value)>) -> List<value> {
     [#(_, v), ..rest] -> [v, ..do_values(rest)]
   }
 }
-// TODO: acceptance_test 013
-//
-// test values_1() {
-//   values(new()) == []
-// }
-//
-// test values_2() {
-//   values(
-//     new()
-//     |> insert(1, 3)
-//     |> insert(2, 4),
-//   ) == [3, 4]
-// }
+
+test values_1() {
+  values(new()) == []
+}
+
+test values_2() {
+  values(
+    new()
+    |> insert(1, 3)
+    |> insert(2, 4),
+  ) == [3, 4]
+}
