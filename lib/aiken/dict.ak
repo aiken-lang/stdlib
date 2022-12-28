@@ -8,6 +8,17 @@ use aiken/builtin.{less_than_bytearray}
 
 /// An opaque `Dict`. The type is opaque because the module maintains some
 /// invariant, namely: there's only one occurence of a given key in the dictionnary.
+///
+/// Note that the `key` parameter is a phantom-type, and only present as a
+/// means of documentation. Keys are always `ByteArray`, but can be given
+/// meaningful names.
+///
+/// See for example:
+///
+/// ```aiken
+/// pub type Value =
+///   Dict<PolicyId, Dict<AssetName, Int>>
+/// ```
 pub opaque type Dict<key, value> {
   inner: List<#(ByteArray, value)>,
 }
@@ -253,11 +264,10 @@ test from_list_4() {
 ///
 /// ```aiken
 /// use aiken/dict
-/// use aiken/builtin
 ///
 /// dict.new()
-/// |> dict.insert(key: 1, value: "Aiken", builtin.less_than_integer)
-/// |> dict.get(key: 1)
+/// |> dict.insert(key: foo, value: "Aiken")
+/// |> dict.get(key: foo)
 /// // Some("Aiken")
 /// ```
 pub fn get(self: Dict<key, value>, key k: ByteArray) -> Option<value> {
@@ -300,10 +310,9 @@ test get_3() {
 ///
 /// ```aiken
 /// use aiken/dict
-/// use aiken/builtin
 ///
 /// dict.new()
-/// |> dict.insert(key: foo, value: "Aiken", builtin.less_than_bytearray)
+/// |> dict.insert(key: foo, value: "Aiken")
 /// |> dict.has_key(foo)
 /// // True
 /// ```
@@ -356,7 +365,6 @@ test has_key_4() {
 ///
 /// ```aiken
 /// use aiken/dict
-/// use aiken/builtin
 ///
 /// dict.new()
 /// |> dict.insert(key: foo, value: "Foo")
@@ -428,7 +436,6 @@ test is_empty_1() {
 ///
 /// ```aiken
 /// use aiken.dict
-/// use aiken.builtin
 ///
 /// dict.new()
 /// |> dict.insert(foo, 14)
@@ -659,7 +666,6 @@ fn do_insert_with(
 ///
 /// ```aiken
 /// use aiken.dict
-/// use aiken.builtin
 ///
 /// dict.new()
 /// |> dict.insert(foo, 14)
