@@ -24,7 +24,7 @@ test concat_2() {
 }
 
 test concat_3() {
-  concat(left: "Hello", right: ", World!") == "Hello, World!"
+  concat("Hello", ", World!") == "Hello, World!"
 }
 
 /// Convert a `ByteArray` into a `String`
