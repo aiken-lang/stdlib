@@ -3,7 +3,7 @@ use aiken/builtin
 /// Combine two `ByteArray` together.
 ///
 /// ```aiken
-/// use aiken.bytearray
+/// use aiken/bytearray
 ///
 /// bytearray.concat(left: #[1,2,3], right: #[4,5,6])
 /// // #[1,2,3,4,5,6]
@@ -31,7 +31,7 @@ test concat_4() {
 /// Returns the suffix of a `ByteArray` after `n` elements.
 ///
 /// ```aiken
-/// use aiken.bytearray
+/// use aiken/bytearray
 ///
 /// bytearray.drop(#[1,2,3], n: 2)
 /// // #[3]
@@ -63,7 +63,7 @@ test drop_4() {
 /// Returns the number of bytes in a `ByteArray`.
 ///
 /// ```aiken
-/// use aiken.bytearray
+/// use aiken/bytearray
 ///
 /// bytearray.length(#[1,2,3])
 /// // 3
@@ -132,7 +132,7 @@ test push_3() {
 /// Indexes are 0-based and inclusive.
 ///
 /// ```aiken
-/// use aiken.bytearray
+/// use aiken/bytearray
 ///
 /// bytearray.slice(#[0,1,2,3,4,5,6], start: 1, end: 3)
 /// // #[1,2,3]
@@ -156,7 +156,7 @@ test slice_3() {
 /// Returns the n-length prefix of a `ByteArray`.
 ///
 /// ```aiken
-/// use aiken.bytearray
+/// use aiken/bytearray
 ///
 /// bytearray.take(#[1,2,3], n: 2)
 /// // #[1,2]
