@@ -56,3 +56,137 @@ pub type IntervalBoundType<a> {
   Finite(a)
   PositiveInfinity
 }
+
+// TODO: Replace 'Int' with a generic 'a' once we have comparable traits.
+
+/// Checks whether an element is contained within the interval.
+///
+/// ```aiken
+/// use aiken/interval.{Interval, IntervalBound, Finite}
+///
+/// let iv =
+///   Interval {
+///     lower_bound: IntervalBound(Finite(14), True),
+///     upper_bound: IntervalBound(Finite(42), False),
+///   }
+///
+/// contains(iv, 25) // True
+/// contains(iv, 0)  // False
+/// contains(iv, 14) // True
+/// contains(iv, 42) // False
+/// ```
+pub fn contains(self: Interval<Int>, elem: Int) -> Bool {
+  let is_greater_than_lower_bound = when self.lower_bound.bound_type is {
+    NegativeInfinity -> True
+    Finite(lower_bound) ->
+      if self.lower_bound.is_inclusive {
+        elem >= lower_bound
+      } else {
+        elem > lower_bound
+      }
+    PositiveInfinity -> False
+  }
+
+  let is_smaller_than_upper_bound = when self.upper_bound.bound_type is {
+    NegativeInfinity -> False
+    Finite(upper_bound) ->
+      if self.upper_bound.is_inclusive {
+        elem <= upper_bound
+      } else {
+        elem < upper_bound
+      }
+    PositiveInfinity -> True
+  }
+
+  is_greater_than_lower_bound && is_smaller_than_upper_bound
+}
+
+test contains_1() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(NegativeInfinity, False),
+      upper_bound: IntervalBound(PositiveInfinity, False),
+    }
+
+  contains(iv, 14)
+}
+
+test contains_2() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(NegativeInfinity, False),
+      upper_bound: IntervalBound(Finite(15), False),
+    }
+
+  contains(iv, 14)
+}
+
+test contains_3() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(NegativeInfinity, False),
+      upper_bound: IntervalBound(Finite(14), True),
+    }
+
+  contains(iv, 14)
+}
+
+test contains_4() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(NegativeInfinity, False),
+      upper_bound: IntervalBound(Finite(14), False),
+    }
+
+  !contains(iv, 14)
+}
+
+test contains_5() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(Finite(13), False),
+      upper_bound: IntervalBound(PositiveInfinity, False),
+    }
+
+  contains(iv, 14)
+}
+
+test contains_6() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(Finite(14), True),
+      upper_bound: IntervalBound(PositiveInfinity, False),
+    }
+
+  contains(iv, 14)
+}
+
+test contains_7() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(Finite(14), False),
+      upper_bound: IntervalBound(PositiveInfinity, False),
+    }
+
+  !contains(iv, 14)
+}
+
+test contains_8() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(Finite(42), False),
+      upper_bound: IntervalBound(Finite(1337), False),
+    }
+
+  !contains(iv, 14)
+}
+
+test contains_9() {
+  let iv =
+    Interval {
+      lower_bound: IntervalBound(Finite(0), False),
+      upper_bound: IntervalBound(Finite(42), False),
+    }
+
+  contains(iv, 14)
+}
