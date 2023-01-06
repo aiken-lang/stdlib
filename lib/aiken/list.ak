@@ -22,9 +22,31 @@ test all_3() {
   all([], fn(n) { n == 42 }) == True
 }
 
-/// Determine if at least one element of the list satisfies the given predicate.
+/// Like [all](#and) but when elements are already booleans.
 ///
 /// Note: an empty list always satisfies the predicate.
+pub fn and(self: List<Bool>) -> Bool {
+  when self is {
+    [] -> True
+    [x, ..xs] -> x && and(xs)
+  }
+}
+
+test and_1() {
+  and([True, True, True])
+}
+
+test and_2() {
+  !and([True, False, True])
+}
+
+test and_3() {
+  and([])
+}
+
+/// Determine if at least one element of the list satisfies the given predicate.
+///
+/// Note: an empty list never satisfies the predicate.
 pub fn any(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
   when self is {
     [] -> False
@@ -42,6 +64,32 @@ test any_2() {
 
 test any_3() {
   any([], fn(n) { n == 42 }) == False
+}
+
+/// Like [any](#any) but when elements are already booleans.
+///
+/// Note: an empty list never satisfies the predicate.
+pub fn or(self: List<Bool>) -> Bool {
+  when self is {
+    [] -> False
+    [x, ..xs] -> x || or(xs)
+  }
+}
+
+test or_1() {
+  or([True, True])
+}
+
+test or_2() {
+  or([True, False, True])
+}
+
+test or_3() {
+  !or([])
+}
+
+test or_4() {
+  !or([False, False])
 }
 
 /// Merge two lists together.
