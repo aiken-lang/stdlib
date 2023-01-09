@@ -230,15 +230,13 @@ pub fn flat_map(self: List<a>, with: fn(a) -> List<b>) -> List<b> {
   foldr(self, fn(x, xs) { concat(with(x), xs) }, [])
 }
 
-// TODO: acceptance_test 034
-//
-// test flat_map_1() {
-//   flat_map([], fn(a) { [a] }) == []
-// }
-//
-// test flat_map_2() {
-//   flat_map([1, 2, 3], fn(a) { [a, a] }) == [1, 1, 2, 2, 3, 3]
-// }
+test flat_map_1() {
+  flat_map([], fn(a) { [a] }) == []
+}
+
+test flat_map_2() {
+  flat_map([1, 2, 3], fn(a) { [a, a] }) == [1, 1, 2, 2, 3, 3]
+}
 
 /// Reduce a list from left to right.
 pub fn foldl(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
