@@ -129,3 +129,41 @@ test and_then_3() {
     |> and_then(try_decrement)
   result == None
 }
+
+/// Converts from `Option<Option<T>>` to `Option<T>`.
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```aiken
+/// use aiken/option
+///
+/// let x: Option<Option<Int>> = Some(Some(6))
+/// Some(6) == flatten(x)
+///
+/// let x: Option<Option<Int>> = Some(None)
+/// None == flatten(x)
+///
+/// let x: Option<Option<Int>> = None
+/// None == flatten(x)
+/// ```
+///
+/// Flattening only removes one level of nesting at a time:
+///
+/// ```aiken
+/// let x: Option<Option<Option<u32>>> = Some(Some(Some(6)))
+/// Some(Some(6)) == flatten(x)
+/// Some(6) == x |> flatten |> flatten
+/// ```
+pub fn flatten(opt: Option<Option<a>>) -> Option<a> {
+  when opt is {
+    Some(inner) -> inner
+    None -> None
+  }
+}
+
+test flatten_1() {
+  let x: Option<Option<Int>> = Some(Some(6))
+  Some(6) == flatten(x)
+}
