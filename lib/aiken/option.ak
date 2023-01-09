@@ -101,6 +101,13 @@ pub fn and_then(
   }
 }
 
+pub fn flat_map(
+  self: Option<a>,
+  f: fn(a) -> Option<result>,
+) -> Option<result> {
+  and_then(self, f)
+}
+
 fn try_decrement(n: Int) -> Option<Int> {
   if n > 0 {
     Some(n - 1)
