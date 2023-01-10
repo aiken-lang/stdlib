@@ -130,7 +130,7 @@ test and_then_3() {
   result == None
 }
 
-/// Converts from `Option<Option<T>>` to `Option<T>`.
+/// Converts from `Option<Option<a>>` to `Option<a>`.
 ///
 /// # Examples
 ///
@@ -152,9 +152,9 @@ test and_then_3() {
 /// Flattening only removes one level of nesting at a time:
 ///
 /// ```aiken
-/// let x: Option<Option<Option<u32>>> = Some(Some(Some(6)))
+/// let x: Option<Option<Option<Int>>> = Some(Some(Some(6)))
 /// Some(Some(6)) == flatten(x)
-/// Some(6) == x |> flatten |> flatten
+/// Some(6) == { x |> flatten |> flatten }
 /// ```
 pub fn flatten(opt: Option<Option<a>>) -> Option<a> {
   when opt is {
@@ -166,4 +166,25 @@ pub fn flatten(opt: Option<Option<a>>) -> Option<a> {
 test flatten_1() {
   let x: Option<Option<Int>> = Some(Some(6))
   Some(6) == flatten(x)
+}
+
+test flatten_2() {
+  let x: Option<Option<Int>> = Some(None)
+  None == flatten(x)
+}
+
+test flatten_3() {
+  let x: Option<Option<Int>> = None
+  None == flatten(x)
+}
+
+test flatten_4() {
+  let x: Option<Option<Option<Int>>> = Some(Some(Some(6)))
+
+  let result =
+    x
+    |> flatten
+    |> flatten
+
+  Some(6) == result
 }
