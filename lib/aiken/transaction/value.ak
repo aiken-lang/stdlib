@@ -124,10 +124,10 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
 //     |> add(v2)
 //
 //   flatten(v) == [
-//     #(#[], #[], 42),
-//     #(#[0], #[], 1),
-//     #(#[1], #[], 2),
-//     #(#[2], #[], 3),
+//     (#[], #[], 42),
+//     (#[0], #[], 1),
+//     (#[1], #[], 2),
+//     (#[2], #[], 3),
 //   ]
 // }
 //
@@ -142,20 +142,20 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
 //     |> add(v2)
 //     |> add(v3)
 //
-//   flatten(v) == [#(#[1], 1)]
+//   flatten(v) == [(#[1], 1)]
 // }
 
 /// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
 ///
 /// Handy to manipulate values as uniform lists.
-pub fn flatten(self: Value) -> List<#(PolicyId, AssetName, Int)> {
+pub fn flatten(self: Value) -> List<(PolicyId, AssetName, Int)> {
   dict.fold(
     self.inner,
     fn(policy_id, asset, assets) {
       dict.fold(
         asset,
         fn(asset_name, quantity, xs) {
-          [#(policy_id, asset_name, quantity), ..xs]
+          [(policy_id, asset_name, quantity), ..xs]
         },
         assets,
       )

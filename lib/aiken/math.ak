@@ -58,10 +58,10 @@ pub fn clamp(self: Int, min: Int, max: Int) -> Int {
     min
   } else {
     if self > max {
-    max
-  } else {
-    self
-  }
+      max
+    } else {
+      self
+    }
   }
 }
 

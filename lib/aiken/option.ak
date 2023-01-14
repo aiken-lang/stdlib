@@ -23,7 +23,7 @@ pub fn map(self: Option<a>, with: fn(a) -> result) -> Option<result> {
 }
 
 test map_1() {
-  map(None, fn(_) { #() }) == None
+  map(None, fn(_) { Void }) == None
 }
 
 test map_2() {
@@ -55,7 +55,7 @@ test map2_2() {
 }
 
 test map2_3() {
-  map2(Some(14), Some(42), fn(a, b) { #(a, b) }) == Some(#(14, 42))
+  map2(Some(14), Some(42), fn(a, b) { (a, b) }) == Some((14, 42))
 }
 
 pub fn map3(
