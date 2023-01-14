@@ -357,10 +357,10 @@ test indexed_foldr_1() {
 
 test indexed_foldr_2() {
   let letters = ["a", "b", "c"]
-  indexed_foldr(letters, fn(i, x, xs) { [#(i, x), ..xs] }, []) == [
-    #(0, "a"),
-    #(1, "b"),
-    #(2, "c"),
+  indexed_foldr(letters, fn(i, x, xs) { [(i, x), ..xs] }, []) == [
+    (0, "a"),
+    (1, "b"),
+    (2, "c"),
   ]
 }
 
@@ -634,34 +634,34 @@ test unique_2() {
 }
 
 /// Decompose a list of tuples into a tuple of lists.
-pub fn unzip(self: List<#(a, b)>) -> #(List<a>, List<b>) {
+pub fn unzip(self: List<(a, b)>) -> (List<a>, List<b>) {
   when self is {
-    [] -> #([], [])
-    [#(a, b), ..xs] -> {
-      let #(a_tail, b_tail) = unzip(xs)
-      #([a, ..a_tail], [b, ..b_tail])
+    [] -> ([], [])
+    [(a, b), ..xs] -> {
+      let (a_tail, b_tail) = unzip(xs)
+      ([a, ..a_tail], [b, ..b_tail])
     }
   }
 }
 
 test unzip_1() {
-  unzip([]) == #([], [])
+  unzip([]) == ([], [])
 }
 
 test unzip_2() {
-  unzip([#(1, "a"), #(2, "b")]) == #([1, 2], ["a", "b"])
+  unzip([(1, "a"), (2, "b")]) == ([1, 2], ["a", "b"])
 }
 
 /// Combine two lists together.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
-pub fn zip(self: List<a>, bs: List<b>) -> List<#(a, b)> {
+pub fn zip(self: List<a>, bs: List<b>) -> List<(a, b)> {
   when self is {
     [] -> []
     [x, ..xs] ->
       when bs is {
         [] -> []
-        [y, ..ys] -> [#(x, y), ..zip(xs, ys)]
+        [y, ..ys] -> [(x, y), ..zip(xs, ys)]
       }
   }
 }
@@ -675,5 +675,5 @@ test zip_2() {
 }
 
 test zip_3() {
-  zip([1, 2], ["a", "b", "c"]) == [#(1, "a"), #(2, "b")]
+  zip([1, 2], ["a", "b", "c"]) == [(1, "a"), (2, "b")]
 }

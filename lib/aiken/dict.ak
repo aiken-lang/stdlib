@@ -20,7 +20,7 @@ use aiken/builtin.{less_than_bytearray}
 ///   Dict<PolicyId, Dict<AssetName, Int>>
 /// ```
 pub opaque type Dict<key, value> {
-  inner: List<#(ByteArray, value)>,
+  inner: List<(ByteArray, value)>,
 }
 
 /// Create a new map
@@ -56,16 +56,16 @@ pub fn delete(self: Dict<key, value>, key k: ByteArray) -> Dict<key, value> {
 }
 
 fn do_delete(
-  self: List<#(ByteArray, value)>,
+  self: List<(ByteArray, value)>,
   key k: ByteArray,
-) -> List<#(ByteArray, value)> {
+) -> List<(ByteArray, value)> {
   when self is {
     [] -> []
-    [#(k2, v2), ..rest] ->
+    [(k2, v2), ..rest] ->
       if k == k2 {
         rest
       } else {
-        [#(k2, v2), ..do_delete(rest, k)]
+        [(k2, v2), ..do_delete(rest, k)]
       }
   }
 }
@@ -113,14 +113,14 @@ pub fn filter(
 }
 
 fn do_filter(
-  self: List<#(ByteArray, value)>,
+  self: List<(ByteArray, value)>,
   with: fn(ByteArray, value) -> Bool,
-) -> List<#(ByteArray, value)> {
+) -> List<(ByteArray, value)> {
   when self is {
     [] -> []
-    [#(k, v), ..rest] ->
+    [(k, v), ..rest] ->
       if with(k, v) {
-        [#(k, v), ..do_filter(rest, with)]
+        [(k, v), ..do_filter(rest, with)]
       } else {
         do_filter(rest, with)
       }
@@ -161,10 +161,10 @@ pub fn find(self: Dict<key, value>, value v: value) -> Option<ByteArray> {
   do_find(self.inner, v)
 }
 
-fn do_find(self: List<#(ByteArray, value)>, value v: value) -> Option<ByteArray> {
+fn do_find(self: List<(ByteArray, value)>, value v: value) -> Option<ByteArray> {
   when self is {
     [] -> None
-    [#(k2, v2), ..rest] ->
+    [(k2, v2), ..rest] ->
       if v == v2 {
         Some(k2)
       } else {
@@ -213,13 +213,13 @@ pub fn fold(
 }
 
 fn do_fold(
-  self: List<#(ByteArray, value)>,
+  self: List<(ByteArray, value)>,
   with: fn(ByteArray, value, result) -> result,
   zero: result,
 ) -> result {
   when self is {
     [] -> zero
-    [#(k, v), ..rest] -> with(k, v, do_fold(rest, with, zero))
+    [(k, v), ..rest] -> with(k, v, do_fold(rest, with, zero))
   }
 }
 
@@ -233,14 +233,14 @@ test fold_1() {
 
 /// Construct a dictionnary from a list of key-value pairs. Note that when a key is present
 /// multiple times, the first occurence prevails.
-pub fn from_list(self: List<#(ByteArray, value)>) -> Dict<key, value> {
+pub fn from_list(self: List<(ByteArray, value)>) -> Dict<key, value> {
   Dict { inner: do_from_list(self) }
 }
 
-fn do_from_list(xs: List<#(ByteArray, value)>) -> List<#(ByteArray, value)> {
+fn do_from_list(xs: List<(ByteArray, value)>) -> List<(ByteArray, value)> {
   when xs is {
     [] -> []
-    [#(k, v), ..rest] -> do_insert(do_from_list(rest), k, v)
+    [(k, v), ..rest] -> do_insert(do_from_list(rest), k, v)
   }
 }
 
@@ -249,15 +249,15 @@ test from_list_1() {
 }
 
 test from_list_2() {
-  from_list([#(foo, 42), #(bar, 14)]) == from_list([#(bar, 14), #(foo, 42)])
+  from_list([(foo, 42), (bar, 14)]) == from_list([(bar, 14), (foo, 42)])
 }
 
 test from_list_3() {
-  from_list([#(foo, 42), #(bar, 14)]) == fixture_1()
+  from_list([(foo, 42), (bar, 14)]) == fixture_1()
 }
 
 test from_list_4() {
-  from_list([#(foo, 42), #(bar, 14), #(foo, 1337)]) == fixture_1()
+  from_list([(foo, 42), (bar, 14), (foo, 1337)]) == fixture_1()
 }
 
 /// Get a value in the dict by its key.
@@ -274,10 +274,10 @@ pub fn get(self: Dict<key, value>, key k: ByteArray) -> Option<value> {
   do_get(self.inner, k)
 }
 
-fn do_get(self: List<#(ByteArray, value)>, key k: ByteArray) -> Option<value> {
+fn do_get(self: List<(ByteArray, value)>, key k: ByteArray) -> Option<value> {
   when self is {
     [] -> None
-    [#(k2, v), ..rest] ->
+    [(k2, v), ..rest] ->
       if k == k2 {
         Some(v)
       } else {
@@ -320,10 +320,10 @@ pub fn has_key(self: Dict<key, value>, key k: ByteArray) -> Bool {
   do_has_key(self.inner, k)
 }
 
-fn do_has_key(self: List<#(ByteArray, value)>, key k: ByteArray) -> Bool {
+fn do_has_key(self: List<(ByteArray, value)>, key k: ByteArray) -> Bool {
   when self is {
     [] -> False
-    [#(k2, _), ..rest] ->
+    [(k2, _), ..rest] ->
       if k == k2 {
         True
       } else {
@@ -370,7 +370,7 @@ test has_key_4() {
 /// |> dict.insert(key: foo, value: "Foo")
 /// |> dict.insert(key: foo, value: "Aiken")
 /// |> dict.to_list()
-/// // [#(foo, "Aiken")]
+/// // [(foo, "Aiken")]
 /// ```
 pub fn insert(
   self: Dict<key, value>,
@@ -381,20 +381,20 @@ pub fn insert(
 }
 
 fn do_insert(
-  self: List<#(ByteArray, value)>,
+  self: List<(ByteArray, value)>,
   key k: ByteArray,
   value v: value,
-) -> List<#(ByteArray, value)> {
+) -> List<(ByteArray, value)> {
   when self is {
-    [] -> [#(k, v)]
-    [#(k2, v2), ..rest] ->
+    [] -> [(k, v)]
+    [(k2, v2), ..rest] ->
       if less_than_bytearray(k, k2) {
-        [#(k, v), ..self]
+        [(k, v), ..self]
       } else {
         if k == k2 {
-          [#(k, v), ..rest]
+          [(k, v), ..rest]
         } else {
-          [#(k2, v2), ..do_insert(rest, k, v)]
+          [(k2, v2), ..do_insert(rest, k, v)]
         }
       }
   }
@@ -448,10 +448,10 @@ pub fn keys(self: Dict<key, value>) -> List<ByteArray> {
   do_keys(self.inner)
 }
 
-fn do_keys(self: List<#(ByteArray, value)>) -> List<ByteArray> {
+fn do_keys(self: List<(ByteArray, value)>) -> List<ByteArray> {
   when self is {
     [] -> []
-    [#(k, _), ..rest] -> [k, ..do_keys(rest)]
+    [(k, _), ..rest] -> [k, ..do_keys(rest)]
   }
 }
 
@@ -481,12 +481,12 @@ pub fn map(self: Dict<key, a>, with: fn(ByteArray, a) -> b) -> Dict<key, b> {
 }
 
 fn do_map(
-  self: List<#(ByteArray, a)>,
+  self: List<(ByteArray, a)>,
   with: fn(ByteArray, a) -> b,
-) -> List<#(ByteArray, b)> {
+) -> List<(ByteArray, b)> {
   when self is {
     [] -> []
-    [#(k, v), ..rest] -> [#(k, with(k, v)), ..do_map(rest, with)]
+    [(k, v), ..rest] -> [(k, with(k, v)), ..do_map(rest, with)]
   }
 }
 
@@ -505,7 +505,7 @@ test map_2() {
 }
 
 /// Get the inner list holding the dictionnary data.
-pub fn to_list(self: Dict<key, value>) -> List<#(ByteArray, value)> {
+pub fn to_list(self: Dict<key, value>) -> List<(ByteArray, value)> {
   self.inner
 }
 
@@ -514,7 +514,7 @@ test to_list_1() {
 }
 
 test to_list_2() {
-  to_list(fixture_1()) == [#(bar, 14), #(foo, 42)]
+  to_list(fixture_1()) == [(bar, 14), (foo, 42)]
 }
 
 /// Return the number of key-value pairs in the dictionnary.
@@ -522,7 +522,7 @@ pub fn size(self: Dict<key, value>) -> Int {
   do_size(self.inner)
 }
 
-fn do_size(self: List<#(ByteArray, value)>) -> Int {
+fn do_size(self: List<(ByteArray, value)>) -> Int {
   when self is {
     [] -> 0
     [_, ..rest] -> 1 + do_size(rest)
@@ -558,12 +558,12 @@ pub fn union(
 }
 
 fn do_union(
-  left: List<#(ByteArray, value)>,
-  right: List<#(ByteArray, value)>,
-) -> List<#(ByteArray, value)> {
+  left: List<(ByteArray, value)>,
+  right: List<(ByteArray, value)>,
+) -> List<(ByteArray, value)> {
   when left is {
     [] -> right
-    [#(k, v), ..rest] -> do_union(rest, do_insert(right, k, v))
+    [(k, v), ..rest] -> do_union(rest, do_insert(right, k, v))
   }
 }
 
@@ -583,7 +583,7 @@ test union_3() {
     new()
     |> insert(bar, 42)
     |> insert(baz, 1337)
-  union(left, right) == from_list([#(foo, 14), #(baz, 1337), #(bar, 42)])
+  union(left, right) == from_list([(foo, 14), (baz, 1337), (bar, 42)])
 }
 
 test union_4() {
@@ -594,7 +594,7 @@ test union_4() {
     new()
     |> insert(bar, 42)
     |> insert(foo, 1337)
-  union(left, right) == from_list([#(foo, 14), #(bar, 42)])
+  union(left, right) == from_list([(foo, 14), (bar, 42)])
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
@@ -610,36 +610,36 @@ pub fn union_with(
 }
 
 fn do_union_with(
-  left: List<#(ByteArray, value)>,
-  right: List<#(ByteArray, value)>,
+  left: List<(ByteArray, value)>,
+  right: List<(ByteArray, value)>,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> List<#(ByteArray, value)> {
+) -> List<(ByteArray, value)> {
   when left is {
     [] -> right
-    [#(k, v), ..rest] ->
+    [(k, v), ..rest] ->
       do_union_with(rest, do_insert_with(right, k, v, with), with)
   }
 }
 
 fn do_insert_with(
-  self: List<#(ByteArray, value)>,
+  self: List<(ByteArray, value)>,
   key k: ByteArray,
   value v: value,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> List<#(ByteArray, value)> {
+) -> List<(ByteArray, value)> {
   when self is {
-    [] -> [#(k, v)]
-    [#(k2, v2), ..rest] ->
+    [] -> [(k, v)]
+    [(k2, v2), ..rest] ->
       if less_than_bytearray(k, k2) {
-        [#(k, v), ..self]
+        [(k, v), ..self]
       } else {
         if k == k2 {
           when with(k, v, v2) is {
-            Some(combined) -> [#(k, combined), ..rest]
+            Some(combined) -> [(k, combined), ..rest]
             None -> rest
           }
         } else {
-          [#(k2, v2), ..do_insert_with(rest, k, v, with)]
+          [(k2, v2), ..do_insert_with(rest, k, v, with)]
         }
       }
   }
@@ -656,7 +656,7 @@ fn do_insert_with(
 //     |> insert(bar, 42)
 //     |> insert(foo, 1337)
 //   union_with(left, right, with: fn(_, l, r) { Some(l + r) }) == from_list(
-//   [#(foo, 1351), #(bar, 42)])
+//   [(foo, 1351), (bar, 42)])
 //
 // }
 
@@ -678,10 +678,10 @@ pub fn values(self: Dict<key, value>) -> List<value> {
   do_values(self.inner)
 }
 
-fn do_values(self: List<#(ByteArray, value)>) -> List<value> {
+fn do_values(self: List<(ByteArray, value)>) -> List<value> {
   when self is {
     [] -> []
-    [#(_, v), ..rest] -> [v, ..do_values(rest)]
+    [(_, v), ..rest] -> [v, ..do_values(rest)]
   }
 }
 
