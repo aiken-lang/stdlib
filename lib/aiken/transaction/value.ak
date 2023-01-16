@@ -65,6 +65,25 @@ pub fn without_lovelace(self: Value) -> Value {
   |> Value
 }
 
+test without_lovelace_1() {
+  let v = from_lovelace(1000000)
+  without_lovelace(v) == zero()
+}
+
+test without_lovelace_2() {
+  let v = from_lovelace(1000000)
+  let v2 = from_lovelace(50000000)
+  without_lovelace(v) == without_lovelace(v2)
+}
+
+test without_lovelace_3() {
+  let v =
+    from_asset(#[1, 2, 3], #[4, 5, 6], 100)
+    |> add(from_lovelace(100000000))
+  let v2 = from_asset(#[1, 2, 3], #[4, 5, 6], 100)
+  without_lovelace(v) == without_lovelace(v2) && without_lovelace(v) == v2
+}
+
 /// Negates quantities of all tokens (including Ada) in that `Value`.
 ///
 /// ```
