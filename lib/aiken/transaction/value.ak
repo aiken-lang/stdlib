@@ -59,6 +59,12 @@ pub fn from_lovelace(quantity: Int) -> Value {
   from_asset(ada_policy_id, ada_asset_name, quantity)
 }
 
+/// Get a `Value` excluding Ada.
+pub fn without_lovelace(self: Value) -> Value {
+  dict.delete(self.inner, ada_policy_id)
+  |> Value
+}
+
 /// Negates quantities of all tokens (including Ada) in that `Value`.
 ///
 /// ```
