@@ -8,7 +8,7 @@ use aiken/builtin.{
 /// use aiken.string
 ///
 /// string.concat(left: "Hello", right: ", World!")
-/// "Hello, World!"
+/// // "Hello, World!"
 /// ```
 pub fn concat(left: String, right: String) -> String {
   append_bytearray(encode_utf8(left), encode_utf8(right))

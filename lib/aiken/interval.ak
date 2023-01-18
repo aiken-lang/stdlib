@@ -48,9 +48,9 @@ pub type IntervalBound<a> {
   is_inclusive: Bool,
 }
 
-/// A type of interval bound. Where finite, a value of type `a` must be provided.
-///
-/// `a` will typically be an `Int`, representing a number of seconds or milliseconds.
+/// A type of interval bound. Where finite, a value of type `a` must be
+/// provided. `a` will typically be an `Int`, representing a number of seconds or
+/// milliseconds.
 pub type IntervalBoundType<a> {
   NegativeInfinity
   Finite(a)

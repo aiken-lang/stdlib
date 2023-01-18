@@ -20,31 +20,24 @@ pub type ScriptContext {
 }
 
 /// Caracterizes the kind of script being executed.
-///
-/// - `Mint`:
-///     refers to scripts executed as minting/burning policies, to insert
-///     or remove assets from circulation. It's parameterized by the identifier
-///     of the associated policy.
-///
-/// - `Spend`:
-///     refers to scripts that are used as payment credentials for addresses in
-///     transaction outputs. They govern the rule by which the output they
-///     reference can be spent.
-///
-/// - `WithdrawFrom`:
-///     is triggered to validate reward withdrawals from a reward account whose
-///     associated credential is defined as a Plutus script. It identifies the
-///     target reward account.
-///
-/// - `Publish`:
-///     needed when delegating to a pool using stake credentials defined as a
-///     Plutus script. This kind is also triggered when de-registering such
-///     stake credentials. It embeds the certificate that's being validated.
-///
 pub type ScriptPurpose {
+  /// For scripts executed as minting/burning policies, to insert
+  /// or remove assets from circulation. It's parameterized by the identifier
+  /// of the associated policy.
   Mint(PolicyId)
+  /// For scripts that are used as payment credentials for addresses in
+  /// transaction outputs. They govern the rule by which the output they
+  /// reference can be spent.
   Spend(OutputReference)
+  /// For scripts that validate reward withdrawals from a reward account.
+  ///
+  /// The argument identifies the target reward account.
   WithdrawFrom(StakeCredential)
+  /// Needed when delegating to a pool using stake credentials defined as a
+  /// Plutus script. This purpose is also triggered when de-registering such
+  /// stake credentials.
+  ///
+  /// It embeds the certificate that's being validated.
   Publish(Certificate)
 }
 
@@ -102,14 +95,12 @@ pub type Output {
   reference_script: Option<Hash<Blake2b_224, Script>>,
 }
 
-/// An output `Datum`, which be either:
-///
-/// - None (`NoDatum`)
-/// - A reference by hash (`DatumHash`)
-/// - A plain inline Plutus data (`InlineDatum`)
+/// An output `Datum`.
 pub type Datum {
   NoDatum
+  /// A datum referenced by its hash digest.
   DatumHash(Hash<Blake2b_256, Data>)
+  /// A datum completely inlined in the output.
   InlineDatum(Data)
 }
 
