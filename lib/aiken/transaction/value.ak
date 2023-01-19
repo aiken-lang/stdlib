@@ -130,45 +130,38 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
   |> Value
 }
 
-// TODO: acceptance_test 035
-//
-// test add_1() {
-//   let v1 = from_lovelace(1)
-//   let v2 = from_lovelace(-1)
-//   add(v1, v2) == zero()
-// }
-//
-// test add_2() {
-//   let v1 = from_asset(#[0], #[], 1)
-//   let v2 = from_asset(#[1], #[], 2)
-//   let v3 = from_asset(#[2], #[], 3)
-//   let v =
-//     from_lovelace(42)
-//     |> add(v3)
-//     |> add(v1)
-//     |> add(v2)
-//
-//   flatten(v) == [
-//     (#[], #[], 42),
-//     (#[0], #[], 1),
-//     (#[1], #[], 2),
-//     (#[2], #[], 3),
-//   ]
-// }
-//
-// test add_3() {
-//   let v1 = from_asset(#[0], #[], 1)
-//   let v2 = from_asset(#[0], #[], -1)
-//   let v3 = from_asset(#[1], #[], 1)
-//
-//   let v =
-//     zero()
-//     |> add(v1)
-//     |> add(v2)
-//     |> add(v3)
-//
-//   flatten(v) == [(#[1], 1)]
-// }
+test add_1() {
+  let v1 = from_lovelace(1)
+  let v2 = from_lovelace(-1)
+  add(v1, v2) == zero()
+}
+
+test add_2() {
+  let v1 = from_asset(#[0], #[], 1)
+  let v2 = from_asset(#[1], #[], 2)
+  let v3 = from_asset(#[2], #[], 3)
+  let v =
+    from_lovelace(42)
+    |> add(v3)
+    |> add(v1)
+    |> add(v2)
+
+  flatten(v) == [(#[], #[], 42), (#[0], #[], 1), (#[1], #[], 2), (#[2], #[], 3)]
+}
+
+test add_3() {
+  let v1 = from_asset(#[0], #[], 1)
+  let v2 = from_asset(#[0], #[], -1)
+  let v3 = from_asset(#[1], #[], 1)
+
+  let v =
+    zero()
+    |> add(v1)
+    |> add(v2)
+    |> add(v3)
+
+  flatten(v) == [(#[1], #[], 1)]
+}
 
 /// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
 ///
