@@ -678,16 +678,7 @@ test zip_3() {
 
 /// Returns Some(item) or None given index, note that counting of index is starting from 0
 pub fn at(self: List<a>, index: Int) -> Option<a> {
-  let len = length(self)
-  let pos = index + 1
-
-  if index < 0 || pos > len {
-    None
-  } else if pos == len {
-    head(drop(self, len - 1))
-  } else {
-    head(take(self, pos))
-  }
+  drop(self, index) |> head
 }
 
 test at_1() {

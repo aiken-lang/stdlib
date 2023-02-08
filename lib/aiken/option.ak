@@ -188,3 +188,35 @@ test flatten_4() {
 
   Some(6) == result
 }
+
+/// Asserts whether an option is `Some`, irrespective of the value it contains.
+pub fn is_some(self: Option<a>) -> Bool {
+  when self is {
+    Some(_) -> True
+    _ -> False
+  }
+}
+
+test is_some_1() {
+  is_some(Some(0)) == True
+}
+
+test is_some_2() {
+  is_some(None) == False
+}
+
+/// Asserts whether an option is `None`.
+pub fn is_none(self: Option<a>) -> Bool {
+  when self is {
+    Some(_) -> False
+    _ -> True
+  }
+}
+
+test is_none_1() {
+  is_none(Some(0)) == False
+}
+
+test is_none_2() {
+  is_none(None) == True
+}
