@@ -220,3 +220,27 @@ test is_none_1() {
 test is_none_2() {
   is_none(None) == True
 }
+
+/// Picks the first element which is Some<a> from a given list.
+pub fn choice(self: List<Option<a>>) -> Option<a> {
+  when self is {
+    [] -> None
+    [head, ..others] ->
+      when head is {
+        None -> choice(others)
+        _ -> head
+      }
+  }
+}
+
+test choice_1() {
+  Some(1) == choice([Some(1), Some(2)])
+}
+
+test choice_2() {
+  None == choice([])
+}
+
+test choice_3() {
+  Some(1) == choice([None, Some(1)])
+}
