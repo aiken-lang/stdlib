@@ -66,6 +66,45 @@ test any_3() {
   any([], fn(n) { n == 42 }) == False
 }
 
+/// Return Some(item) at the index or None if the index is out of range. The index is 0-based.
+///
+/// ```aiken
+/// at([1,2,3], 1) == Some(2)
+///
+/// at([1,2,3], 42) == None
+/// ```
+pub fn at(self: List<a>, index: Int) -> Option<a> {
+  when self is {
+    [] -> None
+    [x, ..xs] ->
+      if index == 0 {
+        Some(x)
+      } else {
+        at(xs, index - 1)
+      }
+  }
+}
+
+test at_1() {
+  at([1, 2, 3], -1) == None
+}
+
+test at_2() {
+  at([], 0) == None
+}
+
+test at_3() {
+  at([1, 2, 3], 3) == None
+}
+
+test at_4() {
+  at([1], 0) == Some(1)
+}
+
+test at_5() {
+  at([1, 2, 3], 2) == Some(3)
+}
+
 /// Like [any](#any) but when elements are already booleans.
 ///
 /// Note: an empty list never satisfies the predicate.
@@ -674,37 +713,4 @@ test zip_2() {
 
 test zip_3() {
   zip([1, 2], ["a", "b", "c"]) == [(1, "a"), (2, "b")]
-}
-
-/// Returns Some(item) or None given index, note that counting of index is starting from 0
-pub fn at(self: List<a>, index: Int) -> Option<a> {
-  drop(self, index) |> head
-}
-
-test at_1() {
-  at([], -1) == None
-}
-
-test at_2() {
-  at([], 0) == None
-}
-
-test at_3() {
-  at([1, 2, 3], 3) == None
-}
-
-test at_4() {
-  at([1], 0) == Some(1)
-}
-
-test at_5() {
-  at([1, 2, 3], 2) == Some(3)
-}
-
-test at_6() {
-  at([1, 2, 3], 1) == Some(2)
-}
-
-test at_7() {
-  at([1, 2, 3], 0) == Some(1)
 }
