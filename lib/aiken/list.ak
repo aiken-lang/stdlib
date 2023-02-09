@@ -675,3 +675,36 @@ test zip_2() {
 test zip_3() {
   zip([1, 2], ["a", "b", "c"]) == [(1, "a"), (2, "b")]
 }
+
+/// Returns Some(item) or None given index, note that counting of index is starting from 0
+pub fn at(self: List<a>, index: Int) -> Option<a> {
+  drop(self, index) |> head
+}
+
+test at_1() {
+  at([], -1) == None
+}
+
+test at_2() {
+  at([], 0) == None
+}
+
+test at_3() {
+  at([1, 2, 3], 3) == None
+}
+
+test at_4() {
+  at([1], 0) == Some(1)
+}
+
+test at_5() {
+  at([1, 2, 3], 2) == Some(3)
+}
+
+test at_6() {
+  at([1, 2, 3], 1) == Some(2)
+}
+
+test at_7() {
+  at([1, 2, 3], 0) == Some(1)
+}
