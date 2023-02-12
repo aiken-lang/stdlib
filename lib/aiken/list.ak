@@ -1000,6 +1000,13 @@ test slice_6() {
 }
 
 /// Sort a list in ascending order using the given comparison function.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// sort([3, 1, 4, 0, 2], int.compare) == [0, 1, 2, 3, 4]
+/// sort([1, 2, 3], int.compare) == [1, 2, 3]
+/// ```
 pub fn sort(self: List<a>, compare: fn(a, a) -> Ordering) -> List<a> {
   when self is {
     [] -> []
