@@ -19,7 +19,7 @@ pub type ScriptContext {
   purpose: ScriptPurpose,
 }
 
-/// Caracterizes the kind of script being executed.
+/// Characterizes the kind of script being executed.
 pub type ScriptPurpose {
   /// For scripts executed as minting/burning policies, to insert
   /// or remove assets from circulation. It's parameterized by the identifier
