@@ -6,7 +6,7 @@ use aiken/hash.{Blake2b_224, Hash}
 /// Credentials are always one of two kinds: a direct public/private key
 /// pair, or a script (native or Plutus).
 pub type Credential {
-  PublicKeyCredential(Hash<Blake2b_224, VerificationKey>)
+  VerificationKeyCredential(Hash<Blake2b_224, VerificationKey>)
   ScriptCredential(Hash<Blake2b_224, Script>)
 }
 
@@ -19,6 +19,22 @@ pub type Credential {
 pub type Address {
   payment_credential: PaymentCredential,
   stake_credential: Option<StakeCredential>,
+}
+
+/// Smart-constructor for an `Address` from a verification key hash. The address has no delegation rights whatsoever.
+pub fn from_verification_key(vk: Hash<Blake2b_224, VerificationKey>) -> Address {
+  Address {
+    payment_credential: VerificationKeyCredential(vk),
+    stake_credential: None,
+  }
+}
+
+/// Smart-constructor for an `Address` from a script hash. The address has no delegation rights whatsoever.
+pub fn from_script(script: Hash<Blake2b_224, Script>) -> Address {
+  Address {
+    payment_credential: ScriptCredential(script),
+    stake_credential: None,
+  }
 }
 
 /// Represent a type of object that can be represented either inline (by hash)
@@ -63,7 +79,7 @@ pub type StakeCredential =
 /// A 'PaymentCredential' represents the spending conditions associated with
 /// some output. Hence,
 ///
-/// - a `PublicKeyCredential` captures an output locked by a public/private key pair;
+/// - a `VerificationKeyCredential` captures an output locked by a public/private key pair;
 /// - and a `ScriptCredential` captures an output locked by a native or Plutus script.
 ///
 pub type PaymentCredential =

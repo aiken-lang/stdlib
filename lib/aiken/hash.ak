@@ -13,7 +13,7 @@
 ////
 //// ```aiken
 //// pub type Credential {
-////   PublicKeyCredential(ByteArray)
+////   VerificationKeyCredential(ByteArray)
 ////   ScriptCredential(ByteArray)
 //// }
 //// ```
@@ -22,7 +22,7 @@
 ////
 //// ```aiken
 //// pub type Credential {
-////   PublicKeyCredential(Hash<Blake2b_224, VerificationKey>)
+////   VerificationKeyCredential(Hash<Blake2b_224, VerificationKey>)
 ////   ScriptCredential(Hash<Blake2b_224, Script>)
 //// }
 //// ```
