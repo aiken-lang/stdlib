@@ -1,4 +1,5 @@
 use aiken/builtin
+use aiken/int
 
 /// Determine if all elements of the list satisfy the given predicate.
 ///
@@ -164,7 +165,10 @@ test or_4() {
 /// list.concat([1, 2, 3], [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
 /// ```
 pub fn concat(left: List<a>, right: List<a>) -> List<a> {
-  foldr(left, fn(x, xs) { [x, ..xs] }, right)
+  when left is {
+    [] -> right
+    [x, ..xs] -> [x, ..concat(xs, right)]
+  }
 }
 
 test concat_1() {
@@ -896,24 +900,23 @@ test reverse_2() {
   reverse([1, 2, 3]) == [3, 2, 1]
 }
 
-/// Returns a tuple where the first element is the longest prefix from the given list where all elements
-/// satisfy the given predicate, and the second element is the rest of the list.
-///
-/// Fundamentally equivalent to:
+/// Returns a tuple with all elements that satisfy the predicate at first
+/// element, and the rest as second element.
 ///
 /// ```aiken
-/// list.partition(xs, p) == (list.take_while(xs, p), list.drop_while(xs, p))`
+/// list.partition([1, 2, 3, 4], fn(x) { x % 2 == 0 }) == ([2, 4], [1, 3])
 /// ```
 pub fn partition(self: List<a>, predicate: fn(a) -> Bool) -> (List<a>, List<a>) {
   when self is {
     [] -> ([], [])
-    [x, ..xs] ->
+    [x, ..xs] -> {
+      let (left, right) = partition(xs, predicate)
       if predicate(x) {
-        let (left, right) = partition(xs, predicate)
         ([x, ..left], right)
       } else {
-        ([], self)
+        (left, [x, ..right])
       }
+    }
   }
 }
 
@@ -934,6 +937,10 @@ test partition_3() {
 test partition_4() {
   let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   partition(xs, fn(x) { x < 42 }) == (xs, [])
+}
+
+test partition_5() {
+  partition([1, 2, 3, 4], fn(x) { x % 2 == 0 }) == ([2, 4], [1, 3])
 }
 
 /// Extract a sublist from the given list using 0-based indexes. Negative
@@ -990,6 +997,82 @@ test slice_5() {
 
 test slice_6() {
   slice([1, 2, 3, 4, 5, 6], from: -2, to: 1) == []
+}
+
+/// Sort a list in ascending order using the given comparison function.
+pub fn sort(self: List<a>, compare: fn(a, a) -> Ordering) -> List<a> {
+  when self is {
+    [] -> []
+    [x, ..xs] -> insert(sort(xs, compare), x, compare)
+  }
+}
+
+fn insert(self: List<a>, e: a, compare: fn(a, a) -> Ordering) -> List<a> {
+  when self is {
+    [] -> [e]
+    [x, ..xs] ->
+      if compare(e, x) == Less {
+        [e, ..self]
+      } else {
+        [x, ..insert(xs, e, compare)]
+      }
+  }
+}
+
+test sort_1() {
+  let xs = [6, 7, 5, 4, 1, 3, 9, 8, 0, 2]
+  sort(xs, int.compare) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+
+test sort_2() {
+  let xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  sort(xs, int.compare) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+
+test sort_3() {
+  let xs = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+  sort(xs, int.compare) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+
+test sort_4() {
+  sort([], int.compare) == []
+}
+
+/// Cut a list in two, such that the first list contains the given number of /
+/// elements and the second list contains the rest.
+///
+/// Fundamentally equivalent to (but more efficient):
+///
+/// ```aiken
+/// span(xs, n) == (take(xs, n), drop(xs, n))
+/// ```
+pub fn span(self: List<a>, n: Int) -> (List<a>, List<a>) {
+  when self is {
+    [] -> ([], [])
+    [x, ..xs] ->
+      if n <= 0 {
+        ([], self)
+      } else {
+        let (left, right) = span(xs, n - 1)
+        ([x, ..left], right)
+      }
+  }
+}
+
+test span_1() {
+  span([], 2) == ([], [])
+}
+
+test span_2() {
+  span([1, 2, 3], 2) == ([1, 2], [3])
+}
+
+test span_3() {
+  span([1, 2, 3], -1) == ([], [1, 2, 3])
+}
+
+test span_4() {
+  span([1, 2, 3], 42) == ([1, 2, 3], [])
 }
 
 /// Get elements of a list after the first one, if any.
