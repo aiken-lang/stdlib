@@ -3,6 +3,12 @@ use aiken/builtin
 /// Determine if all elements of the list satisfy the given predicate.
 ///
 /// Note: an empty list always satisfies the predicate.
+///
+/// ```aiken
+/// list.all([], fn(n) { n > 0 }) == True
+/// list.all([1, 2, 3], fn(n) { n > 0 }) == True
+/// list.all([1, 2, 3], fn(n) { n == 2 }) == False
+/// ```
 pub fn all(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
   when self is {
     [] -> True
@@ -25,6 +31,12 @@ test all_3() {
 /// Like [all](#and) but when elements are already booleans.
 ///
 /// Note: an empty list always satisfies the predicate.
+///
+/// ```aiken
+/// list.and([]) == True
+/// list.and([True, True]) == True
+/// list.and([True, False]) == False
+/// ```
 pub fn and(self: List<Bool>) -> Bool {
   when self is {
     [] -> True
@@ -47,6 +59,13 @@ test and_3() {
 /// Determine if at least one element of the list satisfies the given predicate.
 ///
 /// Note: an empty list never satisfies the predicate.
+///
+/// ```aiken
+/// list.any([], fn(n) { n > 2 }) == False
+/// list.any([1, 2, 3], fn(n) { n > 0 }) == True
+/// list.any([1, 2, 3], fn(n) { n == 2 }) == True
+/// list.any([1, 2, 3], fn(n) { n < 0 }) == False
+/// ```
 pub fn any(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
   when self is {
     [] -> False
@@ -69,9 +88,8 @@ test any_3() {
 /// Return Some(item) at the index or None if the index is out of range. The index is 0-based.
 ///
 /// ```aiken
-/// at([1,2,3], 1) == Some(2)
-///
-/// at([1,2,3], 42) == None
+/// list.at([1, 2, 3], 1) == Some(2)
+/// list.at([1, 2, 3], 42) == None
 /// ```
 pub fn at(self: List<a>, index: Int) -> Option<a> {
   when self is {
@@ -108,6 +126,13 @@ test at_5() {
 /// Like [any](#any) but when elements are already booleans.
 ///
 /// Note: an empty list never satisfies the predicate.
+///
+/// ```aiken
+/// list.or([]) == False
+/// list.or([True, True]) == True
+/// list.or([True, False]) == True
+/// list.or([False, False]) == False
+/// ```
 pub fn or(self: List<Bool>) -> Bool {
   when self is {
     [] -> False
@@ -132,6 +157,12 @@ test or_4() {
 }
 
 /// Merge two lists together.
+///
+/// ```aiken
+/// list.concat([], []) == []
+/// list.concat([], [1, 2, 3]) == [1, 2, 3]
+/// list.concat([1, 2, 3], [4, 5, 6]) == [1, 2, 3, 4, 5, 6]
+/// ```
 pub fn concat(left: List<a>, right: List<a>) -> List<a> {
   foldr(left, fn(x, xs) { [x, ..xs] }, right)
 }
@@ -148,7 +179,77 @@ test concat_3() {
   concat([], [1, 2, 3]) == [1, 2, 3]
 }
 
+/// Remove the first occurence of the given element from the list.
+///
+/// ```aiken
+/// list.delete([1, 2, 3, 1], 1) == [2, 3, 1]
+/// list.delete([1, 2, 3], 14) == [1, 2, 3]
+/// ```
+pub fn delete(self: List<a>, elem: a) -> List<a> {
+  when self is {
+    [] -> []
+    [x, ..xs] ->
+      if x == elem {
+        xs
+      } else {
+        [x, ..delete(xs, elem)]
+      }
+  }
+}
+
+test delete_1() {
+  delete([], 42) == []
+}
+
+test delete_2() {
+  delete([1, 2, 3, 1], 1) == [2, 3, 1]
+}
+
+test delete_3() {
+  delete([1, 2, 3], 14) == [1, 2, 3]
+}
+
+test delete_4() {
+  delete([2], 2) == []
+}
+
+/// Remove the first occurence of each element of the second list from the first one.
+///
+/// ```
+/// list.difference(["h", "e", "l", "l", "o"], ["l", "e", "l"]) == ["h", "o"]
+/// list.difference([1, 2, 3, 4, 5], [1, 1, 2]) == [3, 4, 5]
+/// list.difference([1, 2, 3], []) == [1, 2, 3]
+/// ```
+pub fn difference(self: List<a>, with: List<a>) -> List<a> {
+  when with is {
+    [] -> self
+    [x, ..xs] -> difference(delete(self, x), xs)
+  }
+}
+
+test difference_1() {
+  difference(["h", "e", "l", "l", "o"], ["l", "e", "l"]) == ["h", "o"]
+}
+
+test difference_2() {
+  difference([1, 2, 3, 4, 5], [1, 1, 2]) == [3, 4, 5]
+}
+
+test difference_3() {
+  difference([1, 2, 3], []) == [1, 2, 3]
+}
+
+test difference_4() {
+  difference([], [1, 2, 3]) == []
+}
+
 /// Drop the first `n` elements of a list.
+///
+/// ```aiken
+/// list.drop([1, 2, 3], 2) == [3]
+/// list.drop([], 42) == []
+/// list.drop([1, 2, 3], 42) == []
+/// ```
 pub fn drop(self: List<a>, n: Int) -> List<a> {
   if n <= 0 {
     self
@@ -168,7 +269,51 @@ test drop_2() {
   drop([1, 2, 3], 2) == [3]
 }
 
+/// Returns the suffix of the given list after removing all elements that satisfy the predicate.
+///
+/// ```aiken
+/// list.drop_while([1, 2, 3], fn(x) { x > 2 }) == [2, 3]
+/// list.drop_while([], fn(x) { x > 2 }) == []
+/// list.drop_while([1, 2, 3], fn(x) { x == 3 }) == [1, 2, 3]
+/// ```
+pub fn drop_while(self: List<a>, predicate: fn(a) -> Bool) -> List<a> {
+  when self is {
+    [] -> []
+    [x, ..xs] ->
+      if predicate(x) {
+        drop_while(xs, predicate)
+      } else {
+        self
+      }
+  }
+}
+
+test drop_while_1() {
+  drop_while([], fn(x) { x > 2 }) == []
+}
+
+test drop_while_2() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  drop_while(xs, fn(x) { x > 5 }) == [5, 4, 3, 2, 1]
+}
+
+test drop_while_3() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  drop_while(xs, fn(x) { x == 42 }) == xs
+}
+
+test drop_while_4() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  drop_while(xs, fn(x) { x < 42 }) == []
+}
+
 /// Produce a list of elements that statisfy a predicate.
+///
+/// ```aiken
+/// list.filter([1, 2, 3], fn(x) { x > 2 }) == [2, 3]
+/// list.filter([], fn(x) { x > 2 }) == []
+/// list.filter([1, 2, 3], fn(x) { x == 3 }) == [3]
+/// ```
 pub fn filter(self: List<a>, predicate: fn(a) -> Bool) -> List<a> {
   when self is {
     [] -> []
@@ -211,6 +356,11 @@ test filter_3() {
 }
 
 /// Produce a list of transformed elements that statisfy a predicate.
+///
+/// ```aiken
+/// let transform = fn(x) { if x % 2 == 0 { None } else { Some(3*x) } }
+/// list.filter_map([1, 2, 3], transform) == [3, 9]
+/// ```
 pub fn filter_map(self: List<a>, predicate: fn(a) -> Option<b>) -> List<b> {
   when self is {
     [] -> []
@@ -240,6 +390,11 @@ test filter_map_2() {
 }
 
 /// Find the first element satisfying the given predicate, if any.
+///
+/// ```aiken
+/// list.find([1, 2, 3], fn(x) { x == 2 }) == Some(2)
+/// list.find([4, 5, 6], fn(x) { x == 2 }) == None
+/// ```
 pub fn find(self: List<a>, predicate: fn(a) -> Bool) -> Option<a> {
   when self is {
     [] -> None
@@ -265,6 +420,10 @@ test find_3() {
 }
 
 /// Map elements of a list into a new list and flatten the result.
+///
+/// ```aiken
+/// list.flat_map([1, 2, 3], fn(a) { [a, 2*a] }) == [1, 2, 2, 4, 3, 6]
+/// ```
 pub fn flat_map(self: List<a>, with: fn(a) -> List<b>) -> List<b> {
   foldr(self, fn(x, xs) { concat(with(x), xs) }, [])
 }
@@ -278,6 +437,11 @@ test flat_map_2() {
 }
 
 /// Reduce a list from left to right.
+///
+/// ```aiken
+/// list.foldl([1, 2, 3], fn(n, total) { n + total }, 0) == 6
+/// list.foldl([1, 2, 3], fn(x, xs) { [x, ..xs] }) == [3, 2, 1]
+/// ```
 pub fn foldl(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
   when self is {
     [] -> zero
@@ -298,6 +462,11 @@ test foldl_3() {
 }
 
 /// Reduce a list from right to left.
+///
+/// ```aiken
+/// list.foldr([1, 2, 3], fn(n, total) { n + total }, 0) == 6
+/// list.foldr([1, 2, 3], fn(x, xs) { [x, ..xs] }, 0) == [1, 2, 3]
+/// ```
 pub fn foldr(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
   when self is {
     [] -> zero
@@ -327,7 +496,46 @@ test foldr_3() {
   foldr([1, 2, 3, 4], fn(x, xs) { [x, ..xs] }, []) == [1, 2, 3, 4]
 }
 
+/// Return all elements except the last one.
+///
+/// ```aiken
+/// list.init([]) == None
+/// list.init([1, 2, 3]) == Some([1, 2])
+/// ```
+pub fn init(self: List<a>) -> Option<List<a>> {
+  when self is {
+    [] -> None
+    _ -> Some(do_init(self))
+  }
+}
+
+fn do_init(self: List<a>) -> List<a> {
+  when self is {
+    [] -> error("unreachable")
+    [_] -> []
+    [x, ..xs] -> [x, ..do_init(xs)]
+  }
+}
+
+test init_1() {
+  init([]) == None
+}
+
+test init_2() {
+  init([1]) == Some([])
+}
+
+test init_3() {
+  init([1, 2, 3, 4]) == Some([1, 2, 3])
+}
+
 /// Figures out whether a list contain the given element.
+///
+/// ```aiken
+/// list.has([1, 2, 3], 2) == True
+/// list.has([1, 2, 3], 14) == False
+/// list.has([], 14) == False
+/// ```
 pub fn has(self: List<a>, elem: a) -> Bool {
   when self is {
     [] -> False
@@ -353,6 +561,11 @@ test has_3() {
 }
 
 /// Get the first element of a list
+///
+/// ```aiken
+/// list.head([1, 2, 3]) == Some(1)
+/// list.head([]) == None
+/// ```
 pub fn head(self: List<a>) -> Option<a> {
   when self is {
     [] -> None
@@ -368,6 +581,16 @@ test head_2() {
   head([]) == None
 }
 
+/// Like [`foldr`](#foldr), but also provides the position (0-based) of the elements when iterating.
+///
+/// ```aiken
+/// let group = fn(i, x, xs) { [(i, x), ..xs] }
+/// list.indexed_foldr(["a", "b", "c"], group, []) == [
+///   (0, "a"),
+///   (1, "b"),
+///   (2, "c")
+/// ]
+/// ```
 pub fn indexed_foldr(
   self: List<a>,
   with: fn(Int, a, result) -> result,
@@ -401,7 +624,11 @@ test indexed_foldr_2() {
   ]
 }
 
-/// Apply a function to each element of a list.
+/// List [`map`](#map) but provides the position (0-based) of the elements while iterating.
+///
+/// ```aiken
+/// list.indexed_map([1, 2, 3], fn(i, x) { i + x }) == [1, 3, 5]
+/// ```
 pub fn indexed_map(self: List<a>, with: fn(Int, a) -> result) -> List<result> {
   do_indexed_map(0, self, with)
 }
@@ -435,6 +662,11 @@ test indexed_map_2() {
 }
 
 /// Checks whether a list is empty.
+///
+/// ```aiken
+/// list.is_empty([]) == True
+/// list.is_empty([1, 2, 3]) == False
+/// ```
 pub fn is_empty(self: List<a>) -> Bool {
   when self is {
     [] -> True
@@ -450,7 +682,38 @@ test is_empty_2() {
   is_empty([1, 2, 3]) == False
 }
 
+/// Get the last in the given list, if any.
+///
+/// ```aiken
+/// list.last([]) == None
+/// list.last([1, 2, 3]) == Some(3)
+/// ```
+pub fn last(self: List<a>) -> Option<a> {
+  when self is {
+    [] -> None
+    [x] -> Some(x)
+    [_, ..xs] -> last(xs)
+  }
+}
+
+test last_1() {
+  last([]) == None
+}
+
+test last_2() {
+  last([1]) == Some(1)
+}
+
+test last_3() {
+  last([1, 2, 3, 4]) == Some(4)
+}
+
 /// Get the number of elements in the given list.
+///
+/// ```aiken
+/// list.length([]) == 0
+/// list.length([1, 2, 3]) == 3
+/// ```
 pub fn length(self: List<a>) -> Int {
   when self is {
     [] -> 0
@@ -467,6 +730,10 @@ test length_2() {
 }
 
 /// Apply a function to each element of a list.
+///
+/// ```aiken
+/// list.map([1, 2, 3, 4], fn(n) { n + 1 }) == [2, 3, 4, 5]
+/// ```
 pub fn map(self: List<a>, with: fn(a) -> result) -> List<result> {
   when self is {
     [] -> []
@@ -485,6 +752,10 @@ test map_2() {
 /// Apply a function of two arguments, combining elements from two lists.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
+///
+/// ```aiken
+/// list.map2([1, 2, 3], [1, 2], fn(a, b) { a + b }) == [2, 4]
+/// ```
 pub fn map2(
   self: List<a>,
   bs: List<b>,
@@ -515,6 +786,10 @@ test map2_3() {
 /// Apply a function of three arguments, combining elements from three lists.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
+///
+/// ```aiken
+/// list.map3([1, 2, 3], [1, 2], [1, 2, 3], fn(a, b, c) { a + b + c }) == [3, 6]
+/// ```
 pub fn map3(
   self: List<a>,
   bs: List<b>,
@@ -547,8 +822,6 @@ test map3_2() {
 /// other functions.
 ///
 /// ```aiken
-/// use aiken/list
-///
 /// list.push([2, 3], 1) == [1, ..[2, 3]] == [1, 2, 3]
 /// ```
 pub fn push(self: List<a>, elem: a) -> List<a> {
@@ -564,6 +837,11 @@ test push_2() {
 }
 
 /// Construct a list of a integer from a given range.
+///
+/// ```aiken
+/// list.range(0, 3) == [0, 1, 2, 3]
+/// list.range(-1, 1) == [-1, 0, 1]
+/// ```
 pub fn range(from: Int, to: Int) -> List<Int> {
   if from > to {
     []
@@ -581,6 +859,10 @@ test range_2() {
 }
 
 /// Construct a list filled with n copies of a value.
+///
+/// ```aiken
+/// list.repeat("na", 3) == ["na", "na", "na"]
+/// ```
 pub fn repeat(elem: a, n_times: Int) -> List<a> {
   if n_times <= 0 {
     []
@@ -597,7 +879,11 @@ test repeat_2() {
   repeat(14, 3) == [14, 14, 14]
 }
 
-/// Get the number of elements in the given list.
+/// Return the list with its elements in the reserve order.
+///
+/// ```aiken
+/// list.reverse([1, 2, 3]) == [3, 2, 1]
+/// ```
 pub fn reverse(self: List<a>) -> List<a> {
   foldl(self, fn(x, xs) { [x, ..xs] }, [])
 }
@@ -610,7 +896,108 @@ test reverse_2() {
   reverse([1, 2, 3]) == [3, 2, 1]
 }
 
-/// Get elements of a list after the first one, if any
+/// Returns a tuple where the first element is the longest prefix from the given list where all elements
+/// satisfy the given predicate, and the second element is the rest of the list.
+///
+/// Fundamentally equivalent to:
+///
+/// ```aiken
+/// list.partition(xs, p) == (list.take_while(xs, p), list.drop_while(xs, p))`
+/// ```
+pub fn partition(self: List<a>, predicate: fn(a) -> Bool) -> (List<a>, List<a>) {
+  when self is {
+    [] -> ([], [])
+    [x, ..xs] ->
+      if predicate(x) {
+        let (left, right) = partition(xs, predicate)
+        ([x, ..left], right)
+      } else {
+        ([], self)
+      }
+  }
+}
+
+test partition_1() {
+  partition([], fn(x) { x > 2 }) == ([], [])
+}
+
+test partition_2() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  partition(xs, fn(x) { x > 5 }) == ([10, 9, 8, 7, 6], [5, 4, 3, 2, 1])
+}
+
+test partition_3() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  partition(xs, fn(x) { x == 42 }) == ([], xs)
+}
+
+test partition_4() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  partition(xs, fn(x) { x < 42 }) == (xs, [])
+}
+
+/// Extract a sublist from the given list using 0-based indexes. Negative
+/// indexes wrap over, so `-1` refers to the last element of the list.
+///
+/// ```aiken
+/// list.slice([1, 2, 3, 4, 5, 6], from: 2, to: 4) == [3, 4, 5]
+/// list.slice([1, 2, 3, 4, 5, 6], from: -2, to: -1) == [5, 6]
+/// list.slice([1, 2, 3, 4, 5, 6], from: 1, to: -1) == [2, 3, 4, 5, 6]
+/// ```
+pub fn slice(self: List<a>, from: Int, to: Int) {
+  let (i, l) =
+    if from >= 0 {
+      (from, None)
+    } else {
+      let l = length(self)
+      (l + from, Some(l))
+    }
+
+  let j =
+    if to >= 0 {
+      to - i + 1
+    } else {
+      when l is {
+        Some(l) -> l + to - i + 1
+        None -> length(self) + to - i + 1
+      }
+    }
+
+  self
+  |> drop(i)
+  |> take(j)
+}
+
+test slice_1() {
+  slice([1, 2, 3], 0, 2) == [1, 2, 3]
+}
+
+test slice_2() {
+  slice([1, 2, 3, 4, 5, 6], from: 2, to: 4) == [3, 4, 5]
+}
+
+test slice_3() {
+  slice([1, 2, 3, 4, 5, 6], from: -2, to: -1) == [5, 6]
+}
+
+test slice_4() {
+  slice([1, 2, 3, 4, 5, 6], from: 1, to: -1) == [2, 3, 4, 5, 6]
+}
+
+test slice_5() {
+  slice([1, 2, 3, 4, 5, 6], from: -4, to: -3) == [3, 4]
+}
+
+test slice_6() {
+  slice([1, 2, 3, 4, 5, 6], from: -2, to: 1) == []
+}
+
+/// Get elements of a list after the first one, if any.
+///
+/// ```aiken
+/// list.tail([]) == None
+/// list.tail([1, 2, 3]) == Some([2, 3])
+/// ```
 pub fn tail(self: List<a>) -> Option<List<a>> {
   when self is {
     [] -> None
@@ -627,6 +1014,11 @@ test tail_2() {
 }
 
 /// Get the first `n` elements of a list.
+///
+/// ```aiken
+/// list.take([1, 2, 3], 2) == [1, 2]
+/// list.take([1, 2, 3], 14) == [1, 2, 3]
+/// ```
 pub fn take(self: List<a>, n: Int) -> List<a> {
   if n <= 0 {
     []
@@ -646,13 +1038,47 @@ test take_2() {
   take([1, 2, 3], 2) == [1, 2]
 }
 
+/// Returns the longest prefix of the given list where all elements satisfy the predicate.
+///
+/// ```aiken
+/// list.take_while([1, 2, 3], fn(x) { x > 2 }) == []
+/// list.take_while([1, 2, 3], fn(x) { x < 2 }) == [1]
+/// ```
+pub fn take_while(self: List<a>, predicate: fn(a) -> Bool) -> List<a> {
+  when self is {
+    [] -> []
+    [x, ..xs] ->
+      if predicate(x) {
+        [x, ..take_while(xs, predicate)]
+      } else {
+        []
+      }
+  }
+}
+
+test take_while_1() {
+  take_while([], fn(x) { x > 2 }) == []
+}
+
+test take_while_2() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  take_while(xs, fn(x) { x > 5 }) == [10, 9, 8, 7, 6]
+}
+
+test take_while_3() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  take_while(xs, fn(x) { x == 42 }) == []
+}
+
+test take_while_4() {
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  take_while(xs, fn(x) { x < 42 }) == xs
+}
+
 /// Removes duplicate elements from a list.
 ///
 /// ```aiken
-/// use aiken/list
-///
-/// list.unique([1,2,3,1])
-/// // [1,2,3]
+/// list.unique([1, 2, 3, 1]) == [1, 2, 3]
 /// ```
 pub fn unique(self: List<a>) -> List<a> {
   when self is {
@@ -671,6 +1097,10 @@ test unique_2() {
 }
 
 /// Decompose a list of tuples into a tuple of lists.
+///
+/// ```
+/// list.unzip([(1, "a"), (2, "b")]) == ([1, 2], ["a", "b"])
+/// ```
 pub fn unzip(self: List<(a, b)>) -> (List<a>, List<b>) {
   when self is {
     [] -> ([], [])
@@ -692,6 +1122,10 @@ test unzip_2() {
 /// Combine two lists together.
 ///
 /// Note: if one list is longer, the extra elements are dropped.
+///
+/// ```aiken
+/// list.zip([1, 2], ["a", "b", "c"]) == [(1, "a"), (2, "b")]
+/// ```
 pub fn zip(self: List<a>, bs: List<b>) -> List<(a, b)> {
   when self is {
     [] -> []
