@@ -41,7 +41,7 @@ pub fn from_script(script: Hash<Blake2b_224, Script>) -> Address {
 /// or via a reference (i.e. a pointer to an on-chain location).
 ///
 /// This is mainly use for capturing pointers to a stake credential
-/// registration certificate in in the case of so-called pointer addresses.
+/// registration certificate in the case of so-called pointer addresses.
 pub type Referenced<a> {
   Inline(a)
   Pointer { slot_number: Int, transaction_index: Int, certificate_index: Int }
