@@ -1,5 +1,22 @@
 use aiken/builtin
 
+/// Compare two bytearrays lexicographically.
+///
+/// ```aiken
+/// bytearray.compare(#00, #FF) == Less
+/// bytearray.compare(#42, #42) == Equal
+/// bytearray.compare(#FF, #00) == Greater
+/// ```
+pub fn compare(left: ByteArray, right: ByteArray) -> Ordering {
+  if builtin.less_than_bytearray(left, right) {
+    Less
+  } else if builtin.equals_bytearray(left, right) {
+    Equal
+  } else {
+    Greater
+  }
+}
+
 /// Combine two `ByteArray` together.
 ///
 /// ```aiken

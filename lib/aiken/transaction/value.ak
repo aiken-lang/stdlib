@@ -1,3 +1,4 @@
+use aiken/bytearray
 use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/option
@@ -11,7 +12,7 @@ pub type PolicyId =
 /// possible to mint Ada!).
 ///
 /// By convention, it is an empty `ByteArray`.
-pub const ada_policy_id = #[]
+pub const ada_policy_id = #""
 
 /// A type-alias for 'AssetName`, which are free-form byte-arrays between
 /// 0 and 32 bytes.
@@ -22,7 +23,7 @@ pub type AssetName =
 /// possible to mint Ada!).
 ///
 /// By convention, it is an empty `ByteArray`.
-pub const ada_asset_name = #[]
+pub const ada_asset_name = #""
 
 /// A multi-asset output `Value`. Contains tokens indexed by [PolicyId](#PolicyId) and [AssetName](#AssetName).
 ///
@@ -46,9 +47,9 @@ pub fn from_asset(
 ) -> Value {
   let asset =
     dict.new()
-    |> dict.insert(asset_name, quantity)
+    |> dict.insert(asset_name, quantity, bytearray.compare)
   dict.new()
-  |> dict.insert(policy_id, asset)
+  |> dict.insert(policy_id, asset, bytearray.compare)
   |> Value
 }
 
@@ -78,9 +79,9 @@ test without_lovelace_2() {
 
 test without_lovelace_3() {
   let v =
-    from_asset(#[1, 2, 3], #[4, 5, 6], 100)
+    from_asset(#"010203", #"040506", 100)
     |> add(from_lovelace(100000000))
-  let v2 = from_asset(#[1, 2, 3], #[4, 5, 6], 100)
+  let v2 = from_asset(#"010203", #"040506", 100)
   without_lovelace(v) == without_lovelace(v2) && without_lovelace(v) == v2
 }
 
@@ -118,6 +119,7 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
               Some(q)
             }
           },
+          bytearray.compare,
         )
 
       if dict.is_empty(result) {
@@ -126,6 +128,7 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
         Some(result)
       }
     },
+    bytearray.compare,
   )
   |> Value
 }
@@ -137,22 +140,27 @@ test add_1() {
 }
 
 test add_2() {
-  let v1 = from_asset(#[0], #[], 1)
-  let v2 = from_asset(#[1], #[], 2)
-  let v3 = from_asset(#[2], #[], 3)
+  let v1 = from_asset(#"00", #"", 1)
+  let v2 = from_asset(#"01", #"", 2)
+  let v3 = from_asset(#"02", #"", 3)
   let v =
     from_lovelace(42)
     |> add(v3)
     |> add(v1)
     |> add(v2)
 
-  flatten(v) == [(#[], #[], 42), (#[0], #[], 1), (#[1], #[], 2), (#[2], #[], 3)]
+  flatten(v) == [
+    (#"", #"", 42),
+    (#"00", #"", 1),
+    (#"01", #"", 2),
+    (#"02", #"", 3),
+  ]
 }
 
 test add_3() {
-  let v1 = from_asset(#[0], #[], 1)
-  let v2 = from_asset(#[0], #[], -1)
-  let v3 = from_asset(#[1], #[], 1)
+  let v1 = from_asset(#"00", #"", 1)
+  let v2 = from_asset(#"00", #"", -1)
+  let v3 = from_asset(#"01", #"", 1)
 
   let v =
     zero()
@@ -160,7 +168,7 @@ test add_3() {
     |> add(v2)
     |> add(v3)
 
-  flatten(v) == [(#[1], #[], 1)]
+  flatten(v) == [(#"01", #"", 1)]
 }
 
 /// Flatten a value as list of 3-tuple (PolicyId, AssetName, Quantity).
