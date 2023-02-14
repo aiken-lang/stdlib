@@ -256,3 +256,28 @@ test is_none_1() {
 test is_none_2() {
   is_none(None) == True
 }
+
+/// Filters option with a given predicate
+fn filter(self: Option<a>, predicate: fn(a) -> Bool) -> Option<a> {
+  when self is {
+    Some(x) ->
+      if predicate(x) {
+        Some(x)
+      } else {
+        None
+      }
+    None -> None
+  }
+}
+
+test filter_1() {
+  let opt = Some(1)
+
+  filter(opt, fn(x) { x == 1 }) == Some(1)
+}
+
+test filter_2() {
+  let opt = Some(0)
+
+  filter(opt, fn(x) { x == 1 }) == None
+}
