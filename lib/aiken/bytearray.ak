@@ -116,11 +116,11 @@ pub fn from_string(str: String) -> ByteArray {
 }
 
 test from_string_1() {
-  from_string("") == #""
+  from_string(@"") == ""
 }
 
 test from_string_2() {
-  from_string("ABC") == #"414243"
+  from_string(@"ABC") == #"414243"
 }
 
 /// Add a byte element in front of a `ByteArray`. When the given byte is
@@ -137,16 +137,16 @@ pub fn push(self: ByteArray, byte: Int) -> ByteArray {
 }
 
 test push_1() {
-  push(#"", 0) == #"00"
+  push(#[], 0) == #[0]
 }
 
 test push_2() {
-  push(#"0203", 1) == #"010203"
+  push(#[2, 3], 1) == #[1, 2, 3]
 }
 
 test push_3() {
   let x = 257
-  push(#"0203", x) == #"010203"
+  push(#[2, 3], x) == #[1, 2, 3]
 }
 
 /// Extract a `ByteArray` as a slice of another `ByteArray`.
@@ -211,9 +211,9 @@ pub fn to_string(self: ByteArray) -> String {
 }
 
 test to_string_1() {
-  to_string(#"") == ""
+  to_string("") == @""
 }
 
 test to_string_2() {
-  to_string(#"414243") == "ABC"
+  to_string("ABC") == @"ABC"
 }

@@ -16,15 +16,15 @@ pub fn concat(left: String, right: String) -> String {
 }
 
 test concat_1() {
-  concat("", "") == ""
+  concat(@"", @"") == @""
 }
 
 test concat_2() {
-  concat("", "foo") == concat("foo", "")
+  concat(@"", @"foo") == concat(@"foo", @"")
 }
 
 test concat_3() {
-  concat(left: "Hello", right: ", World!") == "Hello, World!"
+  concat(left: @"Hello", right: @", World!") == @"Hello, World!"
 }
 
 /// Convert a `ByteArray` into a `String`
@@ -33,11 +33,15 @@ pub fn from_bytearray(bytes: ByteArray) -> String {
 }
 
 test from_bytearray_1() {
-  from_bytearray(#[]) == ""
+  from_bytearray(#[]) == @""
 }
 
 test from_bytearray_2() {
-  from_bytearray(#[65, 66, 67]) == "ABC"
+  from_bytearray(#[65, 66, 67]) == @"ABC"
+}
+
+test from_bytearray_3() {
+  from_bytearray("ABC") == @"ABC"
 }
 
 /// Convert an `Int` to its `String` representation.
@@ -67,19 +71,19 @@ fn do_from_int(i: Int, digits: ByteArray) -> ByteArray {
 }
 
 test from_int_1() {
-  from_int(0) == "0"
+  from_int(0) == @"0"
 }
 
 test from_int_2() {
-  from_int(5) == "5"
+  from_int(5) == @"5"
 }
 
 test from_int_3() {
-  from_int(42) == "42"
+  from_int(42) == @"42"
 }
 
 test from_int_4() {
-  from_int(200) == "200"
+  from_int(200) == @"200"
 }
 
 /// Join a list of strings, separated by a given _delimiter_.
@@ -112,11 +116,11 @@ fn do_join(xs, delimiter, bytes) {
 }
 
 test join_1() {
-  join([], ",") == ""
+  join([], @",") == @""
 }
 
 test join_2() {
-  join(["a", "b", "c"], ",") == "a,b,c"
+  join([@"a", @"b", @"c"], @",") == @"a,b,c"
 }
 
 /// Convert a `String` into a `ByteArray`
@@ -125,9 +129,13 @@ pub fn to_bytearray(self: String) -> ByteArray {
 }
 
 test to_bytearray_1() {
-  to_bytearray("") == #[]
+  to_bytearray(@"") == ""
 }
 
 test to_bytearray_2() {
-  to_bytearray("ABC") == #[65, 66, 67]
+  to_bytearray(@"ABC") == #[65, 66, 67]
+}
+
+test to_bytearray_3() {
+  to_bytearray(@"ABC") == "ABC"
 }
