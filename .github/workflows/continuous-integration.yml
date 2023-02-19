@@ -33,7 +33,7 @@ jobs:
       uses: actions/configure-pages@v2
 
     - name: 🧰 Install Aiken
-      run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git
+      run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git --branch string-and-bytearray-literals-iteration
 
     - name: 🔬 Run tests
       run: aiken check
