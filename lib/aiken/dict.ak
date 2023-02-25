@@ -10,8 +10,8 @@ use aiken/bytearray
 /// invariant, namely: there's only one occurence of a given key in the dictionnary.
 ///
 /// Note that the `key` parameter is a phantom-type, and only present as a
-/// means of documentation. Keys are always `ByteArray`, but can be given
-/// meaningful names.
+/// means of documentation. Keys can be any type, yet will need to comparable
+/// to use functions like `insert`.
 ///
 /// See for example:
 ///
