@@ -1,18 +1,16 @@
 use aiken/builtin.{
-  append_bytearray, decode_utf8, encode_utf8, length_of_bytearray,
+  append_bytearray, append_string, decode_utf8, encode_utf8, length_of_bytearray,
 }
+use aiken/cbor
 
 /// Combine two `String` together.
 ///
 /// ```aiken
-/// use aiken.string
-///
 /// string.concat(left: "Hello", right: ", World!")
 /// // "Hello, World!"
 /// ```
 pub fn concat(left: String, right: String) -> String {
-  append_bytearray(encode_utf8(left), encode_utf8(right))
-  |> decode_utf8
+  append_string(left, right)
 }
 
 test concat_1() {
@@ -53,21 +51,7 @@ test from_bytearray_3() {
 /// // "42"
 /// ```
 pub fn from_int(n: Int) -> String {
-  from_bytearray(do_from_int(n, #[]))
-}
-
-fn do_from_int(i: Int, digits: ByteArray) -> ByteArray {
-  if i == 0 {
-    if builtin.length_of_bytearray(digits) == 0 {
-      #[48]
-    } else {
-      digits
-    }
-  } else {
-    let r = builtin.remainder_integer(i, 10)
-    let q = builtin.quotient_integer(i, 10)
-    do_from_int(q, builtin.cons_bytearray(r + 48, digits))
-  }
+  cbor.diagnostic(n)
 }
 
 test from_int_1() {
@@ -95,7 +79,7 @@ test from_int_4() {
 /// // "a,b,c"
 /// ```
 pub fn join(list: List<String>, delimiter: String) -> String {
-  do_join(list, encode_utf8(delimiter), #[])
+  do_join(list, encode_utf8(delimiter), #"")
   |> decode_utf8
 }
 
