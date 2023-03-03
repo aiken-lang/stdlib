@@ -118,3 +118,106 @@ test min_2() {
 test min_3() {
   min(42, 14) == 14
 }
+
+/// Calculates x to the power of n using the exponentiation by squaring method.
+/// This power function is designed for Plutus.
+///
+/// ```aiken
+/// use aiken/math
+///
+/// math.pow(513, 3)
+/// // 135005697
+/// ```
+pub fn pow(x: Int, n: Int) -> Int {
+  if n < 0 {
+    0
+  } else if n == 0 {
+    1
+  } else if n % 2 == 0 {
+    pow(x * x, n / 2)
+  } else {
+    x * pow(x * x, ( n - 1 ) / 2)
+  }
+}
+
+test pow_3_5() {
+  pow(3, 5) == 243
+}
+
+test pow_7_2() {
+  pow(7, 2) == 49
+}
+
+test pow_3__4() {
+  // negative powers round to zero
+  pow(3, -4) == 0
+}
+
+test pow_0_0() {
+  // sorry math
+  pow(0, 0) == 1
+}
+
+/// Calculates the x to the power of n modulo q.
+///
+/// ```aiken
+/// use aiken/math
+///
+/// math.powmod(1425, 2434, 71)
+/// // 57
+/// ```
+pub fn powmod(x: Int, n: Int, q: Int) -> Int {
+  if q <= 0 {
+    0
+  } else {
+    pow(x, n) % q
+  }
+}
+
+test powmod_131_4_3() {
+  powmod(131, 4, 3) == 1
+}
+
+test powmod_13_34_0() {
+  powmod(13, 34, 0) == 0
+}
+
+test powmod_1425_2434_71() {
+  powmod(1425, 2434, 71) == 57
+}
+
+/// The log of x in base b for plutus. This is the integer division version.
+///
+/// ```aiken
+/// use aiken/math
+///
+/// log_x_in_base_b(42, 3)
+/// // 3
+/// ```
+pub fn log_x_in_base_b(x: Int, b: Int) -> Int {
+  if b <= 0 {
+    0
+  } else if x == b {
+    1
+  } else if x < b {
+    0
+  } else {
+    1 + log_x_in_base_b(x / b, b)
+  }
+}
+
+test log_5_0() {
+  log_x_in_base_b(5, 0) == 0
+}
+
+test log_4_4() {
+  log_x_in_base_b(4, 4) == 1
+}
+
+test log_4_43() {
+  log_x_in_base_b(4, 43) == 0
+}
+
+test log_42_3() {
+  log_x_in_base_b(42, 3) == 3
+}
