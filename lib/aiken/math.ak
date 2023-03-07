@@ -21,13 +21,8 @@
 /// Calculate the absolute value of an integer.
 ///
 /// ```aiken
-/// use aiken/math
-///
-/// math.abs(-42)
-/// // 42
-///
-/// math.abs(14)
-/// // 14
+/// math.abs(-42) == 42
+/// math.abs(14) == 14
 /// ```
 pub fn abs(self: Int) -> Int {
   if self < 0 {
@@ -48,10 +43,7 @@ test abs_2() {
 /// Restrict the value of an integer between two min and max bounds
 ///
 /// ```aiken
-/// use aiken/math
-///
-/// math.clamp(14, min: 0, max: 10)
-/// // 10
+/// math.clamp(14, min: 0, max: 10) == 10
 /// ```
 pub fn clamp(self: Int, min: Int, max: Int) -> Int {
   if self < min {
@@ -119,24 +111,25 @@ test min_3() {
   min(42, 14) == 14
 }
 
-/// Calculates x to the power of n using the exponentiation by squaring method.
-/// This power function is designed for Plutus.
+/// Calculates a number to the power of `e` using the exponentiation by
+/// squaring method.
 ///
 /// ```aiken
-/// use aiken/math
-///
-/// math.pow(513, 3)
-/// // 135005697
+/// math.pow(3, 5) = 243
+/// math.pow(7, 2) = 49
+/// math.pow(3, -4) = 0
+/// math.pow(0, 0) = 1
+/// math.pow(513, 3) == 135005697
 /// ```
-pub fn pow(x: Int, n: Int) -> Int {
-  if n < 0 {
+pub fn pow(self: Int, e: Int) -> Int {
+  if e < 0 {
     0
-  } else if n == 0 {
+  } else if e == 0 {
     1
-  } else if n % 2 == 0 {
-    pow(x * x, n / 2)
+  } else if e % 2 == 0 {
+    pow(self * self, e / 2)
   } else {
-    x * pow(x * x, ( n - 1 ) / 2)
+    self * pow(self * self, ( e - 1 ) / 2)
   }
 }
 
@@ -158,66 +151,52 @@ test pow_0_0() {
   pow(0, 0) == 1
 }
 
-/// Calculates the x to the power of n modulo q.
+test pow_513_3() {
+  pow(513, 3) == 135005697
+}
+
+/// The logarithm in base `b` of an element using integer divisions.
 ///
 /// ```aiken
-/// use aiken/math
-///
-/// math.powmod(1425, 2434, 71)
-/// // 57
+/// math.log(10, base: 2) == 3
+/// math.log(42, base: 2) == 5
+/// math.log(42, base: 3) == 3
+/// math.log(5, base: 0) == 0
+/// math.log(4, base: 4) == 1
+/// math.log(4, base: 42) == 0
 /// ```
-pub fn powmod(x: Int, n: Int, q: Int) -> Int {
-  if q <= 0 {
+pub fn log(self: Int, base: Int) -> Int {
+  if base <= 0 {
     0
-  } else {
-    pow(x, n) % q
-  }
-}
-
-test powmod_131_4_3() {
-  powmod(131, 4, 3) == 1
-}
-
-test powmod_13_34_0() {
-  powmod(13, 34, 0) == 0
-}
-
-test powmod_1425_2434_71() {
-  powmod(1425, 2434, 71) == 57
-}
-
-/// The log of x in base b for plutus. This is the integer division version.
-///
-/// ```aiken
-/// use aiken/math
-///
-/// log_x_in_base_b(42, 3)
-/// // 3
-/// ```
-pub fn log_x_in_base_b(x: Int, b: Int) -> Int {
-  if b <= 0 {
-    0
-  } else if x == b {
+  } else if self == base {
     1
-  } else if x < b {
+  } else if self < base {
     0
   } else {
-    1 + log_x_in_base_b(x / b, b)
+    1 + log(self / base, base)
   }
 }
 
-test log_5_0() {
-  log_x_in_base_b(5, 0) == 0
+test log_10_2() {
+  log(10, base: 2) == 3
 }
 
-test log_4_4() {
-  log_x_in_base_b(4, 4) == 1
-}
-
-test log_4_43() {
-  log_x_in_base_b(4, 43) == 0
+test log_42_2() {
+  log(42, base: 2) == 5
 }
 
 test log_42_3() {
-  log_x_in_base_b(42, 3) == 3
+  log(42, base: 3) == 3
+}
+
+test log_5_0() {
+  log(5, base: 0) == 0
+}
+
+test log_4_4() {
+  log(4, base: 4) == 1
+}
+
+test log_4_43() {
+  log(4, base: 43) == 0
 }
