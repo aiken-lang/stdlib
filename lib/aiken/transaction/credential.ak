@@ -21,7 +21,7 @@ pub type Address {
   stake_credential: Option<StakeCredential>,
 }
 
-/// Smart-constructor for an `Address` from a verification key hash. The address has no delegation rights whatsoever.
+/// Smart-constructor for an [Address](#Address) from a [verification key](#VerificationKey) hash. The resulting address has no delegation rights whatsoever.
 pub fn from_verification_key(vk: Hash<Blake2b_224, VerificationKey>) -> Address {
   Address {
     payment_credential: VerificationKeyCredential(vk),
@@ -29,11 +29,33 @@ pub fn from_verification_key(vk: Hash<Blake2b_224, VerificationKey>) -> Address 
   }
 }
 
-/// Smart-constructor for an `Address` from a script hash. The address has no delegation rights whatsoever.
+/// Smart-constructor for an [Address](#Address) from a [script](#Script) hash. The address has no delegation rights whatsoever.
 pub fn from_script(script: Hash<Blake2b_224, Script>) -> Address {
   Address {
     payment_credential: ScriptCredential(script),
     stake_credential: None,
+  }
+}
+
+/// Set (or reset) the delegation part of an [Address](#Address) using a [verification key](#VerificationKey) hash. This is useful when combined with [`from_verification_key`](#from_verification_key) and/or [`from_script`](#from_script).
+pub fn with_delegation_key(
+  self: Address,
+  vk: Hash<Blake2b_224, VerificationKey>,
+) -> Address {
+  Address {
+    payment_credential: self.payment_credential,
+    stake_credential: Some(Inline(VerificationKeyCredential(vk))),
+  }
+}
+
+/// Set (or reset) the delegation part of an [Address](#Address) using a [script](#Script) hash. This is useful when combined with [`from_verification_key`](#from_verification_key) and/or [`from_script`](#from_script).
+pub fn with_delegation_script(
+  self: Address,
+  script: Hash<Blake2b_224, Script>,
+) -> Address {
+  Address {
+    payment_credential: self.payment_credential,
+    stake_credential: Some(Inline(ScriptCredential(script))),
   }
 }
 

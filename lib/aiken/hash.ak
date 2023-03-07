@@ -53,7 +53,6 @@ pub opaque type Blake2b_224 {
 /// Typically used for:
 ///
 /// - [`TransactionId`](../aiken/transaction.html#TransactionId)
-///
 pub opaque type Blake2b_256 {
   Blake2b_256
 }
