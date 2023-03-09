@@ -106,114 +106,106 @@ pub fn diagnostic(self: Data) -> String {
 /// | {      | 123     | 0x7b |
 /// | }      | 125     | 0x7d |
 fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
-  // NOTE: These steps could be simplified and made more readable if
-  // `choose_data` is made lazy in its arguments. This function is already a
-  // little akward anyway, so it may as well have a special semantic.
-  //
-  // Ideally, we would rather write:
-  //
-  // ```aiken
-  // choose_data(
-  //   self,
-  //   diagnostic_constr(self),
-  //   diagnostic_map(self),
-  //   diagnostic_list(self),
-  //   diagnostic_int(self),
-  //   diagnostic_bytearray(self),
-  // )
-  // ```
-  //
-  // but since 4 of these 5 sub-calls will always return an error term, we can't
-  // write that without deferring their evaluation.
-  //
-  // See: [aiken-lang/aiken#388](https://github.com/aiken-lang/aiken/pull/388)
-  let kind = choose_data(self, 1, 2, 3, 4, 5)
-  if kind == 1 {
-    // constr
+  choose_data(
+    self,
+    {
+      // -------- Constr
 
-    // NOTE: [aiken-lang/aiken#387](https://github.com/aiken-lang/aiken/pull/387)
-    let (constr, fields) = un_constr_data(self)
+      let (constr, fields) = un_constr_data(self)
 
-    // NOTE: This is fundamentally the same logic for serializing list. However, the compiler
-    // doesn't support mutual recursion just yet, so we can't extract that logic in a separate
-    // function.
-    //
-    // See [aiken-lang/aiken#389](https://github.com/aiken-lang/aiken/pull/389)
-    let builder = when fields is {
-      [] -> append_bytearray(#"5b5d29", builder)
-      _ -> {
-        let (_, bytes) =
-          list.foldr(
-            fields,
-            fn(e: Data, st: (Int, ByteArray)) {
-              (44, do_diagnostic(e, cons_bytearray(st.1st, st.2nd)))
-            },
-            (93, append_bytearray(#"29", builder)),
-          )
-        append_bytearray(#"5b", bytes)
-      }
-    }
-
-    let constr_tag =
-      if constr < 7 {
-        121 + constr
-      } else if constr < 128 {
-        1280 + constr - 7
-      } else {
-        error @"What are you doing? No I mean, seriously."
+      // NOTE: This is fundamentally the same logic for serializing list. However, the compiler
+      // doesn't support mutual recursion just yet, so we can't extract that logic in a separate
+      // function.
+      //
+      // See [aiken-lang/aiken#389](https://github.com/aiken-lang/aiken/pull/389)
+      let builder = when fields is {
+        [] -> append_bytearray(#"5b5d29", builder)
+        _ -> {
+          let (_, bytes) =
+            list.foldr(
+              fields,
+              fn(e: Data, st: (Int, ByteArray)) {
+                (44, do_diagnostic(e, cons_bytearray(st.1st, st.2nd)))
+              },
+              (93, append_bytearray(#"29", builder)),
+            )
+          append_bytearray(#"5b", bytes)
+        }
       }
 
-    builder
-    |> append_bytearray(#"28", _)
-    |> from_int(constr_tag, _)
-  } else if kind == 4 {
-    // integer
-    from_int(un_i_data(self), builder)
-  } else if kind == 5 {
-    // bytearray
-    let bytes = un_b_data(self)
-    bytes
-    |> encode_base16(
-      length_of_bytearray(bytes) - 1,
-      append_bytearray(#[39], builder),
-    )
-    |> append_bytearray(#"6827", _)
-  } else if kind == 3 {
-    // list
-    let elems = un_list_data(self)
-    when elems is {
-      [] -> append_bytearray(#"5b5d", builder)
-      _ -> {
-        let (_, bytes) =
-          list.foldr(
-            elems,
-            fn(e: Data, st: (ByteArray, ByteArray)) {
-              (#"2c20", do_diagnostic(e, append_bytearray(st.1st, st.2nd)))
-            },
-            (#"5d", builder),
-          )
-        append_bytearray(#[91], bytes)
+      let constr_tag =
+        if constr < 7 {
+          121 + constr
+        } else if constr < 128 {
+          1280 + constr - 7
+        } else {
+          error @"What are you doing? No I mean, seriously."
+        }
+
+      builder
+      |> append_bytearray(#"28", _)
+      |> from_int(constr_tag, _)
+    },
+    {
+      // -------- Map
+
+      let elems = un_map_data(self)
+      when elems is {
+        [] -> append_bytearray(#"7b7d", builder)
+        _ -> {
+          let (_, bytes) =
+            list.foldr(
+              elems,
+              fn(e: (Data, Data), st: (ByteArray, ByteArray)) {
+                let value =
+                  do_diagnostic(e.2nd, append_bytearray(st.1st, st.2nd))
+                (
+                  #"2c20",
+                  do_diagnostic(e.1st, append_bytearray(#"3a20", value)),
+                )
+              },
+              (#"207d", builder),
+            )
+          append_bytearray(#"7b20", bytes)
+        }
       }
-    }
-  } else {
-    // map
-    let elems = un_map_data(self)
-    when elems is {
-      [] -> append_bytearray(#"7b7d", builder)
-      _ -> {
-        let (_, bytes) =
-          list.foldr(
-            elems,
-            fn(e: (Data, Data), st: (ByteArray, ByteArray)) {
-              let value = do_diagnostic(e.2nd, append_bytearray(st.1st, st.2nd))
-              (#"2c20", do_diagnostic(e.1st, append_bytearray(#"3a20", value)))
-            },
-            (#"207d", builder),
-          )
-        append_bytearray(#"7b20", bytes)
+    },
+    {
+      // -------- List
+
+      let elems = un_list_data(self)
+      when elems is {
+        [] -> append_bytearray(#"5b5d", builder)
+        _ -> {
+          let (_, bytes) =
+            list.foldr(
+              elems,
+              fn(e: Data, st: (ByteArray, ByteArray)) {
+                (#"2c20", do_diagnostic(e, append_bytearray(st.1st, st.2nd)))
+              },
+              (#"5d", builder),
+            )
+          append_bytearray(#[91], bytes)
+        }
       }
-    }
-  }
+    },
+    // -------- Integer
+    self
+    |> un_i_data
+    |> from_int(builder),
+    {
+      // -------- ByteArray
+
+      let bytes = un_b_data(self)
+
+      bytes
+      |> encode_base16(
+        length_of_bytearray(bytes) - 1,
+        append_bytearray(#[39], builder),
+      )
+      |> append_bytearray(#"6827", _)
+    },
+  )
 }
 
 fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
