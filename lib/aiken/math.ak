@@ -1,13 +1,13 @@
 //// This module contains some basic Math utilities. Standard arithmetic
 //// operations on integers are available through native operators:
 ////
-//// operator | Description
-//// ---      | ---
-//// +        | Arithmetic sum
-//// -        | Arithmetic difference
-//// /        | Whole division
-//// *        | Arithmetic multiplication
-//// %        | Remainder by whole division
+//// Operator | Description
+//// ---      | :---
+//// `+`      | Arithmetic sum
+//// `-`      | Arithmetic difference
+//// `/`      | Whole division
+//// `*`      | Arithmetic multiplication
+//// `%`      | Remainder by whole division
 ////
 //// Here are a few examples:
 ////
