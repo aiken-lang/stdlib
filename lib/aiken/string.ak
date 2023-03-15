@@ -6,8 +6,7 @@ use aiken/cbor
 /// Combine two `String` together.
 ///
 /// ```aiken
-/// string.concat(left: "Hello", right: ", World!")
-/// // "Hello, World!"
+/// string.concat(left: "Hello", right: ", World!") == @"Hello, World!"
 /// ```
 pub fn concat(left: String, right: String) -> String {
   append_string(left, right)
@@ -26,6 +25,11 @@ test concat_3() {
 }
 
 /// Convert a `ByteArray` into a `String`
+///
+/// ```aiken
+/// string.from_bytearray("foo") == @"foo"
+/// string.from_bytearray(#"666f6f") == @"foo"
+/// ```
 pub fn from_bytearray(bytes: ByteArray) -> String {
   decode_utf8(bytes)
 }
@@ -45,10 +49,7 @@ test from_bytearray_3() {
 /// Convert an `Int` to its `String` representation.
 ///
 /// ```aiken
-/// use builtin/string
-///
-/// string.from_int(42)
-/// // "42"
+/// string.from_int(42) == @"42"
 /// ```
 pub fn from_int(n: Int) -> String {
   cbor.diagnostic(n)
@@ -73,14 +74,12 @@ test from_int_4() {
 /// Join a list of strings, separated by a given _delimiter_.
 ///
 /// ```aiken
-/// use aiken/string
-///
-/// string.join(["a", "b", "c"], ",")
-/// // "a,b,c"
+/// string.join([], "+") == @""
+/// string.join([@"a", @"b", @"c"], ",") == @"a,b,c"
 /// ```
 pub fn join(list: List<String>, delimiter: String) -> String {
   do_join(list, encode_utf8(delimiter), #"")
-  |> decode_utf8
+    |> decode_utf8
 }
 
 fn do_join(xs, delimiter, bytes) {
@@ -108,6 +107,10 @@ test join_2() {
 }
 
 /// Convert a `String` into a `ByteArray`
+///
+/// ```aiken
+/// string.to_bytearray(@"foo") == "foo"
+/// ```
 pub fn to_bytearray(self: String) -> ByteArray {
   encode_utf8(self)
 }
