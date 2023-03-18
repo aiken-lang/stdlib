@@ -9,7 +9,6 @@ and aliases that make using Aiken a bliss.
 ```aiken
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
-use aiken/string
 use aiken/transaction.{ScriptContext}
 use aiken/transaction/credential.{VerificationKey}
 
@@ -27,12 +26,16 @@ pub type Redeemer {
 /// - The spender is expected to provide a signature, and the string 'Hello, World!' as message
 /// - The signature is implicitly verified by the ledger, and included as 'extra_signatories'
 ///
-pub fn spend(datum: Datum, redeemer: Redeemer, context: ScriptContext) -> Bool {
-  let must_say_hello = string.from_bytearray(redeemer.msg) == "Hello, World!"
-  let must_be_signed =
-    context.transaction.extra_signatories
-    |> list.any(fn(vkh: ByteArray) { vkh == datum.owner })
+validator {
+  fn spend(datum: Datum, redeemer: Redeemer, context: ScriptContext) -> Bool {
+    let must_say_hello =
+      redeemer.msg == "Hello, World!"
 
-  must_say_hello && must_be_signed
+    let must_be_signed =
+      context.transaction.extra_signatories
+        |> list.any(fn(vkh: ByteArray) { vkh == datum.owner })
+
+    must_say_hello && must_be_signed
+  }
 }
 ```
