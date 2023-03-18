@@ -1,9 +1,13 @@
+use aiken/cbor
 use aiken/dict.{Dict}
-use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
+use aiken/hash.{Blake2b_224, Blake2b_256, Hash, blake2b_256}
 use aiken/interval.{Interval}
+use aiken/list
+use aiken/option
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Script, StakeCredential, VerificationKey,
+  Address, Script, ScriptCredential, StakeCredential, VerificationKey,
+  VerificationKeyCredential,
 }
 use aiken/transaction/value.{PolicyId, Value}
 
@@ -109,3 +113,77 @@ pub type Datum {
 /// parse it into its expected form.
 pub type Redeemer =
   Data
+
+/// Find an input by its [`OutputReference`](#OutputReference). This is typically used in
+/// combination with the `Spend` [`ScriptPurpose`](#ScriptPurpose) to find a script's own
+/// input.
+///
+/// ```aiken
+/// validator {
+///   fn(datum, redeemer, ctx: ScriptContext) {
+///     expect Spend(my_output_reference) =
+///       ctx.purpose
+///
+///     expect Some(input) =
+///       ctx.transaction
+///         |> transaction.find_input(my_output_reference)
+///   }
+/// }
+/// ```
+pub fn find_input(
+  transaction: Transaction,
+  output_reference: OutputReference,
+) -> Option<Input> {
+  transaction.inputs
+    |> list.find(fn(input) { input.output_reference == output_reference })
+}
+
+/// Find a [`Datum`](#Datum) by its hash, if present. The function looks first for
+/// datums in the witness set, and then for inline datums if it doesn't find any in
+/// witnesses.
+pub fn find_datum(
+  transaction: Transaction,
+  datum_hash: Hash<Blake2b_256, Data>,
+) -> Option<Data> {
+  transaction.datums
+    |> dict.get(datum_hash)
+    |> option.or_try(
+    fn(_) {
+      transaction.outputs
+        |> list.filter_map(
+        fn(output) {
+          when output.datum is {
+            InlineDatum(data) ->
+              if blake2b_256(cbor.serialise(data)) == datum_hash {
+                Some(data)
+              } else {
+                None
+              }
+            _ ->
+              None
+          }
+        },
+      )
+        |> list.head
+    },
+  )
+}
+
+/// Find all outputs that are paying into the given script hash, if any. This is useful for
+/// contracts running over multiple transactions.
+pub fn find_script_outputs(
+  transaction: Transaction,
+  script_hash: Hash<Blake2b_224, VerificationKey>,
+) -> List<Output> {
+  transaction.outputs
+    |> list.filter(
+    fn(output) {
+      when output.address.payment_credential is {
+        ScriptCredential(addr_script_hash) ->
+          script_hash == addr_script_hash
+        VerificationKeyCredential(_) ->
+          False
+      }
+    },
+  )
+}

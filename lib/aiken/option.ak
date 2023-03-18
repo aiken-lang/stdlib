@@ -55,6 +55,32 @@ test or_else_2() {
   or_else(Some(42), 14) == 42
 }
 
+/// Like [`or_else`](#or_else) but allows returning an `Option`.
+/// This is effectively mapping the error branch.
+///
+/// ```aiken
+///
+/// ```
+pub fn or_try(
+  self: Option<a>,
+  compute_default: fn(Void) -> Option<a>,
+) -> Option<a> {
+  when self is {
+    None ->
+      compute_default(Void)
+    _ ->
+      self
+  }
+}
+
+test or_try_1() {
+  or_try(None, fn(_) { Some("aiken") }) == Some("aiken")
+}
+
+test or_try_2() {
+  or_try(Some(42), fn(_) { error }) == Some(42)
+}
+
 /// Apply a function to the inner value of an Option
 pub fn map(self: Option<a>, with: fn(a) -> result) -> Option<result> {
   when self is {
