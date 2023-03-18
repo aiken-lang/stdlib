@@ -54,9 +54,12 @@ pub fn max(
   right: IntervalBound<Int>,
 ) -> IntervalBound<Int> {
   when compare_bound(left, right) is {
-    Less -> right
-    Equal -> left
-    Greater -> left
+    Less ->
+      right
+    Equal ->
+      left
+    Greater ->
+      left
   }
 }
 
@@ -66,9 +69,12 @@ pub fn min(
   right: IntervalBound<Int>,
 ) -> IntervalBound<Int> {
   when compare_bound(left, right) is {
-    Less -> left
-    Equal -> left
-    Greater -> right
+    Less ->
+      left
+    Equal ->
+      left
+    Greater ->
+      right
   }
 }
 
@@ -77,8 +83,10 @@ fn compare_bound(
   right: IntervalBound<Int>,
 ) -> Ordering {
   when compare_bound_type(left.bound_type, right.bound_type) is {
-    Less -> Less
-    Greater -> Greater
+    Less ->
+      Less
+    Greater ->
+      Greater
     Equal ->
       if left.is_inclusive == right.is_inclusive {
         Equal
@@ -106,18 +114,24 @@ fn compare_bound_type(
   when left is {
     NegativeInfinity ->
       when right is {
-        NegativeInfinity -> Equal
-        _ -> Less
+        NegativeInfinity ->
+          Equal
+        _ ->
+          Less
       }
     PositiveInfinity ->
       when right is {
-        PositiveInfinity -> Equal
-        _ -> Greater
+        PositiveInfinity ->
+          Equal
+        _ ->
+          Greater
       }
     Finite(left) ->
       when right is {
-        NegativeInfinity -> Greater
-        PositiveInfinity -> Less
+        NegativeInfinity ->
+          Greater
+        PositiveInfinity ->
+          Less
         Finite(right) ->
           if left < right {
             Less
@@ -149,88 +163,106 @@ fn compare_bound_type(
 /// contains(iv, 42) // False
 /// ```
 pub fn contains(self: Interval<Int>, elem: Int) -> Bool {
-  let is_greater_than_lower_bound = when self.lower_bound.bound_type is {
-    NegativeInfinity -> True
-    Finite(lower_bound) ->
-      if self.lower_bound.is_inclusive {
-        elem >= lower_bound
-      } else {
-        elem > lower_bound
-      }
-    PositiveInfinity -> False
-  }
+  let is_greater_than_lower_bound =
+    when self.lower_bound.bound_type is {
+      NegativeInfinity ->
+        True
+      Finite(lower_bound) ->
+        if self.lower_bound.is_inclusive {
+          elem >= lower_bound
+        } else {
+          elem > lower_bound
+        }
+      PositiveInfinity ->
+        False
+    }
 
-  let is_smaller_than_upper_bound = when self.upper_bound.bound_type is {
-    NegativeInfinity -> False
-    Finite(upper_bound) ->
-      if self.upper_bound.is_inclusive {
-        elem <= upper_bound
-      } else {
-        elem < upper_bound
-      }
-    PositiveInfinity -> True
-  }
+  let is_smaller_than_upper_bound =
+    when self.upper_bound.bound_type is {
+      NegativeInfinity ->
+        False
+      Finite(upper_bound) ->
+        if self.upper_bound.is_inclusive {
+          elem <= upper_bound
+        } else {
+          elem < upper_bound
+        }
+      PositiveInfinity ->
+        True
+    }
 
   is_greater_than_lower_bound && is_smaller_than_upper_bound
 }
 
 test contains_1() {
-  let iv = everything()
+  let iv =
+    everything()
   contains(iv, 14)
 }
 
 test contains_2() {
-  let iv = strictly_before(15)
+  let iv =
+    strictly_before(15)
   contains(iv, 14)
 }
 
 test contains_3() {
-  let iv = before(14)
+  let iv =
+    before(14)
   contains(iv, 14)
 }
 
 test contains_4() {
-  let iv = strictly_before(14)
+  let iv =
+    strictly_before(14)
   !contains(iv, 14)
 }
 
 test contains_5() {
-  let iv = strictly_after(13)
+  let iv =
+    strictly_after(13)
   contains(iv, 14)
 }
 
 test contains_6() {
-  let iv = after(14)
+  let iv =
+    after(14)
   contains(iv, 14)
 }
 
 test contains_7() {
-  let iv = strictly_after(14)
+  let iv =
+    strictly_after(14)
   !contains(iv, 14)
 }
 
 test contains_8() {
-  let iv = between(42, 1337)
+  let iv =
+    between(42, 1337)
   !contains(iv, 14)
 }
 
 test contains_9() {
-  let iv = between(0, 42)
+  let iv =
+    between(0, 42)
   contains(iv, 14)
 }
 
 test contains_10() {
-  let iv = between(0, 42)
+  let iv =
+    between(0, 42)
   contains(iv, 42)
 }
 
 test contains_11() {
-  let iv = strictly_between(0, 42)
+  let iv =
+    strictly_between(0, 42)
   !contains(iv, 0)
 }
 
 test contains_12() {
-  let iv = empty()
+  let iv =
+    empty()
   !contains(iv, 14)
 }
 
@@ -352,8 +384,10 @@ pub fn is_empty(self: Interval<Int>) -> Bool {
     compare_bound_type(self.lower_bound.bound_type, self.upper_bound.bound_type)
 
   when ordering is {
-    Greater -> True
-    Equal -> !(self.lower_bound.is_inclusive && self.upper_bound.is_inclusive)
+    Greater ->
+      True
+    Equal ->
+      !(self.lower_bound.is_inclusive && self.upper_bound.is_inclusive)
     Less -> {
       let is_open_interval =
         !self.lower_bound.is_inclusive && !self.upper_bound.is_inclusive
@@ -361,7 +395,8 @@ pub fn is_empty(self: Interval<Int>) -> Bool {
         when (self.lower_bound.bound_type, self.upper_bound.bound_type) is {
           (Finite(lower_bound), Finite(upper_bound)) ->
             lower_bound + 1 == upper_bound
-          _ -> False
+          _ ->
+            False
         }
       } else {
         False
@@ -395,40 +430,52 @@ pub fn intersection(iv1: Interval<Int>, iv2: Interval<Int>) -> Interval<Int> {
 }
 
 test intersection_1() {
-  let iv1 = between(0, 10)
-  let iv2 = between(2, 14)
+  let iv1 =
+    between(0, 10)
+  let iv2 =
+    between(2, 14)
   intersection(iv1, iv2) == between(2, 10)
 }
 
 test intersection_2() {
-  let iv1 = between(0, 1)
-  let iv2 = between(1, 2)
+  let iv1 =
+    between(0, 1)
+  let iv2 =
+    between(1, 2)
   intersection(iv1, iv2) == between(1, 1)
 }
 
 test intersection_3() {
-  let iv1 = between(0, 1)
-  let iv2 = strictly_between(1, 2)
+  let iv1 =
+    between(0, 1)
+  let iv2 =
+    strictly_between(1, 2)
   intersection(iv1, iv2)
-  |> is_empty
+    |> is_empty
 }
 
 test intersection_4() {
-  let iv1 = strictly_between(0, 1)
-  let iv2 = strictly_between(1, 2)
+  let iv1 =
+    strictly_between(0, 1)
+  let iv2 =
+    strictly_between(1, 2)
   intersection(iv1, iv2)
-  |> is_empty
+    |> is_empty
 }
 
 test intersection_5() {
-  let iv1 = between(0, 10)
-  let iv2 = before(4)
+  let iv1 =
+    between(0, 10)
+  let iv2 =
+    before(4)
   intersection(iv1, iv2) == between(0, 4)
 }
 
 test intersection_6() {
-  let iv1 = strictly_before(10)
-  let iv2 = strictly_after(0)
+  let iv1 =
+    strictly_before(10)
+  let iv2 =
+    strictly_after(0)
   intersection(iv1, iv2) == strictly_between(0, 10)
 }
 
@@ -457,19 +504,25 @@ pub fn hull(iv1: Interval<Int>, iv2: Interval<Int>) -> Interval<Int> {
 }
 
 test hull_1() {
-  let iv1 = between(0, 10)
-  let iv2 = between(2, 14)
+  let iv1 =
+    between(0, 10)
+  let iv2 =
+    between(2, 14)
   hull(iv1, iv2) == between(0, 14)
 }
 
 test hull_2() {
-  let iv1 = between(5, 10)
-  let iv2 = before(0)
+  let iv1 =
+    between(5, 10)
+  let iv2 =
+    before(0)
   hull(iv1, iv2) == before(10)
 }
 
 test hull_3() {
-  let iv1 = strictly_after(0)
-  let iv2 = between(10, 42)
+  let iv1 =
+    strictly_after(0)
+  let iv2 =
+    between(10, 42)
   hull(iv1, iv2) == strictly_after(0)
 }

@@ -12,7 +12,8 @@ pub type PolicyId =
 /// possible to mint Ada!).
 ///
 /// By convention, it is an empty `ByteArray`.
-pub const ada_policy_id = #""
+pub const ada_policy_id =
+  #""
 
 /// A type-alias for 'AssetName`, which are free-form byte-arrays between
 /// 0 and 32 bytes.
@@ -23,7 +24,8 @@ pub type AssetName =
 /// possible to mint Ada!).
 ///
 /// By convention, it is an empty `ByteArray`.
-pub const ada_asset_name = #""
+pub const ada_asset_name =
+  #""
 
 /// A multi-asset output `Value`. Contains tokens indexed by [PolicyId](#PolicyId) and [AssetName](#AssetName).
 ///
@@ -47,14 +49,14 @@ pub fn from_asset(
 ) -> Value {
   if quantity == 0 {
     dict.new()
-    |> Value
+      |> Value
   } else {
     let asset =
       dict.new()
-      |> dict.insert(asset_name, quantity, bytearray.compare)
+        |> dict.insert(asset_name, quantity, bytearray.compare)
     dict.new()
-    |> dict.insert(policy_id, asset, bytearray.compare)
-    |> Value
+      |> dict.insert(policy_id, asset, bytearray.compare)
+      |> Value
   }
 }
 
@@ -68,25 +70,29 @@ pub fn from_lovelace(quantity: Int) -> Value {
 /// Get a `Value` excluding Ada.
 pub fn without_lovelace(self: Value) -> Value {
   dict.delete(self.inner, ada_policy_id)
-  |> Value
+    |> Value
 }
 
 test without_lovelace_1() {
-  let v = from_lovelace(1000000)
+  let v =
+    from_lovelace(1000000)
   without_lovelace(v) == zero()
 }
 
 test without_lovelace_2() {
-  let v = from_lovelace(1000000)
-  let v2 = from_lovelace(50000000)
+  let v =
+    from_lovelace(1000000)
+  let v2 =
+    from_lovelace(50000000)
   without_lovelace(v) == without_lovelace(v2)
 }
 
 test without_lovelace_3() {
   let v =
     from_asset(#"010203", #"040506", 100)
-    |> add(from_lovelace(100000000))
-  let v2 = from_asset(#"010203", #"040506", 100)
+      |> add(from_lovelace(100000000))
+  let v2 =
+    from_asset(#"010203", #"040506", 100)
   without_lovelace(v) == without_lovelace(v2) && without_lovelace(v) == v2
 }
 
@@ -103,7 +109,7 @@ test without_lovelace_3() {
 /// ```
 pub fn negate(self: Value) -> Value {
   dict.map(self.inner, fn(_, a) { dict.map(a, fn(_, q) { 0 - q }) })
-  |> Value
+    |> Value
 }
 
 /// Combine two `Value` together.
@@ -117,7 +123,8 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
           a0,
           a1,
           fn(_, q0, q1) {
-            let q = q0 + q1
+            let q =
+              q0 + q1
             if q == 0 {
               None
             } else {
@@ -135,24 +142,29 @@ pub fn add(left v0: Value, right v1: Value) -> Value {
     },
     bytearray.compare,
   )
-  |> Value
+    |> Value
 }
 
 test add_1() {
-  let v1 = from_lovelace(1)
-  let v2 = from_lovelace(-1)
+  let v1 =
+    from_lovelace(1)
+  let v2 =
+    from_lovelace(-1)
   add(v1, v2) == zero()
 }
 
 test add_2() {
-  let v1 = from_asset(#"00", #"", 1)
-  let v2 = from_asset(#"01", #"", 2)
-  let v3 = from_asset(#"02", #"", 3)
+  let v1 =
+    from_asset(#"00", #"", 1)
+  let v2 =
+    from_asset(#"01", #"", 2)
+  let v3 =
+    from_asset(#"02", #"", 3)
   let v =
     from_lovelace(42)
-    |> add(v3)
-    |> add(v1)
-    |> add(v2)
+      |> add(v3)
+      |> add(v1)
+      |> add(v2)
 
   flatten(v) == [
     (#"", #"", 42),
@@ -163,15 +175,18 @@ test add_2() {
 }
 
 test add_3() {
-  let v1 = from_asset(#"00", #"", 1)
-  let v2 = from_asset(#"00", #"", -1)
-  let v3 = from_asset(#"01", #"", 1)
+  let v1 =
+    from_asset(#"00", #"", 1)
+  let v2 =
+    from_asset(#"00", #"", -1)
+  let v3 =
+    from_asset(#"01", #"", 1)
 
   let v =
     zero()
-    |> add(v1)
-    |> add(v2)
-    |> add(v3)
+      |> add(v1)
+      |> add(v2)
+      |> add(v3)
 
   flatten(v) == [(#"01", #"", 1)]
 }
@@ -206,9 +221,9 @@ pub fn quantity_of(
   asset_name: AssetName,
 ) -> Int {
   self.inner
-  |> dict.get(policy_id)
-  |> option.and_then(dict.get(_, asset_name))
-  |> option.or_else(0)
+    |> dict.get(policy_id)
+    |> option.and_then(dict.get(_, asset_name))
+    |> option.or_else(0)
 }
 
 /// A specialized version of `quantity_of` for the Ada currency.
@@ -219,8 +234,8 @@ pub fn lovelace_of(self: Value) -> Int {
 /// Get all tokens associated with a given policy.
 pub fn tokens(self: Value, policy_id: PolicyId) -> Dict<AssetName, Int> {
   self.inner
-  |> dict.get(policy_id)
-  |> option.or_else(dict.new())
+    |> dict.get(policy_id)
+    |> option.or_else(dict.new())
 }
 
 /// A list of all token policies in that Value with non-zero tokens.
@@ -242,8 +257,10 @@ pub fn flatten_with(
         asset,
         fn(asset_name, quantity, xs) {
           when transform(policy_id, asset_name, quantity) is {
-            None -> xs
-            Some(x) -> [x, ..xs]
+            None ->
+              xs
+            Some(x) ->
+              [x, ..xs]
           }
         },
         assets,
@@ -260,9 +277,9 @@ test flatten_with_1() {
 test flatten_with_2() {
   let v =
     zero()
-    |> add(from_asset("a", "1", 14))
-    |> add(from_asset("b", "", 42))
-    |> add(from_asset("a", "2", 42))
+      |> add(from_asset("a", "1", 14))
+      |> add(from_asset("b", "", 42))
+      |> add(from_asset("a", "2", 42))
 
   flatten_with(
     v,

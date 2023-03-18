@@ -52,22 +52,26 @@ pub fn drop(self: ByteArray, n: Int) -> ByteArray {
 }
 
 test drop_1() {
-  let x = #"01020304050607"
+  let x =
+    #"01020304050607"
   drop(x, 2) == #"0304050607"
 }
 
 test drop_2() {
-  let x = #"01020304050607"
+  let x =
+    #"01020304050607"
   drop(x, 0) == x
 }
 
 test drop_3() {
-  let x = #"01"
+  let x =
+    #"01"
   drop(x, 1) == #""
 }
 
 test drop_4() {
-  let x = #""
+  let x =
+    #""
   drop(x, 2) == #""
 }
 
@@ -145,7 +149,8 @@ test push_2() {
 }
 
 test push_3() {
-  let x = 257
+  let x =
+    257
   push(#[2, 3], x) == #[1, 2, 3]
 }
 
@@ -182,22 +187,26 @@ pub fn take(self: ByteArray, n: Int) -> ByteArray {
 }
 
 test take_1() {
-  let x = #"01020304050607"
+  let x =
+    #"01020304050607"
   take(x, 2) == #"0102"
 }
 
 test take_2() {
-  let x = #"01020304050607"
+  let x =
+    #"01020304050607"
   take(x, 0) == #""
 }
 
 test take_3() {
-  let x = #"01"
+  let x =
+    #"01"
   take(x, 1) == x
 }
 
 test take_4() {
-  let x = #"010203"
+  let x =
+    #"010203"
   take(x, 0) == #""
 }
 

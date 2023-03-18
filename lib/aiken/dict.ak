@@ -28,16 +28,19 @@ pub fn new() -> Dict<key, value> {
   Dict { inner: [] }
 }
 
-const foo = #"666f6f"
+const foo =
+  #"666f6f"
 
-const bar = #"626172"
+const bar =
+  #"626172"
 
-const baz = #"62617a"
+const baz =
+  #"62617a"
 
 fn fixture_1() {
   new()
-  |> insert(foo, 42, bytearray.compare)
-  |> insert(bar, 14, bytearray.compare)
+    |> insert(foo, 42, bytearray.compare)
+    |> insert(bar, 14, bytearray.compare)
 }
 
 /// Remove a key-value pair from the dictionnary. If the key is not found, no changes are made.
@@ -55,7 +58,8 @@ pub fn delete(self: Dict<key, value>, key: key) -> Dict<key, value> {
 
 fn do_delete(self: List<(key, value)>, key k: key) -> List<(key, value)> {
   when self is {
-    [] -> []
+    [] ->
+      []
     [(k2, v2), ..rest] ->
       if k == k2 {
         rest
@@ -72,30 +76,30 @@ test delete_1() {
 test delete_2() {
   let m =
     new()
-    |> insert(foo, 14, bytearray.compare)
+      |> insert(foo, 14, bytearray.compare)
   delete(m, foo) == new()
 }
 
 test delete_3() {
   let m =
     new()
-    |> insert(foo, 14, bytearray.compare)
+      |> insert(foo, 14, bytearray.compare)
   delete(m, bar) == m
 }
 
 test delete_4() {
   let m =
     new()
-    |> insert(foo, 14, bytearray.compare)
-    |> insert(bar, 14, bytearray.compare)
+      |> insert(foo, 14, bytearray.compare)
+      |> insert(bar, 14, bytearray.compare)
   !has_key(delete(m, foo), foo)
 }
 
 test delete_5() {
   let m =
     new()
-    |> insert(foo, 14, bytearray.compare)
-    |> insert(bar, 14, bytearray.compare)
+      |> insert(foo, 14, bytearray.compare)
+      |> insert(bar, 14, bytearray.compare)
   has_key(delete(m, bar), foo)
 }
 
@@ -112,7 +116,8 @@ fn do_filter(
   with: fn(key, value) -> Bool,
 ) -> List<(key, value)> {
   when self is {
-    [] -> []
+    [] ->
+      []
     [(k, v), ..rest] ->
       if with(k, v) {
         [(k, v), ..do_filter(rest, with)]
@@ -129,14 +134,14 @@ test filter_1() {
 test filter_2() {
   let expected =
     new()
-    |> insert(foo, 42, bytearray.compare)
+      |> insert(foo, 42, bytearray.compare)
   filter(fixture_1(), fn(_, v) { v > 14 }) == expected
 }
 
 test filter_3() {
   let expected =
     new()
-    |> insert(bar, 14, bytearray.compare)
+      |> insert(bar, 14, bytearray.compare)
   filter(fixture_1(), fn(k, _) { k == bar }) == expected
 }
 
@@ -155,7 +160,8 @@ pub fn find(self: Dict<key, value>, value v: value) -> Option<key> {
 
 fn do_find(self: List<(key, value)>, value v: value) -> Option<key> {
   when self is {
-    [] -> None
+    [] ->
+      None
     [(k2, v2), ..rest] ->
       if v == v2 {
         Some(k2)
@@ -172,7 +178,7 @@ test find_1() {
 test find_2() {
   find(
     new()
-    |> insert(foo, 14, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare),
     14,
   ) == Some(foo)
 }
@@ -180,7 +186,7 @@ test find_2() {
 test find_3() {
   find(
     new()
-    |> insert(foo, 14, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare),
     42,
   ) == None
 }
@@ -188,9 +194,9 @@ test find_3() {
 test find_4() {
   find(
     new()
-    |> insert(foo, 14, bytearray.compare)
-    |> insert(bar, 42, bytearray.compare)
-    |> insert(baz, 14, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare)
+      |> insert(bar, 42, bytearray.compare)
+      |> insert(baz, 14, bytearray.compare),
     14,
   ) == Some(baz)
 }
@@ -210,8 +216,10 @@ fn do_fold(
   zero: result,
 ) -> result {
   when self is {
-    [] -> zero
-    [(k, v), ..rest] -> with(k, v, do_fold(rest, with, zero))
+    [] ->
+      zero
+    [(k, v), ..rest] ->
+      with(k, v, do_fold(rest, with, zero))
   }
 }
 
@@ -237,8 +245,10 @@ fn do_from_list(
   compare: fn(key, key) -> Ordering,
 ) -> List<(key, value)> {
   when xs is {
-    [] -> []
-    [(k, v), ..rest] -> do_insert(do_from_list(rest, compare), k, v, compare)
+    [] ->
+      []
+    [(k, v), ..rest] ->
+      do_insert(do_from_list(rest, compare), k, v, compare)
   }
 }
 
@@ -275,7 +285,8 @@ pub fn get(self: Dict<key, value>, key: key) -> Option<value> {
 
 fn do_get(self: List<(key, value)>, key k: key) -> Option<value> {
   when self is {
-    [] -> None
+    [] ->
+      None
     [(k2, v), ..rest] ->
       if k == k2 {
         Some(v)
@@ -292,16 +303,16 @@ test get_1() {
 test get_2() {
   let m =
     new()
-    |> insert(foo, "Aiken", bytearray.compare)
-    |> insert(bar, "awesome", bytearray.compare)
+      |> insert(foo, "Aiken", bytearray.compare)
+      |> insert(bar, "awesome", bytearray.compare)
   get(m, key: foo) == Some("Aiken")
 }
 
 test get_3() {
   let m =
     new()
-    |> insert(foo, "Aiken", bytearray.compare)
-    |> insert(bar, "awesome", bytearray.compare)
+      |> insert(foo, "Aiken", bytearray.compare)
+      |> insert(bar, "awesome", bytearray.compare)
   get(m, key: baz) == None
 }
 
@@ -319,7 +330,8 @@ pub fn has_key(self: Dict<key, value>, key k: key) -> Bool {
 
 fn do_has_key(self: List<(key, value)>, key k: key) -> Bool {
   when self is {
-    [] -> False
+    [] ->
+      False
     [(k2, _), ..rest] ->
       if k == k2 {
         True
@@ -336,7 +348,7 @@ test has_key_1() {
 test has_key_2() {
   has_key(
     new()
-    |> insert(foo, 14, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare),
     foo,
   )
 }
@@ -344,7 +356,7 @@ test has_key_2() {
 test has_key_3() {
   !has_key(
     new()
-    |> insert(foo, 14, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare),
     bar,
   )
 }
@@ -352,8 +364,8 @@ test has_key_3() {
 test has_key_4() {
   has_key(
     new()
-    |> insert(foo, 14, bytearray.compare)
-    |> insert(bar, 42, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare)
+      |> insert(bar, 42, bytearray.compare),
     bar,
   )
 }
@@ -383,7 +395,8 @@ fn do_insert(
   compare: fn(key, key) -> Ordering,
 ) -> List<(key, value)> {
   when self is {
-    [] -> [(k, v)]
+    [] ->
+      [(k, v)]
     [(k2, v2), ..rest] ->
       if compare(k, k2) == Less {
         [(k, v), ..self]
@@ -400,20 +413,20 @@ fn do_insert(
 test insert_1() {
   let m1 =
     new()
-    |> insert(foo, 42, bytearray.compare)
+      |> insert(foo, 42, bytearray.compare)
   let m2 =
     new()
-    |> insert(foo, 14, bytearray.compare)
+      |> insert(foo, 14, bytearray.compare)
   insert(m1, foo, 14, bytearray.compare) == m2
 }
 
 test insert_2() {
   let m1 =
     new()
-    |> insert(foo, 42, bytearray.compare)
+      |> insert(foo, 42, bytearray.compare)
   let m2 =
     new()
-    |> insert(bar, 14, bytearray.compare)
+      |> insert(bar, 14, bytearray.compare)
   insert(m1, bar, 14, bytearray.compare) == insert(
     m2,
     foo,
@@ -425,8 +438,10 @@ test insert_2() {
 /// Efficiently checks whether a dictionnary is empty.
 pub fn is_empty(self: Dict<key, value>) -> Bool {
   when self.inner is {
-    [] -> True
-    _ -> False
+    [] ->
+      True
+    _ ->
+      False
   }
 }
 
@@ -450,8 +465,10 @@ pub fn keys(self: Dict<key, value>) -> List<key> {
 
 fn do_keys(self: List<(key, value)>) -> List<key> {
   when self is {
-    [] -> []
-    [(k, _), ..rest] -> [k, ..do_keys(rest)]
+    [] ->
+      []
+    [(k, _), ..rest] ->
+      [k, ..do_keys(rest)]
   }
 }
 
@@ -462,8 +479,8 @@ test keys_1() {
 test keys_2() {
   keys(
     new()
-    |> insert(foo, 0, bytearray.compare)
-    |> insert(bar, 0, bytearray.compare),
+      |> insert(foo, 0, bytearray.compare)
+      |> insert(bar, 0, bytearray.compare),
   ) == [bar, foo]
 }
 
@@ -480,22 +497,24 @@ pub fn map(self: Dict<key, a>, with: fn(key, a) -> b) -> Dict<key, b> {
 
 fn do_map(self: List<(key, a)>, with: fn(key, a) -> b) -> List<(key, b)> {
   when self is {
-    [] -> []
-    [(k, v), ..rest] -> [(k, with(k, v)), ..do_map(rest, with)]
+    [] ->
+      []
+    [(k, v), ..rest] ->
+      [(k, with(k, v)), ..do_map(rest, with)]
   }
 }
 
 test map_1() {
   let result =
     fixture_1()
-    |> map(with: fn(k, _) { k })
+      |> map(with: fn(k, _) { k })
   get(result, foo) == Some(foo)
 }
 
 test map_2() {
   let result =
     fixture_1()
-    |> map(with: fn(_, v) { v + 1 })
+      |> map(with: fn(_, v) { v + 1 })
   get(result, foo) == Some(43) && size(result) == size(fixture_1())
 }
 
@@ -519,8 +538,10 @@ pub fn size(self: Dict<key, value>) -> Int {
 
 fn do_size(self: List<(key, value)>) -> Int {
   when self is {
-    [] -> 0
-    [_, ..rest] -> 1 + do_size(rest)
+    [] ->
+      0
+    [_, ..rest] ->
+      1 + do_size(rest)
   }
 }
 
@@ -531,15 +552,15 @@ test size_1() {
 test size_2() {
   size(
     new()
-    |> insert(foo, 14, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare),
   ) == 1
 }
 
 test size_3() {
   size(
     new()
-    |> insert(foo, 14, bytearray.compare)
-    |> insert(bar, 42, bytearray.compare),
+      |> insert(foo, 14, bytearray.compare)
+      |> insert(bar, 42, bytearray.compare),
   ) == 2
 }
 
@@ -559,8 +580,10 @@ fn do_union(
   compare: fn(key, key) -> Ordering,
 ) -> List<(key, value)> {
   when left is {
-    [] -> right
-    [(k, v), ..rest] -> do_union(rest, do_insert(right, k, v, compare), compare)
+    [] ->
+      right
+    [(k, v), ..rest] ->
+      do_union(rest, do_insert(right, k, v, compare), compare)
   }
 }
 
@@ -575,11 +598,11 @@ test union_2() {
 test union_3() {
   let left =
     new()
-    |> insert(foo, 14, bytearray.compare)
+      |> insert(foo, 14, bytearray.compare)
   let right =
     new()
-    |> insert(bar, 42, bytearray.compare)
-    |> insert(baz, 1337, bytearray.compare)
+      |> insert(bar, 42, bytearray.compare)
+      |> insert(baz, 1337, bytearray.compare)
   union(left, right, bytearray.compare) == from_list(
     [(foo, 14), (baz, 1337), (bar, 42)],
     bytearray.compare,
@@ -589,11 +612,11 @@ test union_3() {
 test union_4() {
   let left =
     new()
-    |> insert(foo, 14, bytearray.compare)
+      |> insert(foo, 14, bytearray.compare)
   let right =
     new()
-    |> insert(bar, 42, bytearray.compare)
-    |> insert(foo, 1337, bytearray.compare)
+      |> insert(bar, 42, bytearray.compare)
+      |> insert(foo, 1337, bytearray.compare)
   union(left, right, bytearray.compare) == from_list(
     [(foo, 14), (bar, 42)],
     bytearray.compare,
@@ -620,7 +643,8 @@ fn do_union_with(
   compare: fn(key, key) -> Ordering,
 ) -> List<(key, value)> {
   when left is {
-    [] -> right
+    [] ->
+      right
     [(k, v), ..rest] ->
       do_union_with(
         rest,
@@ -639,15 +663,18 @@ fn do_insert_with(
   compare: fn(key, key) -> Ordering,
 ) -> List<(key, value)> {
   when self is {
-    [] -> [(k, v)]
+    [] ->
+      [(k, v)]
     [(k2, v2), ..rest] ->
       if compare(k, k2) == Less {
         [(k, v), ..self]
       } else {
         if k == k2 {
           when with(k, v, v2) is {
-            Some(combined) -> [(k, combined), ..rest]
-            None -> rest
+            Some(combined) ->
+              [(k, combined), ..rest]
+            None ->
+              rest
           }
         } else {
           [(k2, v2), ..do_insert_with(rest, k, v, with, compare)]
@@ -691,8 +718,10 @@ pub fn values(self: Dict<key, value>) -> List<value> {
 
 fn do_values(self: List<(key, value)>) -> List<value> {
   when self is {
-    [] -> []
-    [(_, v), ..rest] -> [v, ..do_values(rest)]
+    [] ->
+      []
+    [(_, v), ..rest] ->
+      [v, ..do_values(rest)]
   }
 }
 
@@ -703,7 +732,7 @@ test values_1() {
 test values_2() {
   values(
     new()
-    |> insert(foo, 3, bytearray.compare)
-    |> insert(bar, 4, bytearray.compare),
+      |> insert(foo, 3, bytearray.compare)
+      |> insert(bar, 4, bytearray.compare),
   ) == [4, 3]
 }

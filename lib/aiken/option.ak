@@ -13,11 +13,14 @@
 /// ```
 pub fn choice(self: List<Option<a>>) -> Option<a> {
   when self is {
-    [] -> None
+    [] ->
+      None
     [head, ..others] ->
       when head is {
-        None -> choice(others)
-        _ -> head
+        None ->
+          choice(others)
+        _ ->
+          head
       }
   }
 }
@@ -37,8 +40,10 @@ test choice_3() {
 /// Provide a default value, turning an optional value into a normal value.
 pub fn or_else(self: Option<a>, default: a) -> a {
   when self is {
-    None -> default
-    Some(a) -> a
+    None ->
+      default
+    Some(a) ->
+      a
   }
 }
 
@@ -53,8 +58,10 @@ test or_else_2() {
 /// Apply a function to the inner value of an Option
 pub fn map(self: Option<a>, with: fn(a) -> result) -> Option<result> {
   when self is {
-    None -> None
-    Some(a) -> Some(with(a))
+    None ->
+      None
+    Some(a) ->
+      Some(with(a))
   }
 }
 
@@ -73,11 +80,14 @@ pub fn map2(
   with: fn(a, b) -> result,
 ) -> Option<result> {
   when opt_a is {
-    None -> None
+    None ->
+      None
     Some(a) ->
       when opt_b is {
-        None -> None
-        Some(b) -> Some(with(a, b))
+        None ->
+          None
+        Some(b) ->
+          Some(with(a, b))
       }
   }
 }
@@ -101,14 +111,18 @@ pub fn map3(
   with: fn(a, b, c) -> result,
 ) -> Option<result> {
   when opt_a is {
-    None -> None
+    None ->
+      None
     Some(a) ->
       when opt_b is {
-        None -> None
+        None ->
+          None
         Some(b) ->
           when opt_c is {
-            None -> None
-            Some(c) -> Some(with(a, b, c))
+            None ->
+              None
+            Some(c) ->
+              Some(with(a, b, c))
           }
       }
   }
@@ -132,8 +146,10 @@ pub fn and_then(
   then: fn(a) -> Option<result>,
 ) -> Option<result> {
   when self is {
-    None -> None
-    Some(a) -> then(a)
+    None ->
+      None
+    Some(a) ->
+      then(a)
   }
 }
 
@@ -148,21 +164,21 @@ fn try_decrement(n: Int) -> Option<Int> {
 test and_then_1() {
   let result =
     None
-    |> and_then(try_decrement)
+      |> and_then(try_decrement)
   result == None
 }
 
 test and_then_2() {
   let result =
     Some(14)
-    |> and_then(try_decrement)
+      |> and_then(try_decrement)
   result == Some(13)
 }
 
 test and_then_3() {
   let result =
     Some(0)
-    |> and_then(try_decrement)
+      |> and_then(try_decrement)
   result == None
 }
 
@@ -194,33 +210,39 @@ test and_then_3() {
 /// ```
 pub fn flatten(opt: Option<Option<a>>) -> Option<a> {
   when opt is {
-    Some(inner) -> inner
-    None -> None
+    Some(inner) ->
+      inner
+    None ->
+      None
   }
 }
 
 test flatten_1() {
-  let x: Option<Option<Int>> = Some(Some(6))
+  let x: Option<Option<Int>> =
+    Some(Some(6))
   Some(6) == flatten(x)
 }
 
 test flatten_2() {
-  let x: Option<Option<Int>> = Some(None)
+  let x: Option<Option<Int>> =
+    Some(None)
   None == flatten(x)
 }
 
 test flatten_3() {
-  let x: Option<Option<Int>> = None
+  let x: Option<Option<Int>> =
+    None
   None == flatten(x)
 }
 
 test flatten_4() {
-  let x: Option<Option<Option<Int>>> = Some(Some(Some(6)))
+  let x: Option<Option<Option<Int>>> =
+    Some(Some(Some(6)))
 
   let result =
     x
-    |> flatten
-    |> flatten
+      |> flatten
+      |> flatten
 
   Some(6) == result
 }
@@ -228,8 +250,10 @@ test flatten_4() {
 /// Asserts whether an option is `Some`, irrespective of the value it contains.
 pub fn is_some(self: Option<a>) -> Bool {
   when self is {
-    Some(_) -> True
-    _ -> False
+    Some(_) ->
+      True
+    _ ->
+      False
   }
 }
 
@@ -244,8 +268,10 @@ test is_some_2() {
 /// Asserts whether an option is `None`.
 pub fn is_none(self: Option<a>) -> Bool {
   when self is {
-    Some(_) -> False
-    _ -> True
+    Some(_) ->
+      False
+    _ ->
+      True
   }
 }
 

@@ -84,7 +84,8 @@ pub fn join(list: List<String>, delimiter: String) -> String {
 
 fn do_join(xs, delimiter, bytes) {
   when xs is {
-    [] -> bytes
+    [] ->
+      bytes
     [x, ..rest] ->
       do_join(
         rest,
