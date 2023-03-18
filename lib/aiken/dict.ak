@@ -47,9 +47,9 @@ fn fixture_1() {
 ///
 /// ```aiken
 /// dict.new()
-/// |> dict.insert(key: 14, value: 42, int.compare)
-/// |> dict.delete(key: 14)
-/// |> dict.get(14)
+///   |> dict.insert(key: 14, value: 42, int.compare)
+///   |> dict.delete(key: 14)
+///   |> dict.get(14)
 /// // None
 /// ```
 pub fn delete(self: Dict<key, value>, key: key) -> Dict<key, value> {
@@ -149,9 +149,9 @@ test filter_3() {
 ///
 /// ```aiken
 /// dict.new()
-/// |> dict.insert(key: foo, value: 42, bytearray.compare)
-/// |> dict.insert(key: bar, value: 14, bytearray.compare)
-/// |> dict.find(42)
+///   |> dict.insert(key: foo, value: 42, bytearray.compare)
+///   |> dict.insert(key: bar, value: 14, bytearray.compare)
+///   |> dict.find(42)
 /// // Some(foo)
 /// ```
 pub fn find(self: Dict<key, value>, value v: value) -> Option<key> {
@@ -275,8 +275,8 @@ test from_list_4() {
 ///
 /// ```aiken
 /// dict.new()
-/// |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
-/// |> dict.get(key: foo)
+///   |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
+///   |> dict.get(key: foo)
 /// // Some("Aiken")
 /// ```
 pub fn get(self: Dict<key, value>, key: key) -> Option<value> {
@@ -320,8 +320,8 @@ test get_3() {
 ///
 /// ```aiken
 /// dict.new()
-/// |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
-/// |> dict.has_key(foo)
+///   |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
+///   |> dict.has_key(foo)
 /// // True
 /// ```
 pub fn has_key(self: Dict<key, value>, key k: key) -> Bool {
@@ -374,9 +374,9 @@ test has_key_4() {
 ///
 /// ```aiken
 /// dict.new()
-/// |> dict.insert(key: foo, value: "Foo", bytearray.compare)
-/// |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
-/// |> dict.to_list()
+///   |> dict.insert(key: foo, value: "Foo", bytearray.compare)
+///   |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
+///   |> dict.to_list()
 /// // [(foo, "Aiken")]
 /// ```
 pub fn insert(
@@ -453,10 +453,10 @@ test is_empty_1() {
 ///
 /// ```aiken
 /// dict.new()
-/// |> dict.insert(foo, 14, bytearray.compare)
-/// |> dict.insert(bar, 42, bytearray.compare)
-/// |> dict.insert(foo, 1337, bytearray.compare)
-/// |> dict.keys()
+///   |> dict.insert(foo, 14, bytearray.compare)
+///   |> dict.insert(bar, 42, bytearray.compare)
+///   |> dict.insert(foo, 1337, bytearray.compare)
+///   |> dict.keys()
 /// // [foo, bar]
 /// ```
 pub fn keys(self: Dict<key, value>) -> List<key> {
@@ -683,33 +683,37 @@ fn do_insert_with(
   }
 }
 
-// TODO: acceptance_test 035
-//
-// test union_with_1() {
-//   let left =
-//     new()
-//     |> insert(foo, 14)
-//   let right =
-//     new()
-//     |> insert(bar, 42)
-//     |> insert(foo, 1337)
-//   union_with(left, right, with: fn(_, l, r) { Some(l + r) }) == from_list(
-//   [(foo, 1351), (bar, 42)])
-//
-// }
+test union_with_1() {
+  let left =
+    new()
+      |> insert(foo, 14, bytearray.compare)
+
+  let right =
+    new()
+      |> insert(bar, 42, bytearray.compare)
+      |> insert(foo, 1337, bytearray.compare)
+
+  let result =
+    union_with(
+      left,
+      right,
+      with: fn(_, l, r) { Some(l + r) },
+      compare: bytearray.compare,
+    )
+
+  result == from_list([(foo, 1351), (bar, 42)], bytearray.compare)
+}
 
 /// Combine two dictionnaries using the provided strategy for combining values when the same
 /// key is found in both dictionnaries.
 /// Extract all the values present in a given `Dict`.
 ///
 /// ```aiken
-/// use aiken.dict
-///
 /// dict.new()
-/// |> dict.insert(foo, 14, bytearray.compare)
-/// |> dict.insert(bar, 42, bytearray.compare)
-/// |> dict.insert(foo, 1337, bytearray.compare)
-/// |> dict.values()
+///   |> dict.insert(foo, 14, bytearray.compare)
+///   |> dict.insert(bar, 42, bytearray.compare)
+///   |> dict.insert(foo, 1337, bytearray.compare)
+///   |> dict.values()
 /// // [42, 1337]
 /// ```
 pub fn values(self: Dict<key, value>) -> List<value> {

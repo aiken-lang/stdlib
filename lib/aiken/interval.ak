@@ -149,18 +149,16 @@ fn compare_bound_type(
 /// Checks whether an element is contained within the interval.
 ///
 /// ```aiken
-/// use aiken/interval.{Interval, IntervalBound, Finite}
-///
 /// let iv =
 ///   Interval {
 ///     lower_bound: IntervalBound(Finite(14), True),
 ///     upper_bound: IntervalBound(Finite(42), False),
 ///   }
 ///
-/// contains(iv, 25) // True
-/// contains(iv, 0)  // False
-/// contains(iv, 14) // True
-/// contains(iv, 42) // False
+/// interval.contains(iv, 25) // True
+/// interval.contains(iv, 0)  // False
+/// interval.contains(iv, 14) // True
+/// interval.contains(iv, 42) // False
 /// ```
 pub fn contains(self: Interval<Int>, elem: Int) -> Bool {
   let is_greater_than_lower_bound =
@@ -407,20 +405,18 @@ pub fn is_empty(self: Interval<Int>) -> Bool {
 
 /// Computes the largest interval contains in the two given intervals, if any.
 ///
-/// ## Examples
-///
 /// ```aiken
-/// let iv1 = between(0, 10)
-/// let iv2 = between(2, 14)
-/// intersection(iv1, iv2) == between(2, 10)
+/// let iv1 = interval.between(0, 10)
+/// let iv2 = interval.between(2, 14)
+/// interval.intersection(iv1, iv2) == interval.between(2, 10)
 ///
-/// let iv1 = strictly_before(10)
-/// let iv2 = strictly_after(0)
-/// intersection(iv1, iv2) == strictly_between(0, 10)
+/// let iv1 = interval.strictly_before(10)
+/// let iv2 = interval.strictly_after(0)
+/// interval.intersection(iv1, iv2) == interval.strictly_between(0, 10)
 ///
-/// let iv1 = between(0, 1)
-/// let iv2 = between(2, 3)
-/// intersection(iv1, iv2) |> is_empty
+/// let iv1 = interval.between(0, 1)
+/// let iv2 = interval.between(2, 3)
+/// interval.intersection(iv1, iv2) |> interval.is_empty
 /// ```
 pub fn intersection(iv1: Interval<Int>, iv2: Interval<Int>) -> Interval<Int> {
   Interval {
@@ -480,8 +476,6 @@ test intersection_6() {
 }
 
 /// Computes the smallest interval containing the two given intervals, if any
-///
-/// ## Examples
 ///
 /// ```aiken
 /// let iv1 = between(0, 10)

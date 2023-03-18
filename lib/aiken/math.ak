@@ -115,10 +115,10 @@ test min_3() {
 /// squaring method.
 ///
 /// ```aiken
-/// math.pow(3, 5) = 243
-/// math.pow(7, 2) = 49
-/// math.pow(3, -4) = 0
-/// math.pow(0, 0) = 1
+/// math.pow(3, 5) == 243
+/// math.pow(7, 2) == 49
+/// math.pow(3, -4) == 0
+/// math.pow(0, 0) == 1
 /// math.pow(513, 3) == 135005697
 /// ```
 pub fn pow(self: Int, e: Int) -> Int {

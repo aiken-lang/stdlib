@@ -99,12 +99,10 @@ test without_lovelace_3() {
 /// Negates quantities of all tokens (including Ada) in that `Value`.
 ///
 /// ```
-/// use aiken/transaction/value
-///
 /// v1
-/// |> value.negate
-/// |> value.add
-/// |> value.is_zero
+///   |> value.negate
+///   |> value.add
+///   |> value.is_zero
 /// // True
 /// ```
 pub fn negate(self: Value) -> Value {
