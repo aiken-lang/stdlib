@@ -1331,3 +1331,34 @@ test zip_2() {
 test zip_3() {
   zip([1, 2], ["a", "b", "c"]) == [(1, "a"), (2, "b")]
 }
+
+/// Reduce a list from left to right such that 'zero' element is first.
+///
+/// ```aiken
+/// list.reduce([1, 2, 3], fn(n, total) { n + total }, 0) == 6
+/// list.reduce([#[1], #[2], #[3]], fn(left, right) { bytearray.concat(left, right) }, #[9]) == #[9, 1, 2, 3]
+/// ```
+pub fn reduce(self: List<a>, with: fn(b, a) -> b, zero: b) -> b {
+  list.foldl(self, flip(with), zero)
+}
+
+test reduce_1() {
+  reduce([], fn(n, total) { n + total }, 0) == 0
+}
+
+test reduce_2() {
+  reduce([1, 2, 3], fn(n, total) { n + total }, 0) == 6
+}
+
+test reduce_3() {
+  reduce([True, False, True], fn(left, right) { list.or([left, right]) }, False) == True
+}
+
+test reduce_4() {
+  reduce(
+    [#[1], #[2], #[3]],
+    fn(left, right) { bytearray.concat(left, right) },
+    #[9],
+  ) == #[9, 1, 2, 3]
+}
+
