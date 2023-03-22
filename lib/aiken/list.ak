@@ -334,7 +334,7 @@ test drop_while_4() {
 /// Produce a list of elements that statisfy a predicate.
 ///
 /// ```aiken
-/// list.filter([1, 2, 3], fn(x) { x > 2 }) == [2, 3]
+/// list.filter([1, 2, 3], fn(x) { x >= 2 }) == [2, 3]
 /// list.filter([], fn(x) { x > 2 }) == []
 /// list.filter([1, 2, 3], fn(x) { x == 3 }) == [3]
 /// ```
