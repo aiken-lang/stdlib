@@ -1339,7 +1339,7 @@ test zip_3() {
 /// list.reduce([#[1], #[2], #[3]], fn(left, right) { bytearray.concat(left, right) }, #[9]) == #[9, 1, 2, 3]
 /// ```
 pub fn reduce(self: List<a>, with: fn(b, a) -> b, zero: b) -> b {
-  list.foldl(self, flip(with), zero)
+  foldl(self, flip(with), zero)
 }
 
 test reduce_1() {
