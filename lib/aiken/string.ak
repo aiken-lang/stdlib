@@ -6,7 +6,7 @@ use aiken/cbor
 /// Combine two `String` together.
 ///
 /// ```aiken
-/// string.concat(left: "Hello", right: ", World!") == @"Hello, World!"
+/// string.concat(left: @"Hello", right: @", World!") == @"Hello, World!"
 /// ```
 pub fn concat(left: String, right: String) -> String {
   append_string(left, right)
@@ -74,8 +74,8 @@ test from_int_4() {
 /// Join a list of strings, separated by a given _delimiter_.
 ///
 /// ```aiken
-/// string.join([], "+") == @""
-/// string.join([@"a", @"b", @"c"], ",") == @"a,b,c"
+/// string.join([], @"+") == @""
+/// string.join([@"a", @"b", @"c"], @",") == @"a,b,c"
 /// ```
 pub fn join(list: List<String>, delimiter: String) -> String {
   do_join(list, encode_utf8(delimiter), #"")
