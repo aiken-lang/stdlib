@@ -1331,3 +1331,35 @@ test zip_2() {
 test zip_3() {
   zip([1, 2], ["a", "b", "c"]) == [(1, "a"), (2, "b")]
 }
+
+/// Reduce a list from left to right using the accumulator as left operand.
+/// Said differently, this is [`foldl`](#foldl) with callback arguments swapped.
+///
+/// ```aiken
+/// list.reduce([#[1], #[2], #[3]], bytearray.concat, #[0]) == #[0, 1, 2, 3]
+/// list.reduce([True, False, True], or, False) == True
+/// ```
+pub fn reduce(self: List<a>, with: fn(b, a) -> b, zero: b) -> b {
+  foldl(self, flip(with), zero)
+}
+
+test reduce_1() {
+  reduce([], fn(n, total) { n + total }, 0) == 0
+}
+
+test reduce_2() {
+  reduce([1, 2, 3], fn(n, total) { n + total }, 0) == 6
+}
+
+test reduce_3() {
+  reduce([True, False, True], or, False) == True
+}
+
+test reduce_4() {
+  reduce(
+    [#[1], #[2], #[3]],
+    fn(left, right) { bytearray.concat(left, right) },
+    #[9],
+  ) == #[9, 1, 2, 3]
+}
+
