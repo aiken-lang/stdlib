@@ -271,6 +271,96 @@ test from_list_4() {
   from_list([(foo, 42), (bar, 14), (foo, 1337)], bytearray.compare) == fixture_1()
 }
 
+test bench_from_list() {
+  let dict =
+    from_list(
+      [
+        ("bbba", 8),
+        ("bbab", 12),
+        ("aabb", 13),
+        ("aaab", 9),
+        ("bbbb", 16),
+        ("aaaa", 1),
+        ("aaba", 5),
+        ("abab", 10),
+        ("baba", 7),
+        ("baab", 11),
+        ("abaa", 2),
+        ("baaa", 3),
+        ("bbaa", 4),
+        ("babb", 15),
+        ("abbb", 14),
+        ("abba", 6),
+      ],
+      bytearray.compare,
+    )
+
+  size(dict) == 16
+}
+
+/// Like ['from_list'](from_list), but from an already sorted list by ascending
+/// keys. This function fails (i.e. halt the program execution) if the list isn't
+/// sorted.
+///
+/// This is meant to be used to turn a list constructed off-chain into a `Dict`
+/// which has taken care of maintaining interval invariants. This function still
+/// performs a sanity check on all keys to avoid silly mistakes. It is, however,
+/// considerably faster than
+pub fn from_ascending_list(
+  xs: List<(key, value)>,
+  compare: fn(key, key) -> Ordering,
+) -> Dict<key, value> {
+  let Void =
+    check_ascending_list(xs, compare)
+  Dict { inner: xs }
+}
+
+fn check_ascending_list(
+  xs: List<(key, value)>,
+  compare: fn(key, key) -> Ordering,
+) {
+  when xs is {
+    [] ->
+      Void
+    [_] ->
+      Void
+    [(x0, _), (x1, _) as e, ..rest] ->
+      when compare(x0, x1) is {
+        Less ->
+          check_ascending_list([e, ..rest], compare)
+        _ ->
+          error @"keys in associative list aren't in ascending order"
+      }
+  }
+}
+
+test bench_from_ascending_list() {
+  let dict =
+    from_ascending_list(
+      [
+        ("aaaa", 1),
+        ("aaab", 9),
+        ("aaba", 5),
+        ("aabb", 13),
+        ("abaa", 2),
+        ("abab", 10),
+        ("abba", 6),
+        ("abbb", 14),
+        ("baaa", 3),
+        ("baab", 11),
+        ("baba", 7),
+        ("babb", 15),
+        ("bbaa", 4),
+        ("bbab", 12),
+        ("bbba", 8),
+        ("bbbb", 16),
+      ],
+      bytearray.compare,
+    )
+
+  size(dict) == 16
+}
+
 /// Get a value in the dict by its key.
 ///
 /// ```aiken
