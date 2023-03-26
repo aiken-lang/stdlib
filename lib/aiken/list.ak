@@ -1352,7 +1352,7 @@ test reduce_2() {
 }
 
 test reduce_3() {
-  reduce([True, False, True], or, False) == True
+  reduce([True, False, True], fn(left, right) { list.or([left, right]) }, False) == True
 }
 
 test reduce_4() {
