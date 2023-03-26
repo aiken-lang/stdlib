@@ -20,7 +20,7 @@
 ///
 /// ```aiken
 /// // [1; 10]
-/// let i0: Interval<Int> = Interval
+/// let i0: Interval<PosixTime> = Interval
 ///   { lower_bound:
 ///       IntervalBound { bound_type: Finite(1), is_inclusive: True }
 ///   , upper_bound:
@@ -30,7 +30,7 @@
 ///
 /// ```aiken
 /// // (20; infinity)
-/// let i1: Interval<Int> = Interval
+/// let i1: Interval<PosixTime> = Interval
 ///   { lower_bound:
 ///       IntervalBound { bound_type: Finite(20), is_inclusive: False }
 ///   , upper_bound:

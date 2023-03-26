@@ -4,6 +4,7 @@ use aiken/hash.{Blake2b_224, Blake2b_256, Hash, blake2b_256}
 use aiken/interval.{Interval}
 use aiken/list
 use aiken/option
+use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
   Address, Script, ScriptCredential, StakeCredential, VerificationKey,
@@ -68,7 +69,7 @@ pub type Transaction {
 
 /// An interval of POSIX time, measured in number milliseconds since 1970-01-01T00:00:00Z.
 pub type ValidityRange =
-  Interval<Int>
+  Interval<PosixTime>
 
 /// A unique transaction identifier, as the hash of a transaction body. Note that the transaction id
 /// isn't a direct hash of the `Transaction` as visible on-chain. Rather, they correspond to hash
