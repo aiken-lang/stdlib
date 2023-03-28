@@ -75,6 +75,104 @@ test drop_4() {
   drop(x, 2) == #""
 }
 
+/// Left-fold over bytes of a [`ByteArray`](https://aiken-lang.github.io/prelude/aiken.html#ByteArray). Note that every byte given to the callback function is comprised between 0 and 255.
+///
+/// ```aiken
+/// bytearray.foldl(#"acab", fn(byte, acc) { acc * 256 + bytes }, 0) == 44203
+/// bytearray.foldl(#[1, 2, 3], flip(bytearray.push), #"") == #[3, 2, 1]
+/// ```
+pub fn foldl(
+  self: ByteArray,
+  with: fn(Int, result) -> result,
+  zero: result,
+) -> result {
+  do_foldl(self, with, zero, builtin.length_of_bytearray(self), 0)
+}
+
+fn do_foldl(
+  self: ByteArray,
+  with: fn(Int, result) -> result,
+  zero: result,
+  len: Int,
+  cursor: Int,
+) -> result {
+  if cursor == len {
+    zero
+  } else {
+    do_foldl(
+      self,
+      with,
+      with(builtin.index_bytearray(self, cursor), zero),
+      len,
+      cursor + 1,
+    )
+  }
+}
+
+test foldl_1() {
+  foldl(#[], fn(byte, acc) { byte + acc }, 42) == 42
+}
+
+test foldl_2() {
+  foldl(#"acab", fn(byte, acc) { acc * 256 + byte }, 0) == 44203
+}
+
+test foldl_3() {
+  foldl(
+    #"356cf088720a169dae0ce0bb1df8588944389fa43322f0d6ef4ed8c069bfd405",
+    fn(byte, acc) { acc * 256 + byte },
+    0,
+  ) == 24165060555594911913195642527692216679757672038384202527929620681761931383813
+}
+
+test foldl_4() {
+  foldl(#[1, 2, 3, 4, 5], flip(push), #"") == #[5, 4, 3, 2, 1]
+}
+
+/// Right-fold over bytes of a [`ByteArray`](https://aiken-lang.github.io/prelude/aiken.html#ByteArray). Note that every byte given to the callback function is comprised between 0 and 255.
+///
+/// ```aiken
+/// bytearray.foldr(#"acab", fn(byte, acc) { acc * 256 + bytes }, 0) == 44203
+/// bytearray.foldl(#[1, 2, 3], flip(bytearray.push), #"") == #[1, 2, 3]
+/// ```
+pub fn foldr(
+  self: ByteArray,
+  with: fn(Int, result) -> result,
+  zero: result,
+) -> result {
+  do_foldr(self, with, zero, builtin.length_of_bytearray(self) - 1)
+}
+
+fn do_foldr(
+  self: ByteArray,
+  with: fn(Int, result) -> result,
+  zero: result,
+  cursor: Int,
+) -> result {
+  if cursor < 0 {
+    zero
+  } else {
+    do_foldr(
+      self,
+      with,
+      with(builtin.index_bytearray(self, cursor), zero),
+      cursor - 1,
+    )
+  }
+}
+
+test foldr_1() {
+  foldr(#[], fn(byte, acc) { byte + acc }, 42) == 42
+}
+
+test foldr_2() {
+  foldr(#"acab", fn(byte, acc) { acc * 256 + byte }, 0) == 43948
+}
+
+test foldr_3() {
+  foldr(#[1, 2, 3, 4, 5], flip(push), #"") == #[1, 2, 3, 4, 5]
+}
+
 /// Returns the number of bytes in a `ByteArray`.
 ///
 /// ```aiken
@@ -152,6 +250,28 @@ test push_3() {
   let x =
     257
   push(#[2, 3], x) == #[1, 2, 3]
+}
+
+/// Reduce bytes in a ByteArray from left to right using the accumulator as left operand.
+/// Said differently, this is [`foldl`](#foldl) with callback arguments swapped.
+///
+/// ```aiken
+/// bytearray.reduce(#[1,2,3], bytearray.push, #[]) == #[3, 2, 1]
+/// ```
+pub fn reduce(
+  self: ByteArray,
+  with: fn(result, Int) -> result,
+  zero: result,
+) -> result {
+  foldl(self, flip(with), zero)
+}
+
+test reduce_1() {
+  reduce(#[], push, #[]) == #[]
+}
+
+test reduce_2() {
+  reduce(#[1, 2, 3], push, #[]) == #[3, 2, 1]
 }
 
 /// Extract a `ByteArray` as a slice of another `ByteArray`.
