@@ -1,13 +1,13 @@
-//// A module for working with bytearray dictionnaries.
+//// A module for working with bytearray dictionaries.
 ////
-//// These dictionnaries are fundamentally ordered lists of key-value pairs,
+//// These dictionaries are fundamentally ordered lists of key-value pairs,
 //// which preserve some invariants. In particular, each key is only present
-//// once in the dictionnary.
+//// once in the dictionary.
 
 use aiken/bytearray
 
 /// An opaque `Dict`. The type is opaque because the module maintains some
-/// invariant, namely: there's only one occurence of a given key in the dictionnary.
+/// invariant, namely: there's only one occurrence of a given key in the dictionary.
 ///
 /// Note that the `key` parameter is a phantom-type, and only present as a
 /// means of documentation. Keys can be any type, yet will need to comparable
@@ -43,7 +43,7 @@ fn fixture_1() {
     |> insert(bar, 14, bytearray.compare)
 }
 
-/// Remove a key-value pair from the dictionnary. If the key is not found, no changes are made.
+/// Remove a key-value pair from the dictionary. If the key is not found, no changes are made.
 ///
 /// ```aiken
 /// dict.new()
@@ -145,7 +145,7 @@ test filter_3() {
   filter(fixture_1(), fn(k, _) { k == bar }) == expected
 }
 
-/// Finds a value in the dictionnary, and returns the first key found to have that value.
+/// Finds a value in the dictionary, and returns the first key found to have that value.
 ///
 /// ```aiken
 /// dict.new()
@@ -201,7 +201,7 @@ test find_4() {
   ) == Some(baz)
 }
 
-/// Fold over the key-value pairs in a dictionnary.
+/// Fold over the key-value pairs in a dictionary.
 pub fn fold(
   self: Dict<key, value>,
   with: fn(key, value, result) -> result,
@@ -231,8 +231,8 @@ test fold_1() {
   fold(new(), fn(_, _, _) { 42 }, 14) == 14
 }
 
-/// Construct a dictionnary from a list of key-value pairs. Note that when a key is present
-/// multiple times, the first occurence prevails.
+/// Construct a dictionary from a list of key-value pairs. Note that when a key is present
+/// multiple times, the first occurrence prevails.
 pub fn from_list(
   self: List<(key, value)>,
   compare: fn(key, key) -> Ordering,
@@ -406,7 +406,7 @@ test get_3() {
   get(m, key: baz) == None
 }
 
-/// Check if a key exists in the dictionnary.
+/// Check if a key exists in the dictionary.
 ///
 /// ```aiken
 /// dict.new()
@@ -460,7 +460,7 @@ test has_key_4() {
   )
 }
 
-/// Insert a value in the dictionnary at a given key key. If the key already exists, its value is **overridden**.
+/// Insert a value in the dictionary at a given key key. If the key already exists, its value is **overridden**.
 ///
 /// ```aiken
 /// dict.new()
@@ -525,7 +525,7 @@ test insert_2() {
   )
 }
 
-/// Efficiently checks whether a dictionnary is empty.
+/// Efficiently checks whether a dictionary is empty.
 pub fn is_empty(self: Dict<key, value>) -> Bool {
   when self.inner is {
     [] ->
@@ -608,7 +608,7 @@ test map_2() {
   get(result, foo) == Some(43) && size(result) == size(fixture_1())
 }
 
-/// Get the inner list holding the dictionnary data.
+/// Get the inner list holding the dictionary data.
 pub fn to_list(self: Dict<key, value>) -> List<(key, value)> {
   self.inner
 }
@@ -621,7 +621,7 @@ test to_list_2() {
   to_list(fixture_1()) == [(bar, 14), (foo, 42)]
 }
 
-/// Return the number of key-value pairs in the dictionnary.
+/// Return the number of key-value pairs in the dictionary.
 pub fn size(self: Dict<key, value>) -> Int {
   do_size(self.inner)
 }
@@ -654,8 +654,8 @@ test size_3() {
   ) == 2
 }
 
-/// Combine two dictionnaries. If the same key exist in both the left and
-/// right dictionnary, values from the left are preferred (i.e. left-biaised).
+/// Combine two dictionaries. If the same key exist in both the left and
+/// right dictionary, values from the left are preferred (i.e. left-biaised).
 pub fn union(
   left: Dict<key, value>,
   right: Dict<key, value>,
@@ -714,7 +714,7 @@ test union_4() {
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
-/// in both dictionnaries.
+/// in both dictionaries.
 ///
 /// When passing `None`, the value is removed and not present in the union.
 pub fn union_with(
@@ -794,8 +794,8 @@ test union_with_1() {
   result == from_list([(foo, 1351), (bar, 42)], bytearray.compare)
 }
 
-/// Combine two dictionnaries using the provided strategy for combining values when the same
-/// key is found in both dictionnaries.
+/// Combine two dictionaries using the provided strategy for combining values when the same
+/// key is found in both dictionaries.
 /// Extract all the values present in a given `Dict`.
 ///
 /// ```aiken

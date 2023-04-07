@@ -32,7 +32,7 @@ test all_3() {
   all([], fn(n) { n == 42 }) == True
 }
 
-/// Like [all](#and) but when elements are already booleans.
+/// Like [all](#all) but when elements are already booleans.
 ///
 /// Note: an empty list always satisfies the predicate.
 ///
@@ -195,7 +195,7 @@ test concat_3() {
   concat([], [1, 2, 3]) == [1, 2, 3]
 }
 
-/// Remove the first occurence of the given element from the list.
+/// Remove the first occurrence of the given element from the list.
 ///
 /// ```aiken
 /// list.delete([1, 2, 3, 1], 1) == [2, 3, 1]
@@ -230,7 +230,7 @@ test delete_4() {
   delete([2], 2) == []
 }
 
-/// Remove the first occurence of each element of the second list from the first one.
+/// Remove the first occurrence of each element of the second list from the first one.
 ///
 /// ```
 /// list.difference(["h", "e", "l", "l", "o"], ["l", "e", "l"]) == ["h", "o"]
@@ -332,7 +332,7 @@ test drop_while_4() {
   drop_while(xs, fn(x) { x < 42 }) == []
 }
 
-/// Produce a list of elements that statisfy a predicate.
+/// Produce a list of elements that satisfy a predicate.
 ///
 /// ```aiken
 /// list.filter([1, 2, 3], fn(x) { x >= 2 }) == [2, 3]
@@ -384,7 +384,7 @@ test filter_3() {
   filter_foldr([1, 2, 3], is_odd) == filter([1, 2, 3], is_odd)
 }
 
-/// Produce a list of transformed elements that statisfy a predicate.
+/// Produce a list of transformed elements that satisfy a predicate.
 ///
 /// ```aiken
 /// let transform = fn(x) { if x % 2 == 0 { None } else { Some(3*x) } }

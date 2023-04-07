@@ -110,7 +110,7 @@ pub type Datum {
 }
 
 /// A type-alias for Redeemers, passed to scripts for validation. The `Data` is
-/// opaque because it is user-defined and it is the script's responsability to
+/// opaque because it is user-defined and it is the script's responsibility to
 /// parse it into its expected form.
 pub type Redeemer =
   Data
