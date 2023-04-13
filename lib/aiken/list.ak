@@ -1,6 +1,6 @@
 use aiken/builtin
-use aiken/int
 use aiken/bytearray
+use aiken/int
 
 /// Determine if all elements of the list satisfy the given predicate.
 ///
@@ -1363,4 +1363,3 @@ test reduce_4() {
     #[9],
   ) == #[9, 1, 2, 3]
 }
-

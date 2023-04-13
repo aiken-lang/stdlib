@@ -79,7 +79,12 @@ test or_try_1() {
 }
 
 test or_try_2() {
-  or_try(Some(42), fn(_) { error }) == Some(42)
+  or_try(
+    Some(42),
+    fn(_) {
+      error
+    },
+  ) == Some(42)
 }
 
 /// Apply a function to the inner value of an [`Option`](#option)

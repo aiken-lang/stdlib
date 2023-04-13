@@ -149,42 +149,42 @@ pub fn find_datum(
   transaction.datums
     |> dict.get(datum_hash)
     |> option.or_try(
-    fn(_) {
-      transaction.outputs
-        |> list.filter_map(
-        fn(output) {
-          when output.datum is {
-            InlineDatum(data) ->
-              if blake2b_256(cbor.serialise(data)) == datum_hash {
-                Some(data)
-              } else {
-                None
-              }
-            _ ->
-              None
-          }
-        },
-      )
-        |> list.head
-    },
-  )
+         fn(_) {
+           transaction.outputs
+             |> list.filter_map(
+                  fn(output) {
+                    when output.datum is {
+                      InlineDatum(data) ->
+                        if blake2b_256(cbor.serialise(data)) == datum_hash {
+                          Some(data)
+                        } else {
+                          None
+                        }
+                      _ ->
+                        None
+                    }
+                  },
+                )
+             |> list.head
+         },
+       )
 }
 
 /// Find all outputs that are paying into the given script hash, if any. This is useful for
 /// contracts running over multiple transactions.
 pub fn find_script_outputs(
   transaction: Transaction,
-  script_hash: Hash<Blake2b_224, VerificationKey>,
+  script_hash: Hash<Blake2b_224, Script>,
 ) -> List<Output> {
   transaction.outputs
     |> list.filter(
-    fn(output) {
-      when output.address.payment_credential is {
-        ScriptCredential(addr_script_hash) ->
-          script_hash == addr_script_hash
-        VerificationKeyCredential(_) ->
-          False
-      }
-    },
-  )
+         fn(output) {
+           when output.address.payment_credential is {
+             ScriptCredential(addr_script_hash) ->
+               script_hash == addr_script_hash
+             VerificationKeyCredential(_) ->
+               False
+           }
+         },
+       )
 }
