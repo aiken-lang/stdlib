@@ -75,12 +75,12 @@ test serialise_8() {
 /// ```aiken
 /// diagnostic(42) == "42"
 /// diagnostic(#"a1b2") == "h'A1B2'"
-/// diagnostic([1, 2, 3]) == "[1, 2, 3]"
+/// diagnostic([1, 2, 3]) == "[_ 1, 2, 3]"
 /// diagnostic([]) == "[]"
-/// diagnostic((1, 2)) == "[1, 2]"
-/// diagnostic((1, #"ff", 3)) == "[1, h'FF', 3]"
-/// diagnostic([(1, #"ff")]) == "{ 1: h'FF' }"
-/// diagnostic(Some(42)) == "121([42])"
+/// diagnostic((1, 2)) == "[_ 1, 2]"
+/// diagnostic((1, #"ff", 3)) == "[_ 1, h'FF', 3]"
+/// diagnostic([(1, #"ff")]) == "{_ 1: h'FF' }"
+/// diagnostic(Some(42)) == "121([_ 42])"
 /// diagnostic(None) == "122([])"
 /// ```
 pub fn diagnostic(self: Data) -> String {
@@ -102,6 +102,7 @@ pub fn diagnostic(self: Data) -> String {
 /// | A      | 65      | 0x41 |
 /// | [      | 91      | 0x5b |
 /// | ]      | 93      | 0x5d |
+/// | _      | 95      | 0x5f |
 /// | h      | 104     | 0x68 |
 /// | {      | 123     | 0x7b |
 /// | }      | 125     | 0x7d |
@@ -132,7 +133,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
                 },
                 (#"5d", append_bytearray(#"29", builder)),
               )
-            append_bytearray(#"5b", bytes)
+            append_bytearray(#"5b5f20", bytes)
           }
         }
 
@@ -171,7 +172,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
               },
               (#"207d", builder),
             )
-          append_bytearray(#"7b20", bytes)
+          append_bytearray(#"7b5f20", bytes)
         }
       }
     },
@@ -192,7 +193,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
               },
               (#"5d", builder),
             )
-          append_bytearray(#"5b", bytes)
+          append_bytearray(#"5b5f20", bytes)
         }
       }
     },
@@ -270,7 +271,7 @@ test diagnostic_2() {
 }
 
 test diagnostic_3() {
-  diagnostic([1, 2, 3]) == @"[1, 2, 3]"
+  diagnostic([1, 2, 3]) == @"[_ 1, 2, 3]"
 }
 
 test diagnostic_4() {
@@ -278,19 +279,19 @@ test diagnostic_4() {
 }
 
 test diagnostic_5() {
-  diagnostic((1, 2)) == @"[1, 2]"
+  diagnostic((1, 2)) == @"[_ 1, 2]"
 }
 
 test diagnostic_6() {
-  diagnostic((1, #"ff", 3)) == @"[1, h'FF', 3]"
+  diagnostic((1, #"ff", 3)) == @"[_ 1, h'FF', 3]"
 }
 
 test diagnostic_7() {
-  diagnostic([(1, #"ff")]) == @"{ 1: h'FF' }"
+  diagnostic([(1, #"ff")]) == @"{_ 1: h'FF' }"
 }
 
 test diagnostic_8() {
-  diagnostic(Some(42)) == @"121([42])"
+  diagnostic(Some(42)) == @"121([_ 42])"
 }
 
 test diagnostic_9() {
