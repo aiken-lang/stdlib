@@ -111,6 +111,65 @@ test min_3() {
   min(42, 14) == 14
 }
 
+/// Calculates a number to the power of `e` modulo q using the exponentiation by
+/// squaring method modulo q.
+///
+/// ```aiken
+/// math.powmod(3, 5, 3) == 0
+/// math.powmod(7, 2, 3) == 1
+/// math.powmod(3, -4, 5) == 0
+/// math.powmod(0, 0, 0) == 1
+/// math.powmod(513, 3, 35) == 22
+/// ```
+pub fn powmod(self: Int, e: Int, q: Int) -> Int {
+  if e < 0 {
+    0
+  } else if e == 0 {
+    1
+  } else if e % 2 == 0 {
+    powmod(self * self % q, e / 2, q)
+  } else {
+    self * powmod(self * self % q, ( e - 1 ) / 2, q) % q
+  }
+}
+
+test simple_powmod_test() {
+  powmod(2, 4, 2) == 0
+}
+
+test md_pow_speed_compare() {
+  pow(2, 12345) % 1561 == 1149
+}
+
+test md_size_powmod() {
+  powmod(2, 12345, 1561) == 1149
+}
+
+test lg_size_powmod() {
+  powmod(2, 1234567890, 999931) == 497611
+}
+
+// // this takes forever
+// test lg_powmod_compare() {
+//   pow(2, 1234567890) % 999931 == 497611
+// }
+
+test xl_size_powmod() {
+  powmod(2, 12345678901234567890, 9999991) == 7037275
+}
+
+test xxl_size_powmod() {
+  powmod(2, 1234567890123456789012345678901234567890, 999999929) == 744999773
+}
+
+test dammmnn_size_powmod() {
+  powmod(
+    2,
+    12345678901234567890123456789012345678901234567890123456789012345678901234567890,
+    9223372036854775783,
+  ) == 8238788744143562492
+}
+
 /// Calculates a number to the power of `e` using the exponentiation by
 /// squaring method.
 ///
