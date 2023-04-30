@@ -290,3 +290,8 @@ test flatten_with_2() {
     },
   ) == [("a", "2"), ("b", "")]
 }
+
+/// Get the inner list holding the dictionary data.
+pub fn to_list(self: Value) -> List<(ByteArray, Dict<ByteArray, Int>)> {
+  dict.to_list(self.inner)
+}
