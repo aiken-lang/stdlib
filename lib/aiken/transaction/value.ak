@@ -292,6 +292,10 @@ test flatten_with_2() {
 }
 
 /// Get the inner list holding the dictionary data.
-pub fn to_list(self: Value) -> List<(ByteArray, Dict<ByteArray, Int>)> {
+/// ***For advanced usage only, i.e. people like Microproofs***.
+/// If you are looking for a to_list function, use flatten or tokens
+pub fn to_list_advanced_usage(
+  self: Value,
+) -> List<(ByteArray, Dict<ByteArray, Int>)> {
   dict.to_list(self.inner)
 }
