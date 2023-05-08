@@ -3,9 +3,9 @@ use aiken/builtin
 /// Compare two bytearrays lexicographically.
 ///
 /// ```aiken
-/// bytearray.compare(#00, #FF) == Less
-/// bytearray.compare(#42, #42) == Equal
-/// bytearray.compare(#FF, #00) == Greater
+/// bytearray.compare(#"00", #"FF") == Less
+/// bytearray.compare(#"42", #"42") == Equal
+/// bytearray.compare(#"FF", #"00") == Greater
 /// ```
 pub fn compare(left: ByteArray, right: ByteArray) -> Ordering {
   if builtin.less_than_bytearray(left, right) {
@@ -78,7 +78,7 @@ test drop_4() {
 /// Left-fold over bytes of a [`ByteArray`](https://aiken-lang.github.io/prelude/aiken.html#ByteArray). Note that every byte given to the callback function is comprised between 0 and 255.
 ///
 /// ```aiken
-/// bytearray.foldl(#"acab", fn(byte, acc) { acc * 256 + bytes }, 0) == 44203
+/// bytearray.foldl(#"acab", fn(byte, acc) { acc * 256 + byte }, 0) == 44203
 /// bytearray.foldl(#[1, 2, 3], flip(bytearray.push), #"") == #[3, 2, 1]
 /// ```
 pub fn foldl(
@@ -132,7 +132,7 @@ test foldl_4() {
 /// Right-fold over bytes of a [`ByteArray`](https://aiken-lang.github.io/prelude/aiken.html#ByteArray). Note that every byte given to the callback function is comprised between 0 and 255.
 ///
 /// ```aiken
-/// bytearray.foldr(#"acab", fn(byte, acc) { acc * 256 + bytes }, 0) == 44203
+/// bytearray.foldr(#"acab", fn(byte, acc) { acc * 256 + byte }, 0) == 43948
 /// bytearray.foldl(#[1, 2, 3], flip(bytearray.push), #"") == #[1, 2, 3]
 /// ```
 pub fn foldr(
@@ -211,7 +211,7 @@ test is_empty_2() {
 /// Convert a `String` into a `ByteArray`.
 ///
 /// ```aiken
-/// bytearray.from_string("ABC") == #414243
+/// bytearray.from_string(@"ABC") == #"414243"
 /// ```
 pub fn from_string(str: String) -> ByteArray {
   builtin.encode_utf8(str)
