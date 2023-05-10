@@ -24,6 +24,9 @@ pub opaque type Dict<key, value> {
 }
 
 /// Create a new map
+/// ```aiken
+/// dict.to_list(dict.new()) == []
+/// ```
 pub fn new() -> Dict<key, value> {
   Dict { inner: [] }
 }
@@ -46,11 +49,16 @@ fn fixture_1() {
 /// Remove a key-value pair from the dictionary. If the key is not found, no changes are made.
 ///
 /// ```aiken
-/// dict.new()
-///   |> dict.insert(key: 14, value: 42, int.compare)
-///   |> dict.delete(key: 14)
-///   |> dict.get(14)
-/// // None
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: 1, value: 100, compare: int.compare)
+///     |> dict.insert(key: 2, value: 200, compare: int.compare)
+///     |> dict.delete(key: 1)
+///     |> dict.to_list()
+///
+/// result == [(2, 200)]
 /// ```
 pub fn delete(self: Dict<key, value>, key: key) -> Dict<key, value> {
   Dict { inner: do_delete(self.inner, key) }
@@ -104,6 +112,20 @@ test delete_5() {
 }
 
 /// Keep only the key-value pairs that pass the given predicate.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: 1, value: 100, compare: int.compare)
+///     |> dict.insert(key: 2, value: 200, compare: int.compare)
+///     |> dict.insert(key: 3, value: 300, compare: int.compare)
+///     |> dict.filter(fn(k, _v) { k > 1 })
+///     |> dict.to_list()
+///
+/// result == [(2, 200), (3, 300)]
+/// ```
 pub fn filter(
   self: Dict<key, value>,
   with: fn(key, value) -> Bool,
@@ -148,11 +170,18 @@ test filter_3() {
 /// Finds a value in the dictionary, and returns the first key found to have that value.
 ///
 /// ```aiken
-/// dict.new()
-///   |> dict.insert(key: foo, value: 42, bytearray.compare)
-///   |> dict.insert(key: bar, value: 14, bytearray.compare)
-///   |> dict.find(42)
-/// // Some(foo)
+/// use aiken/bytearray
+///
+/// let foo: ByteArray = #"00"
+/// let bar: ByteArray = #"11"
+/// 
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: foo, value: 42, compare: bytearray.compare)
+///     |> dict.insert(key: bar, value: 14, compare: bytearray.compare)
+///     |> dict.find(42)
+/// 
+/// result == Some(foo)
 /// ```
 pub fn find(self: Dict<key, value>, value v: value) -> Option<key> {
   do_find(self.inner, v)
@@ -202,6 +231,19 @@ test find_4() {
 }
 
 /// Fold over the key-value pairs in a dictionary.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: 1, value: 100, compare: int.compare)
+///     |> dict.insert(key: 2, value: 200, compare: int.compare)
+///     |> dict.insert(key: 3, value: 300, compare: int.compare)
+///     |> dict.fold(fn(_k, v, r) { v + r }, 0)
+/// 
+/// result == 600
+/// ```
 pub fn fold(
   self: Dict<key, value>,
   with: fn(key, value, result) -> result,
@@ -233,6 +275,18 @@ test fold_1() {
 
 /// Construct a dictionary from a list of key-value pairs. Note that when a key is present
 /// multiple times, the first occurrence prevails.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let list = [(1, 100), (3, 300), (2, 200)]
+/// 
+/// let result =
+///   dict.from_list(list, int.compare)
+///     |> dict.to_list()
+/// 
+/// result == [(1, 100), (2, 200), (3, 300)]
+/// ```
 pub fn from_list(
   self: List<(key, value)>,
   compare: fn(key, key) -> Ordering,
@@ -302,10 +356,22 @@ test bench_from_list() {
 /// keys. This function fails (i.e. halt the program execution) if the list isn't
 /// sorted.
 ///
+/// ```aiken
+/// use aiken/int
+///
+/// let list = [(1, 100), (2, 200), (3, 300)]
+/// 
+/// let result =
+///   dict.from_ascending_list(list, int.compare)
+///     |> dict.to_list()
+/// 
+/// result == [(1, 100), (2, 200), (3, 300)]
+/// ```
+///
 /// This is meant to be used to turn a list constructed off-chain into a `Dict`
 /// which has taken care of maintaining interval invariants. This function still
 /// performs a sanity check on all keys to avoid silly mistakes. It is, however,
-/// considerably faster than
+/// considerably faster than ['from_list'](from_list)
 pub fn from_ascending_list(
   xs: List<(key, value)>,
   compare: fn(key, key) -> Ordering,
@@ -364,10 +430,16 @@ test bench_from_ascending_list() {
 /// Get a value in the dict by its key.
 ///
 /// ```aiken
-/// dict.new()
-///   |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
-///   |> dict.get(key: foo)
-/// // Some("Aiken")
+/// use aiken/bytearray
+///
+/// let foo: ByteArray = #"00"
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: foo, value: "Aiken", compare: bytearray.compare)
+///     |> dict.get(key: foo)
+///
+///  result == Some("Aiken")
 /// ```
 pub fn get(self: Dict<key, value>, key: key) -> Option<value> {
   do_get(self.inner, key)
@@ -409,10 +481,16 @@ test get_3() {
 /// Check if a key exists in the dictionary.
 ///
 /// ```aiken
-/// dict.new()
-///   |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
-///   |> dict.has_key(foo)
-/// // True
+/// use aiken/bytearray
+///
+/// let foo: ByteArray = #"00"
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: foo, value: "Aiken", compare: bytearray.compare)
+///     |> dict.has_key(foo)
+///
+/// result == True
 /// ```
 pub fn has_key(self: Dict<key, value>, key k: key) -> Bool {
   do_has_key(self.inner, k)
@@ -463,11 +541,17 @@ test has_key_4() {
 /// Insert a value in the dictionary at a given key key. If the key already exists, its value is **overridden**.
 ///
 /// ```aiken
-/// dict.new()
-///   |> dict.insert(key: foo, value: "Foo", bytearray.compare)
-///   |> dict.insert(key: foo, value: "Aiken", bytearray.compare)
-///   |> dict.to_list()
-/// // [(foo, "Aiken")]
+/// use aiken/bytearray
+///
+/// let foo: ByteArray = #"00"
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: foo, value: "Foo", compare: bytearray.compare)
+///     |> dict.insert(key: foo, value: "Aiken", compare: bytearray.compare)
+///     |> dict.to_list()
+///
+/// result == [(foo, "Aiken")]
 /// ```
 pub fn insert(
   self: Dict<key, value>,
@@ -526,6 +610,9 @@ test insert_2() {
 }
 
 /// Efficiently checks whether a dictionary is empty.
+/// ```aiken
+/// dict.is_empty(dict.new()) == True
+/// ```
 pub fn is_empty(self: Dict<key, value>) -> Bool {
   when self.inner is {
     [] ->
@@ -542,12 +629,19 @@ test is_empty_1() {
 /// Extract all the keys present in a given `Dict`.
 ///
 /// ```aiken
-/// dict.new()
-///   |> dict.insert(foo, 14, bytearray.compare)
-///   |> dict.insert(bar, 42, bytearray.compare)
-///   |> dict.insert(foo, 1337, bytearray.compare)
-///   |> dict.keys()
-/// // [foo, bar]
+/// use aiken/bytearray
+///
+/// let foo: ByteArray = #"00"
+/// let bar: ByteArray = #"11"
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(foo, 14, bytearray.compare)
+///     |> dict.insert(bar, 42, bytearray.compare)
+///     |> dict.insert(foo, 1337, bytearray.compare)
+///     |> dict.keys()
+///
+/// result == [foo, bar]
 /// ```
 pub fn keys(self: Dict<key, value>) -> List<key> {
   do_keys(self.inner)
@@ -577,9 +671,17 @@ test keys_2() {
 /// Apply a function to all key-value pairs in a map.
 ///
 /// ```aiken
-/// pub fn celebrate_birthday(self: Dict<ByteArray, Int>, key: ByteArray) {
-///   dict.map(self, with: fn(_key, value) { value + 1 })
-/// }
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(1, 100, int.compare)
+///     |> dict.insert(2, 200, int.compare)
+///     |> dict.insert(3, 300, int.compare)
+///     |> dict.map(fn(_k, v) { v * 2 })
+///     |> dict.to_list()
+///
+///  result == [(1, 200), (2, 400), (3, 600)]
 /// ```
 pub fn map(self: Dict<key, a>, with: fn(key, a) -> b) -> Dict<key, b> {
   Dict { inner: do_map(self.inner, with) }
@@ -609,6 +711,19 @@ test map_2() {
 }
 
 /// Get the inner list holding the dictionary data.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(1, 100, int.compare)
+///     |> dict.insert(2, 200, int.compare)
+///     |> dict.insert(3, 300, int.compare)
+///     |> dict.to_list()
+///
+/// result == [(1, 100), (2, 200), (3, 300)]
+/// ```
 pub fn to_list(self: Dict<key, value>) -> List<(key, value)> {
   self.inner
 }
@@ -622,6 +737,19 @@ test to_list_2() {
 }
 
 /// Return the number of key-value pairs in the dictionary.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(1, 100, int.compare)
+///     |> dict.insert(2, 200, int.compare)
+///     |> dict.insert(3, 300, int.compare)
+///     |> dict.size()
+///
+/// result == 3
+/// ```
 pub fn size(self: Dict<key, value>) -> Int {
   do_size(self.inner)
 }
@@ -656,6 +784,18 @@ test size_3() {
 
 /// Combine two dictionaries. If the same key exist in both the left and
 /// right dictionary, values from the left are preferred (i.e. left-biaised).
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let left_dict = dict.from_list([(1, 100), (2, 200)], int.compare)
+/// let right_dict = dict.from_list([(1, 150), (3, 300)], int.compare)
+///
+/// let result =
+///   dict.union(left_dict, right_dict, int.compare) |> dict.to_list()
+///
+/// result == [(1, 100), (2, 200), (3, 300)]
+/// ```
 pub fn union(
   left: Dict<key, value>,
   right: Dict<key, value>,
@@ -717,6 +857,24 @@ test union_4() {
 /// in both dictionaries.
 ///
 /// When passing `None`, the value is removed and not present in the union.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let left_dict = dict.from_list([(1, 100), (2, 200)], int.compare)
+/// let right_dict = dict.from_list([(1, 150), (3, 300)], int.compare)
+///
+/// let result =
+///   dict.union_with(
+///     left_dict,
+///     right_dict,
+///     fn(_k, v1, v2) { Some(v1 + v2) },
+///     int.compare,
+///   )
+///     |> dict.to_list()
+///
+/// result == [(1, 250), (2, 200), (3, 300)]
+/// ```
 pub fn union_with(
   left: Dict<key, value>,
   right: Dict<key, value>,
@@ -794,17 +952,22 @@ test union_with_1() {
   result == from_list([(foo, 1351), (bar, 42)], bytearray.compare)
 }
 
-/// Combine two dictionaries using the provided strategy for combining values when the same
-/// key is found in both dictionaries.
 /// Extract all the values present in a given `Dict`.
 ///
 /// ```aiken
-/// dict.new()
-///   |> dict.insert(foo, 14, bytearray.compare)
-///   |> dict.insert(bar, 42, bytearray.compare)
-///   |> dict.insert(foo, 1337, bytearray.compare)
-///   |> dict.values()
-/// // [42, 1337]
+/// use aiken/bytearray
+///
+/// let foo: ByteArray = #"00"
+/// let bar: ByteArray = #"11"
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(foo, 14, bytearray.compare)
+///     |> dict.insert(bar, 42, bytearray.compare)
+///     |> dict.insert(foo, 1337, bytearray.compare)
+///     |> dict.values()
+///
+/// result == [1337, 42]
 /// ```
 pub fn values(self: Dict<key, value>) -> List<value> {
   do_values(self.inner)
