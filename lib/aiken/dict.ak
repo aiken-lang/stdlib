@@ -174,13 +174,15 @@ test filter_3() {
 ///
 /// let foo: ByteArray = #"00"
 /// let bar: ByteArray = #"11"
-/// 
+/// let baz: ByteArray = #"22"
+///
 /// let result =
 ///   dict.new()
 ///     |> dict.insert(key: foo, value: 42, compare: bytearray.compare)
 ///     |> dict.insert(key: bar, value: 14, compare: bytearray.compare)
+///     |> dict.insert(key: baz, value: 42, compare: bytearray.compare)
 ///     |> dict.find(42)
-/// 
+///
 /// result == Some(foo)
 /// ```
 pub fn find(self: Dict<key, value>, value v: value) -> Option<key> {
@@ -241,7 +243,7 @@ test find_4() {
 ///     |> dict.insert(key: 2, value: 200, compare: int.compare)
 ///     |> dict.insert(key: 3, value: 300, compare: int.compare)
 ///     |> dict.fold(fn(_k, v, r) { v + r }, 0)
-/// 
+///
 /// result == 600
 /// ```
 pub fn fold(
@@ -280,11 +282,11 @@ test fold_1() {
 /// use aiken/int
 ///
 /// let list = [(1, 100), (3, 300), (2, 200)]
-/// 
+///
 /// let result =
 ///   dict.from_list(list, int.compare)
 ///     |> dict.to_list()
-/// 
+///
 /// result == [(1, 100), (2, 200), (3, 300)]
 /// ```
 pub fn from_list(
@@ -360,11 +362,11 @@ test bench_from_list() {
 /// use aiken/int
 ///
 /// let list = [(1, 100), (2, 200), (3, 300)]
-/// 
+///
 /// let result =
 ///   dict.from_ascending_list(list, int.compare)
 ///     |> dict.to_list()
-/// 
+///
 /// result == [(1, 100), (2, 200), (3, 300)]
 /// ```
 ///
