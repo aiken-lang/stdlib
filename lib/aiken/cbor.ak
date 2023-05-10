@@ -203,7 +203,6 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
       |> from_int(builder),
     {
       // -------- ByteArray
-
       let bytes =
         un_b_data(self)
 
@@ -249,13 +248,20 @@ fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
 
 fn from_int(i: Int, digits: ByteArray) -> ByteArray {
   if i == 0 {
-    if length_of_bytearray(digits) == 0 {
-      #"30"
-    } else {
-      digits
-    }
+    append_bytearray(#"30", digits)
   } else {
-    from_int(
+    do_from_int(
+      quotient_integer(i, 10),
+      cons_bytearray(remainder_integer(i, 10) + 48, digits),
+    )
+  }
+}
+
+fn do_from_int(i: Int, digits: ByteArray) -> ByteArray {
+  if i <= 0 {
+    digits
+  } else {
+    do_from_int(
       quotient_integer(i, 10),
       cons_bytearray(remainder_integer(i, 10) + 48, digits),
     )
@@ -302,4 +308,34 @@ test diagnostic_10() {
   let xs: List<(Int, Int)> =
     []
   diagnostic(xs) == @"{}"
+}
+
+type Foo {
+  foo: Bar,
+}
+
+type Bar {
+  A
+  B(Int)
+}
+
+test diagnostic_11() {
+  diagnostic(Foo { foo: A }) == @"121([_ 121([])])"
+}
+
+test diagnostic_12() {
+  diagnostic(Foo { foo: B(42) }) == @"121([_ 122([_ 42])])"
+}
+
+type Baz {
+  a0: Int,
+  b0: ByteArray,
+}
+
+test diagnostic_13() {
+  diagnostic(Baz { a0: 14, b0: #"ff" }) == @"121([_ 14, h'FF'])"
+}
+
+test diagnostic_14() {
+  diagnostic([0]) == @"[_ 0]"
 }
