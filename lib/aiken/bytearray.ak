@@ -338,7 +338,7 @@ test reduce_2() {
 /// bytearray.slice(#[0, 1, 2, 3, 4, 5, 6], start: 1, end: 3) == #[1, 2, 3]
 /// ```
 pub fn slice(self: ByteArray, start: Int, end: Int) -> ByteArray {
-  builtin.slice_bytearray(start, end, self)
+  builtin.slice_bytearray(start, end - start + 1, self)
 }
 
 test slice_1() {
@@ -351,6 +351,14 @@ test slice_2() {
 
 test slice_3() {
   slice(#"010203", 0, 42) == #"010203"
+}
+
+test slice_4() {
+  slice(#[0, 1, 2, 3, 4], 0, 3) == #[0, 1, 2, 3]
+}
+
+test slice_5() {
+  slice(#[0, 1, 2, 3, 4], 1, 2) == #[1, 2]
 }
 
 /// Returns the n-length prefix of a `ByteArray`.
