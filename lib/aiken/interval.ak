@@ -49,6 +49,13 @@ pub type IntervalBound<a> {
 }
 
 /// Return the highest bound of the two.
+///
+/// ```aiken
+/// let ib1 = IntervalBound { bound_type: Finite(0), is_inclusive: False }
+/// let ib2 = IntervalBound { bound_type: Finite(1), is_inclusive: False }
+///
+/// max(ib1, ib2) == ib2
+/// ```
 pub fn max(
   left: IntervalBound<Int>,
   right: IntervalBound<Int>,
@@ -64,6 +71,13 @@ pub fn max(
 }
 
 /// Return the smallest bound of the two.
+///
+/// ```aiken
+/// let ib1 = IntervalBound { bound_type: Finite(0), is_inclusive: False }
+/// let ib2 = IntervalBound { bound_type: Finite(1), is_inclusive: False }
+///
+/// min(ib1, ib2) == ib1
+/// ```
 pub fn min(
   left: IntervalBound<Int>,
   right: IntervalBound<Int>,
@@ -151,14 +165,20 @@ fn compare_bound_type(
 /// ```aiken
 /// let iv =
 ///   Interval {
-///     lower_bound: IntervalBound(Finite(14), True),
-///     upper_bound: IntervalBound(Finite(42), False),
+///     lower_bound: IntervalBound {
+///       bound_type: Finite(14), 
+///       is_inclusive: True
+///     },
+///     upper_bound: IntervalBound {
+///       bound_type: Finite(42), 
+///       is_inclusive: False
+///     },
 ///   }
 ///
-/// interval.contains(iv, 25) // True
-/// interval.contains(iv, 0)  // False
-/// interval.contains(iv, 14) // True
-/// interval.contains(iv, 42) // False
+/// contains(iv, 25) == True
+/// contains(iv, 0) == False
+/// contains(iv, 14) == True
+/// contains(iv, 42) == False
 /// ```
 pub fn contains(self: Interval<Int>, elem: Int) -> Bool {
   let is_greater_than_lower_bound =
@@ -265,6 +285,12 @@ test contains_12() {
 }
 
 /// Create an interval that contains every possible values. i.e. (-INF, +INF)
+///
+/// ```aiken
+/// contains(everything(), 0) == True
+///
+/// contains(everything(), 1000) == True
+/// ```
 pub fn everything() -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -279,6 +305,12 @@ pub fn everything() -> Interval<a> {
 }
 
 /// Create an empty interval that contains no value.
+///
+/// ```aiken
+/// contains(empty(), 0) == False
+///
+/// contains(empty(), 1000) == False
+/// ```
 pub fn empty() -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -293,6 +325,13 @@ pub fn empty() -> Interval<a> {
 }
 
 /// Create an interval that includes all values between two bounds, including the bounds. i.e. [lower_bound, upper_bound]
+///
+/// ```aiken
+/// between(10, 100) == Interval {
+///   lower_bound: IntervalBound { bound_type: Finite(10), is_inclusive: True },
+///   upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: True },
+/// }
+/// ```
 pub fn between(lower_bound: a, upper_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -307,6 +346,13 @@ pub fn between(lower_bound: a, upper_bound: a) -> Interval<a> {
 }
 
 /// Create an interval that includes all values between two bounds, excluding the bounds. i.e. (lower_bound, upper_bound)
+///
+/// ```aiken
+/// strictly_between(10, 100) == Interval {
+///   lower_bound: IntervalBound { bound_type: Finite(10), is_inclusive: False },
+///   upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: False },
+/// }
+/// ```
 pub fn strictly_between(lower_bound: a, upper_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -321,6 +367,13 @@ pub fn strictly_between(lower_bound: a, upper_bound: a) -> Interval<a> {
 }
 
 /// Create an interval that includes all values greater than the given bound. i.e [lower_bound, +INF)
+///
+/// ```aiken
+/// after(10) == Interval {
+///   lower_bound: IntervalBound { bound_type: Finite(10), is_inclusive: True },
+///   upper_bound: IntervalBound { bound_type: PositiveInfinity, is_inclusive: True },
+/// }
+/// ```
 pub fn after(lower_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -335,6 +388,13 @@ pub fn after(lower_bound: a) -> Interval<a> {
 }
 
 /// Create an interval that includes all values strictly greater than the given bound, excluding the bound itself. i.e (lower_bound, +INF)
+///
+/// ```aiken
+/// strictly_after(10) == Interval {
+///   lower_bound: IntervalBound { bound_type: Finite(10), is_inclusive: False },
+///   upper_bound: IntervalBound { bound_type: PositiveInfinity, is_inclusive: True },
+/// }
+/// ```
 pub fn strictly_after(lower_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -348,7 +408,14 @@ pub fn strictly_after(lower_bound: a) -> Interval<a> {
   }
 }
 
-/// Create an interval that includes all values greater than the given bound. i.e (-INF, upper_bound]
+/// Create an interval that includes all values less than the given bound. i.e (-INF, upper_bound]
+///
+/// ```aiken
+/// before(100) == Interval {
+///   lower_bound: IntervalBound { bound_type: NegativeInfinity, is_inclusive: True },
+///   upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: True },
+/// }
+/// ```
 pub fn before(upper_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -362,7 +429,14 @@ pub fn before(upper_bound: a) -> Interval<a> {
   }
 }
 
-/// Create an interval that includes all values strictly greater than the given bound, excluding the bound itself. i.e (-INF, upper_bound)
+/// Create an interval that includes all values strictly less than the given bound, excluding the bound itself. i.e (-INF, upper_bound)
+///
+/// ```aiken
+/// strictly_before(10) == Interval {
+///   lower_bound: IntervalBound { bound_type: NegativeInfinity, is_inclusive: True },
+///   upper_bound: IntervalBound { bound_type: Finite(10), is_inclusive: False },
+/// }
+/// ```
 pub fn strictly_before(upper_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
@@ -377,6 +451,27 @@ pub fn strictly_before(upper_bound: a) -> Interval<a> {
 }
 
 /// Tells whether an interval is empty; i.e. that is contains no value.
+///
+/// ```aiken
+/// let iv1 = empty()
+///
+/// let iv2 = Interval {
+///     lower_bound: IntervalBound { bound_type: Finite(0), is_inclusive: False },
+///     upper_bound: IntervalBound { bound_type: Finite(0), is_inclusive: False },
+///   }
+///
+/// let iv3 = Interval {
+///     lower_bound: IntervalBound { bound_type: Finite(0), is_inclusive: False },
+///     upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: False },
+///   }
+///
+/// is_empty(iv1) == True
+/// is_empty(iv2) == True
+/// is_empty(iv3) == False
+///
+/// // Note: Two empty intervals are not necessarily equal.
+/// iv1 != iv2
+/// ```
 pub fn is_empty(self: Interval<Int>) -> Bool {
   let ordering =
     compare_bound_type(self.lower_bound.bound_type, self.upper_bound.bound_type)
@@ -406,17 +501,17 @@ pub fn is_empty(self: Interval<Int>) -> Bool {
 /// Computes the largest interval contains in the two given intervals, if any.
 ///
 /// ```aiken
-/// let iv1 = interval.between(0, 10)
-/// let iv2 = interval.between(2, 14)
-/// interval.intersection(iv1, iv2) == interval.between(2, 10)
+/// let iv1 = between(0, 10)
+/// let iv2 = between(2, 14)
+/// intersection(iv1, iv2) == between(2, 10)
 ///
-/// let iv1 = interval.strictly_before(10)
-/// let iv2 = interval.strictly_after(0)
-/// interval.intersection(iv1, iv2) == interval.strictly_between(0, 10)
+/// let iv1 = strictly_before(10)
+/// let iv2 = strictly_after(0)
+/// intersection(iv1, iv2) == strictly_between(0, 10)
 ///
-/// let iv1 = interval.between(0, 1)
-/// let iv2 = interval.between(2, 3)
-/// interval.intersection(iv1, iv2) |> interval.is_empty
+/// let iv1 = between(0, 1)
+/// let iv2 = between(2, 3)
+/// intersection(iv1, iv2) |> interval.is_empty
 /// ```
 pub fn intersection(iv1: Interval<Int>, iv2: Interval<Int>) -> Interval<Int> {
   Interval {
