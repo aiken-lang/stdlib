@@ -1,4 +1,5 @@
 use aiken/builtin
+use aiken/option
 
 /// Compare two bytearrays lexicographically.
 ///
@@ -173,6 +174,61 @@ test foldr_3() {
   foldr(#[1, 2, 3, 4, 5], flip(push), #"") == #[1, 2, 3, 4, 5]
 }
 
+/// Search the start and end positions of a sub-array in a `ByteArray`.
+///
+/// ```aiken
+/// bytearray.index_of("Hello, World!", "World") == Some((7, 11))
+/// bytearray.index_of("Hello, World!", "foo") == None
+/// bytearray.index_of("Hello, World!", "!") == Some((12, 12))
+/// bytearray.index_of("Hello, World!", "o") == Some((4, 4))
+/// bytearray.index_of("Hello, World!", "Hello, World!") == Some((0, 12))
+/// ```
+pub fn index_of(self: ByteArray, bytes: ByteArray) -> Option<(Int, Int)> {
+  let offset =
+    length(bytes)
+
+  do_index_of(self, bytes, 0, offset, length(self))
+    |> option.map(fn(ix) { (ix, ix + offset - 1) })
+}
+
+fn do_index_of(
+  self: ByteArray,
+  bytes: ByteArray,
+  cursor: Int,
+  offset: Int,
+  size: Int,
+) -> Option<Int> {
+  if cursor + offset > size {
+    None
+  } else {
+    if builtin.slice_bytearray(cursor, offset, self) == bytes {
+      Some(cursor)
+    } else {
+      do_index_of(self, bytes, cursor + 1, offset, size)
+    }
+  }
+}
+
+test index_of_1() {
+  index_of("Hello, World!", "World") == Some((7, 11))
+}
+
+test index_of_2() {
+  index_of("Hello, World!", "foo") == None
+}
+
+test index_of_3() {
+  index_of("Hello, World!", "!") == Some((12, 12))
+}
+
+test index_of_4() {
+  index_of("Hello, World!", "o") == Some((4, 4))
+}
+
+test index_of_5() {
+  index_of("Hello, World!", "Hello, World!") == Some((0, 12))
+}
+
 /// Returns the number of bytes in a `ByteArray`.
 ///
 /// ```aiken
@@ -282,7 +338,7 @@ test reduce_2() {
 /// bytearray.slice(#[0, 1, 2, 3, 4, 5, 6], start: 1, end: 3) == #[1, 2, 3]
 /// ```
 pub fn slice(self: ByteArray, start: Int, end: Int) -> ByteArray {
-  builtin.slice_bytearray(start, end, self)
+  builtin.slice_bytearray(start, end - start + 1, self)
 }
 
 test slice_1() {
@@ -295,6 +351,14 @@ test slice_2() {
 
 test slice_3() {
   slice(#"010203", 0, 42) == #"010203"
+}
+
+test slice_4() {
+  slice(#[0, 1, 2, 3, 4], 0, 3) == #[0, 1, 2, 3]
+}
+
+test slice_5() {
+  slice(#[0, 1, 2, 3, 4], 1, 2) == #[1, 2]
 }
 
 /// Returns the n-length prefix of a `ByteArray`.
