@@ -293,7 +293,7 @@ test drop_2() {
 /// Returns the suffix of the given list after removing all elements that satisfy the predicate.
 ///
 /// ```aiken
-/// list.drop_while([1, 2, 3], fn(x) { x > 2 }) == [2, 3]
+/// list.drop_while([1, 2, 3], fn(x) { x < 2 }) == [2, 3]
 /// list.drop_while([], fn(x) { x > 2 }) == []
 /// list.drop_while([1, 2, 3], fn(x) { x == 3 }) == [1, 2, 3]
 /// ```
@@ -473,7 +473,7 @@ test flat_map_2() {
 ///
 /// ```aiken
 /// list.foldl([1, 2, 3], fn(n, total) { n + total }, 0) == 6
-/// list.foldl([1, 2, 3], fn(x, xs) { [x, ..xs] }) == [3, 2, 1]
+/// list.foldl([1, 2, 3], fn(x, xs) { [x, ..xs] }, []) == [3, 2, 1]
 /// ```
 pub fn foldl(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
   when self is {
@@ -500,7 +500,7 @@ test foldl_3() {
 ///
 /// ```aiken
 /// list.foldr([1, 2, 3], fn(n, total) { n + total }, 0) == 6
-/// list.foldr([1, 2, 3], fn(x, xs) { [x, ..xs] }, 0) == [1, 2, 3]
+/// list.foldr([1, 2, 3], fn(x, xs) { [x, ..xs] }, []) == [1, 2, 3]
 /// ```
 pub fn foldr(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
   when self is {
@@ -1127,7 +1127,8 @@ test sort_4() {
 /// Fundamentally equivalent to (but more efficient):
 ///
 /// ```aiken
-/// span(xs, n) == (take(xs, n), drop(xs, n))
+/// // span(xs, n) == (take(xs, n), drop(xs, n))
+/// span([1, 2, 3, 4, 5], 3) == ([1, 2, 3], [4, 5])
 /// ```
 pub fn span(self: List<a>, n: Int) -> (List<a>, List<a>) {
   when self is {
@@ -1338,7 +1339,7 @@ test zip_3() {
 ///
 /// ```aiken
 /// list.reduce([#[1], #[2], #[3]], bytearray.concat, #[0]) == #[0, 1, 2, 3]
-/// list.reduce([True, False, True], or, False) == True
+/// list.reduce([True, False, True], fn(b, a) { or([b, a]) }, False) == True
 /// ```
 pub fn reduce(self: List<a>, with: fn(b, a) -> b, zero: b) -> b {
   foldl(self, flip(with), zero)
