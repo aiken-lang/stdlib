@@ -3,9 +3,9 @@ name: Continuous Integration
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -23,30 +23,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: 📥 Checkout repository
-      uses: actions/checkout@v3
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
 
-    - name: 💾 Cache dependencies
-      uses: Swatinem/rust-cache@v2
+      - name: 🧰 Setup Pages
+        uses: actions/configure-pages@v2
 
-    - name: 🧰 Setup Pages
-      uses: actions/configure-pages@v2
+      - name: 🧰 Install Aiken
+        uses: aiken-lang/setup-aiken@v0.1.0
+        with:
+          version: v1.0.5-alpha
 
-    - name: 🧰 Install Aiken
-      run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git
+      - name: 📝 Run fmt
+        run: aiken fmt --check
 
-    - name: 🔬 Run tests
-      run: aiken check
+      - name: 🔬 Run tests
+        run: aiken check
 
-    - name: 📘 Generate documentation
-      shell: bash
-      working-directory: .
-      run: aiken docs -o docs
+      - name: 📘 Generate documentation
+        shell: bash
+        working-directory: .
+        run: aiken docs -o docs
 
-    - name: 📦 Upload artifact
-      uses: actions/upload-pages-artifact@v1
-      with:
-        path: 'docs/'
+      - name: 📦 Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: "docs/"
 
   deploy:
     if: ${{ github.ref == 'refs/heads/main' }}
