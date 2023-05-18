@@ -1,4 +1,14 @@
-# Aiken Standard Library
+<div align="center">
+  <img src="https://raw.githubusercontent.com/aiken-lang/branding/main/assets/logo-light.png?sanitize=true#gh-dark-mode-only" alt="Aiken" height="150" />
+  <img src="https://raw.githubusercontent.com/aiken-lang/branding/main/assets/logo-dark.png?sanitize=true#gh-light-mode-only" alt="Aiken" height="150" />
+  <hr />
+    <h2 align="center" style="border-bottom: none">Aiken Standard Library</h2>
+
+[![Licence](https://img.shields.io/github/license/aiken-lang/stdlib)](https://github.com/aiken-lang/stdlib/blob/main/LICENSE)
+[![Continuous Integration](https://github.com/aiken-lang/stdlib/actions/workflows/continuous-integration.yml/badge.svg?branch=main)](https://github.com/aiken-lang/stdlib/actions/workflows/continuous-integration.yml)
+
+  <hr/>
+</div>
 
 The official standard library for the [Aiken](https://aiken-lang.org) Cardano
 smart-contract language.
