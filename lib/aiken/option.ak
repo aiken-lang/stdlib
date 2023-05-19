@@ -117,9 +117,9 @@ test map_2() {
 ///   Foo(Int, Int)
 /// }
 ///
-/// option.map2(Foo, Some(14), Some(42)) == Some(Foo(14, 42))
-/// option.map2(Foo, None, Some(42)) == None
-/// option.map2(Foo, Some(14), None) == None
+/// option.map2(Some(14), Some(42), Foo) == Some(Foo(14, 42))
+/// option.map2(None, Some(42), Foo) == None
+/// option.map2(Some(14), None, Foo) == None
 /// ```
 pub fn map2(
   opt_a: Option<a>,
@@ -158,9 +158,9 @@ test map2_3() {
 ///   Foo(Int, Int, Int)
 /// }
 ///
-/// option.map3(Foo, Some(14), Some(42), Some(1337)) == Some(Foo(14, 42, 1337))
-/// option.map3(Foo, None, Some(42), Some(1337)) == None
-/// option.map3(Foo, Some(14), None, None) == None
+/// option.map3(Some(14), Some(42), Some(1337), Foo) == Some(Foo(14, 42, 1337))
+/// option.map3(None, Some(42), Some(1337), Foo) == None
+/// option.map3(Some(14), None, None, Foo) == None
 /// ```
 pub fn map3(
   opt_a: Option<a>,
