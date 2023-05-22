@@ -1,4 +1,4 @@
-use aiken/cbor
+use aiken/builtin
 use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Blake2b_256, Hash, blake2b_256}
 use aiken/interval.{Interval}
@@ -155,7 +155,7 @@ pub fn find_datum(
                   fn(output) {
                     when output.datum is {
                       InlineDatum(data) ->
-                        if blake2b_256(cbor.serialise(data)) == datum_hash {
+                        if blake2b_256(builtin.serialise_data(data)) == datum_hash {
                           Some(data)
                         } else {
                           None
