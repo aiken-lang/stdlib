@@ -249,6 +249,8 @@ fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
 fn from_int(i: Int, digits: ByteArray) -> ByteArray {
   if i == 0 {
     append_bytearray(#"30", digits)
+  } else if i < 0 {
+    append_bytearray(#"2d", from_int(-i, digits))
   } else {
     do_from_int(
       quotient_integer(i, 10),
@@ -338,4 +340,12 @@ test diagnostic_13() {
 
 test diagnostic_14() {
   diagnostic([0]) == @"[_ 0]"
+}
+
+test diagnostic_15() {
+  diagnostic(-42) == @"-42"
+}
+
+test diagnostic_16() {
+  diagnostic([-1, 0, 1]) == @"[_ -1, 0, 1]"
 }
