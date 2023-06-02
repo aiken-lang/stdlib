@@ -193,10 +193,13 @@ pub fn find_script_outputs(
 
 /// Find the input that is currently being spent by the validator.
 /// The `ScriptPurpose` has to be `Spend` otherwise `None` is returned.
-pub fn find_own_input(ctx: ScriptContext) -> Option<Input> {
-  when ctx.purpose is {
+pub fn find_own_input(
+  tx: Transaction,
+  script_purpose: ScriptPurpose,
+) -> Option<Input> {
+  when script_purpose is {
     Spend(own_ref) ->
-      find_input(ctx.transaction, own_ref)
+      find_input(tx, own_ref)
     _ ->
       None
   }
@@ -204,50 +207,46 @@ pub fn find_own_input(ctx: ScriptContext) -> Option<Input> {
 
 test find_own_input_none() {
   find_own_input(
-    ScriptContext {
-      transaction: Transaction {
-        inputs: [],
-        reference_inputs: [],
-        outputs: [],
-        fee: value.zero(),
-        mint: value.zero(),
-        certificates: [],
-        withdrawals: dict.new(),
-        validity_range: interval.empty(),
-        extra_signatories: [],
-        redeemers: dict.new(),
-        datums: dict.new(),
-        id: TransactionId { hash: "a" },
-      },
-      purpose: Spend(
-        OutputReference {
-          transaction_id: TransactionId { hash: "b" },
-          output_index: 0,
-        },
-      ),
+    Transaction {
+      inputs: [],
+      reference_inputs: [],
+      outputs: [],
+      fee: value.zero(),
+      mint: value.zero(),
+      certificates: [],
+      withdrawals: dict.new(),
+      validity_range: interval.empty(),
+      extra_signatories: [],
+      redeemers: dict.new(),
+      datums: dict.new(),
+      id: TransactionId { hash: "a" },
     },
+    Spend(
+      OutputReference {
+        transaction_id: TransactionId { hash: "b" },
+        output_index: 0,
+      },
+    ),
   ) == None
 }
 
 test find_own_input_other_than_spend_purpose() {
   find_own_input(
-    ScriptContext {
-      transaction: Transaction {
-        inputs: [],
-        reference_inputs: [],
-        outputs: [],
-        fee: value.zero(),
-        mint: value.zero(),
-        certificates: [],
-        withdrawals: dict.new(),
-        validity_range: interval.empty(),
-        extra_signatories: [],
-        redeemers: dict.new(),
-        datums: dict.new(),
-        id: TransactionId { hash: "a" },
-      },
-      purpose: Mint(""),
+    Transaction {
+      inputs: [],
+      reference_inputs: [],
+      outputs: [],
+      fee: value.zero(),
+      mint: value.zero(),
+      certificates: [],
+      withdrawals: dict.new(),
+      validity_range: interval.empty(),
+      extra_signatories: [],
+      redeemers: dict.new(),
+      datums: dict.new(),
+      id: TransactionId { hash: "a" },
     },
+    Mint(""),
   ) == None
 }
 
@@ -270,22 +269,20 @@ test find_own_input_some() {
     }
 
   find_own_input(
-    ScriptContext {
-      transaction: Transaction {
-        inputs: [own_input],
-        reference_inputs: [],
-        outputs: [],
-        fee: value.zero(),
-        mint: value.zero(),
-        certificates: [],
-        withdrawals: dict.new(),
-        validity_range: interval.empty(),
-        extra_signatories: [],
-        redeemers: dict.new(),
-        datums: dict.new(),
-        id: TransactionId { hash: "a" },
-      },
-      purpose: Spend(own_input.output_reference),
+    Transaction {
+      inputs: [own_input],
+      reference_inputs: [],
+      outputs: [],
+      fee: value.zero(),
+      mint: value.zero(),
+      certificates: [],
+      withdrawals: dict.new(),
+      validity_range: interval.empty(),
+      extra_signatories: [],
+      redeemers: dict.new(),
+      datums: dict.new(),
+      id: TransactionId { hash: "a" },
     },
+    Spend(own_input.output_reference),
   ) == Some(own_input)
 }
