@@ -17,7 +17,7 @@ pub fn check_rational(num: UncheckedRational) -> Rational {
   let UncheckedRational { numerator, denominator } =
     num
   if denominator < 0 {
-    Rational { numerator: numerator * -1, denominator: denominator * -1 }
+    Rational { numerator: -numerator, denominator: -denominator }
   } else {
     Rational { numerator, denominator }
   }
