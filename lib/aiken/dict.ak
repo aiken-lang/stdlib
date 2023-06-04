@@ -228,7 +228,8 @@ test find_4() {
   ) == Some(baz)
 }
 
-/// Fold over the key-value pairs in a dictionary.
+/// Fold over the key-value pairs in a dictionary. The fold direction follows keys
+/// in ascending order and is done from right-to-left.
 ///
 /// ```aiken
 /// use aiken/int
@@ -238,35 +239,77 @@ test find_4() {
 ///     |> dict.insert(key: 1, value: 100, compare: int.compare)
 ///     |> dict.insert(key: 2, value: 200, compare: int.compare)
 ///     |> dict.insert(key: 3, value: 300, compare: int.compare)
-///     |> dict.fold(0, fn(_k, v, r) { v + r })
+///     |> dict.foldr(0, fn(_k, v, r) { v + r })
 ///
 /// result == 600
 /// ```
-pub fn fold(
+pub fn foldr(
   self: Dict<key, value>,
   zero: result,
   with: fn(key, value, result) -> result,
 ) -> result {
-  do_fold(self.inner, zero, with)
+  do_foldr(self.inner, zero, with)
 }
 
-fn do_fold(
+fn do_foldr(
   self: List<(key, value)>,
   zero: result,
   with: fn(key, value, result) -> result,
 ) -> result {
   when self is {
     [] -> zero
-    [(k, v), ..rest] -> do_fold(rest, with(k, v, zero), with)
+    [(k, v), ..rest] -> with(k, v, do_foldr(rest, zero, with))
+  }
+}
+
+test foldr_1() {
+  foldr(new(), 14, fn(_, _, _) { 42 }) == 14
+}
+
+test foldr_2() {
+  foldr(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
+}
+
+/// Fold over the key-value pairs in a dictionary. The fold direction follows keys
+/// in ascending order and is done from left-to-right.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: 1, value: 100, compare: int.compare)
+///     |> dict.insert(key: 2, value: 200, compare: int.compare)
+///     |> dict.insert(key: 3, value: 300, compare: int.compare)
+///     |> dict.foldl(0, fn(_k, v, r) { v + r })
+///
+/// result == 600
+/// ```
+pub fn foldl(
+  self: Dict<key, value>,
+  zero: result,
+  with: fn(key, value, result) -> result,
+) -> result {
+  do_foldl(self.inner, zero, with)
+}
+
+fn do_foldl(
+  self: List<(key, value)>,
+  zero: result,
+  with: fn(key, value, result) -> result,
+) -> result {
+  when self is {
+    [] -> zero
+    [(k, v), ..rest] -> do_foldl(rest, with(k, v, zero), with)
   }
 }
 
 test fold_1() {
-  fold(new(), 14, fn(_, _, _) { 42 }) == 14
+  foldl(new(), 14, fn(_, _, _) { 42 }) == 14
 }
 
 test fold_2() {
-  fold(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
+  foldl(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
 }
 
 /// Construct a dictionary from a list of key-value pairs. Note that when a key is present
