@@ -10,6 +10,7 @@ use aiken/transaction/credential.{
   Address, Script, ScriptCredential, StakeCredential, VerificationKey,
   VerificationKeyCredential,
 }
+use aiken/transaction/minted_value.{MintedValue}
 use aiken/transaction/value.{PolicyId, Value}
 
 /// A context given to a script by the Cardano ledger when being executed.
@@ -57,7 +58,7 @@ pub type Transaction {
   reference_inputs: List<Input>,
   outputs: List<Output>,
   fee: Value,
-  mint: Value,
+  mint: MintedValue,
   certificates: List<Certificate>,
   withdrawals: Dict<StakeCredential, Int>,
   validity_range: ValidityRange,

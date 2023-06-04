@@ -569,7 +569,7 @@ test has_key_4() {
   )
 }
 
-/// Insert a value in the dictionary at a given key. If the key already exists, its value is **overridden**. If you need ways to combine keys together, use (insert_with)[#insert_with].
+/// Insert a value in the dictionary at a given key. If the key already exists, its value is **overridden**. If you need ways to combine keys together, use (`insert_with`)[#insert_with].
 ///
 /// ```aiken
 /// use aiken/bytearray
@@ -646,7 +646,7 @@ test insert_2() {
 /// use aiken/bytearray
 ///
 /// let sum =
-///   fn (_k, a, b) { a + b }
+///   fn (_k, a, b) { Some(a + b) }
 ///
 /// let result =
 ///   dict.new()
@@ -661,7 +661,7 @@ pub fn insert_with(
   self: Dict<key, value>,
   key k: key,
   value v: value,
-  with: fn(key, value, value) -> value,
+  with: fn(key, value, value) -> Option<value>,
   compare: fn(key, key) -> Ordering,
 ) -> Dict<key, value> {
   Dict {
@@ -669,7 +669,7 @@ pub fn insert_with(
       self.inner,
       k,
       v,
-      fn(k, v1, v2) { Some(with(k, v2, v1)) },
+      fn(k, v1, v2) { with(k, v2, v1) },
       compare,
     ),
   }
@@ -677,7 +677,7 @@ pub fn insert_with(
 
 test insert_with_1() {
   let sum =
-    fn(_k, a, b) { a + b }
+    fn(_k, a, b) { Some(a + b) }
 
   let result =
     new()
@@ -690,7 +690,7 @@ test insert_with_1() {
 
 test insert_with_2() {
   let sum =
-    fn(_k, a, b) { a + b }
+    fn(_k, a, b) { Some(a + b) }
 
   let result =
     new()
@@ -704,11 +704,11 @@ test insert_with_2() {
 
 test insert_with_3() {
   let with =
-    fn(k, a, b) {
+    fn(k, a, _b) {
       if k == "foo" {
-        a
+        Some(a)
       } else {
-        b
+        None
       }
     }
 
@@ -720,7 +720,7 @@ test insert_with_3() {
       |> insert_with(key: "bar", value: 4, with: with, compare: bytearray.compare)
       |> to_list()
 
-  result == [("bar", 4), ("foo", 1)]
+  result == [("foo", 1)]
 }
 
 /// Efficiently checks whether a dictionary is empty.
