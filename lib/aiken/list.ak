@@ -13,10 +13,8 @@ use aiken/int
 /// ```
 pub fn all(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
   when self is {
-    [] ->
-      True
-    [x, ..xs] ->
-      predicate(x) && all(xs, predicate)
+    [] -> True
+    [x, ..xs] -> predicate(x) && all(xs, predicate)
   }
 }
 
@@ -43,10 +41,8 @@ test all_3() {
 /// ```
 pub fn and(self: List<Bool>) -> Bool {
   when self is {
-    [] ->
-      True
-    [x, ..xs] ->
-      x && and(xs)
+    [] -> True
+    [x, ..xs] -> x && and(xs)
   }
 }
 
@@ -74,10 +70,8 @@ test and_3() {
 /// ```
 pub fn any(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
   when self is {
-    [] ->
-      False
-    [x, ..xs] ->
-      predicate(x) || any(xs, predicate)
+    [] -> False
+    [x, ..xs] -> predicate(x) || any(xs, predicate)
   }
 }
 
@@ -101,8 +95,7 @@ test any_3() {
 /// ```
 pub fn at(self: List<a>, index: Int) -> Option<a> {
   when self is {
-    [] ->
-      None
+    [] -> None
     [x, ..xs] ->
       if index == 0 {
         Some(x)
@@ -144,10 +137,8 @@ test at_5() {
 /// ```
 pub fn or(self: List<Bool>) -> Bool {
   when self is {
-    [] ->
-      False
-    [x, ..xs] ->
-      x || or(xs)
+    [] -> False
+    [x, ..xs] -> x || or(xs)
   }
 }
 
@@ -176,8 +167,7 @@ test or_4() {
 /// ```
 pub fn concat(left: List<a>, right: List<a>) -> List<a> {
   when left is {
-    [] ->
-      right
+    [] -> right
     [x, ..xs] ->
       [x, ..concat(xs, right)]
   }
@@ -239,10 +229,8 @@ test delete_4() {
 /// ```
 pub fn difference(self: List<a>, with: List<a>) -> List<a> {
   when with is {
-    [] ->
-      self
-    [x, ..xs] ->
-      difference(delete(self, x), xs)
+    [] -> self
+    [x, ..xs] -> difference(delete(self, x), xs)
   }
 }
 
@@ -276,8 +264,7 @@ pub fn drop(self: List<a>, n: Int) -> List<a> {
     when self is {
       [] ->
         []
-      [_x, ..xs] ->
-        drop(xs, n - 1)
+      [_x, ..xs] -> drop(xs, n - 1)
     }
   }
 }
@@ -396,8 +383,7 @@ pub fn filter_map(self: List<a>, predicate: fn(a) -> Option<b>) -> List<b> {
       []
     [x, ..xs] ->
       when predicate(x) is {
-        None ->
-          filter_map(xs, predicate)
+        None -> filter_map(xs, predicate)
         Some(y) ->
           [y, ..filter_map(xs, predicate)]
       }
@@ -429,8 +415,7 @@ test filter_map_2() {
 /// ```
 pub fn find(self: List<a>, predicate: fn(a) -> Bool) -> Option<a> {
   when self is {
-    [] ->
-      None
+    [] -> None
     [x, ..xs] ->
       if predicate(x) {
         Some(x)
@@ -477,10 +462,8 @@ test flat_map_2() {
 /// ```
 pub fn foldl(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
   when self is {
-    [] ->
-      zero
-    [x, ..xs] ->
-      foldl(xs, with, with(x, zero))
+    [] -> zero
+    [x, ..xs] -> foldl(xs, with, with(x, zero))
   }
 }
 
@@ -504,10 +487,8 @@ test foldl_3() {
 /// ```
 pub fn foldr(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
   when self is {
-    [] ->
-      zero
-    [x, ..xs] ->
-      with(x, foldr(xs, with, zero))
+    [] -> zero
+    [x, ..xs] -> with(x, foldr(xs, with, zero))
   }
 }
 
@@ -541,17 +522,14 @@ test foldr_3() {
 /// ```
 pub fn init(self: List<a>) -> Option<List<a>> {
   when self is {
-    [] ->
-      None
-    _ ->
-      Some(do_init(self))
+    [] -> None
+    _ -> Some(do_init(self))
   }
 }
 
 fn do_init(self: List<a>) -> List<a> {
   when self is {
-    [] ->
-      error @"unreachable"
+    [] -> error @"unreachable"
     [_] ->
       []
     [x, ..xs] ->
@@ -580,8 +558,7 @@ test init_3() {
 /// ```
 pub fn has(self: List<a>, elem: a) -> Bool {
   when self is {
-    [] ->
-      False
+    [] -> False
     [x, ..xs] ->
       if x == elem {
         True
@@ -611,10 +588,8 @@ test has_3() {
 /// ```
 pub fn head(self: List<a>) -> Option<a> {
   when self is {
-    [] ->
-      None
-    _ ->
-      Some(builtin.head_list(self))
+    [] -> None
+    _ -> Some(builtin.head_list(self))
   }
 }
 
@@ -651,10 +626,8 @@ fn do_indexed_foldr(
   zero: result,
 ) -> result {
   when self is {
-    [] ->
-      zero
-    [x, ..xs] ->
-      with(n, x, do_indexed_foldr(n + 1, xs, with, zero))
+    [] -> zero
+    [x, ..xs] -> with(n, x, do_indexed_foldr(n + 1, xs, with, zero))
   }
 }
 
@@ -719,10 +692,8 @@ test indexed_map_2() {
 /// ```
 pub fn is_empty(self: List<a>) -> Bool {
   when self is {
-    [] ->
-      True
-    _ ->
-      False
+    [] -> True
+    _ -> False
   }
 }
 
@@ -742,12 +713,9 @@ test is_empty_2() {
 /// ```
 pub fn last(self: List<a>) -> Option<a> {
   when self is {
-    [] ->
-      None
-    [x] ->
-      Some(x)
-    [_, ..xs] ->
-      last(xs)
+    [] -> None
+    [x] -> Some(x)
+    [_, ..xs] -> last(xs)
   }
 }
 
@@ -771,10 +739,8 @@ test last_3() {
 /// ```
 pub fn length(self: List<a>) -> Int {
   when self is {
-    [] ->
-      0
-    [_, ..xs] ->
-      1 + length(xs)
+    [] -> 0
+    [_, ..xs] -> 1 + length(xs)
   }
 }
 
@@ -970,11 +936,9 @@ test reverse_2() {
 /// ```
 pub fn partition(self: List<a>, predicate: fn(a) -> Bool) -> (List<a>, List<a>) {
   when self is {
-    [] ->
-      ([], [])
+    [] -> ([], [])
     [x, ..xs] -> {
-      let (left, right) =
-        partition(xs, predicate)
+      let (left, right) = partition(xs, predicate)
       if predicate(x) {
         ([x, ..left], right)
       } else {
@@ -1023,8 +987,7 @@ pub fn slice(self: List<a>, from: Int, to: Int) {
     if from >= 0 {
       (from, None)
     } else {
-      let l =
-        length(self)
+      let l = length(self)
       (l + from, Some(l))
     }
 
@@ -1033,10 +996,8 @@ pub fn slice(self: List<a>, from: Int, to: Int) {
       to - i + 1
     } else {
       when l is {
-        Some(l) ->
-          l + to - i + 1
-        None ->
-          length(self) + to - i + 1
+        Some(l) -> l + to - i + 1
+        None -> length(self) + to - i + 1
       }
     }
 
@@ -1081,8 +1042,7 @@ pub fn sort(self: List<a>, compare: fn(a, a) -> Ordering) -> List<a> {
   when self is {
     [] ->
       []
-    [x, ..xs] ->
-      insert(sort(xs, compare), x, compare)
+    [x, ..xs] -> insert(sort(xs, compare), x, compare)
   }
 }
 
@@ -1132,14 +1092,12 @@ test sort_4() {
 /// ```
 pub fn span(self: List<a>, n: Int) -> (List<a>, List<a>) {
   when self is {
-    [] ->
-      ([], [])
+    [] -> ([], [])
     [x, ..xs] ->
       if n <= 0 {
         ([], self)
       } else {
-        let (left, right) =
-          span(xs, n - 1)
+        let (left, right) = span(xs, n - 1)
         ([x, ..left], right)
       }
   }
@@ -1169,10 +1127,8 @@ test span_4() {
 /// ```
 pub fn tail(self: List<a>) -> Option<List<a>> {
   when self is {
-    [] ->
-      None
-    [_, ..xs] ->
-      Some(xs)
+    [] -> None
+    [_, ..xs] -> Some(xs)
   }
 }
 
@@ -1283,11 +1239,9 @@ test unique_2() {
 /// ```
 pub fn unzip(self: List<(a, b)>) -> (List<a>, List<b>) {
   when self is {
-    [] ->
-      ([], [])
+    [] -> ([], [])
     [(a, b), ..xs] -> {
-      let (a_tail, b_tail) =
-        unzip(xs)
+      let (a_tail, b_tail) = unzip(xs)
       ([a, ..a_tail], [b, ..b_tail])
     }
   }

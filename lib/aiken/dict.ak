@@ -31,14 +31,11 @@ pub fn new() -> Dict<key, value> {
   Dict { inner: [] }
 }
 
-const foo =
-  #"666f6f"
+const foo = #"666f6f"
 
-const bar =
-  #"626172"
+const bar = #"626172"
 
-const baz =
-  #"62617a"
+const baz = #"62617a"
 
 fn fixture_1() {
   new()
@@ -191,8 +188,7 @@ pub fn find(self: Dict<key, value>, value v: value) -> Option<key> {
 
 fn do_find(self: List<(key, value)>, value v: value) -> Option<key> {
   when self is {
-    [] ->
-      None
+    [] -> None
     [(k2, v2), ..rest] ->
       if v == v2 {
         Some(k2)
@@ -260,10 +256,8 @@ fn do_fold(
   zero: result,
 ) -> result {
   when self is {
-    [] ->
-      zero
-    [(k, v), ..rest] ->
-      with(k, v, do_fold(rest, with, zero))
+    [] -> zero
+    [(k, v), ..rest] -> with(k, v, do_fold(rest, with, zero))
   }
 }
 
@@ -303,8 +297,7 @@ fn do_from_list(
   when xs is {
     [] ->
       []
-    [(k, v), ..rest] ->
-      do_insert(do_from_list(rest, compare), k, v, compare)
+    [(k, v), ..rest] -> do_insert(do_from_list(rest, compare), k, v, compare)
   }
 }
 
@@ -378,8 +371,7 @@ pub fn from_ascending_list(
   xs: List<(key, value)>,
   compare: fn(key, key) -> Ordering,
 ) -> Dict<key, value> {
-  let Void =
-    check_ascending_list(xs, compare)
+  let Void = check_ascending_list(xs, compare)
   Dict { inner: xs }
 }
 
@@ -388,16 +380,12 @@ fn check_ascending_list(
   compare: fn(key, key) -> Ordering,
 ) {
   when xs is {
-    [] ->
-      Void
-    [_] ->
-      Void
+    [] -> Void
+    [_] -> Void
     [(x0, _), (x1, _) as e, ..rest] ->
       when compare(x0, x1) is {
-        Less ->
-          check_ascending_list([e, ..rest], compare)
-        _ ->
-          error @"keys in associative list aren't in ascending order"
+        Less -> check_ascending_list([e, ..rest], compare)
+        _ -> error @"keys in associative list aren't in ascending order"
       }
   }
 }
@@ -449,8 +437,7 @@ pub fn get(self: Dict<key, value>, key: key) -> Option<value> {
 
 fn do_get(self: List<(key, value)>, key k: key) -> Option<value> {
   when self is {
-    [] ->
-      None
+    [] -> None
     [(k2, v), ..rest] ->
       if k == k2 {
         Some(v)
@@ -500,8 +487,7 @@ pub fn has_key(self: Dict<key, value>, key k: key) -> Bool {
 
 fn do_has_key(self: List<(key, value)>, key k: key) -> Bool {
   when self is {
-    [] ->
-      False
+    [] -> False
     [(k2, _), ..rest] ->
       if k == k2 {
         True
@@ -617,10 +603,8 @@ test insert_2() {
 /// ```
 pub fn is_empty(self: Dict<key, value>) -> Bool {
   when self.inner is {
-    [] ->
-      True
-    _ ->
-      False
+    [] -> True
+    _ -> False
   }
 }
 
@@ -758,10 +742,8 @@ pub fn size(self: Dict<key, value>) -> Int {
 
 fn do_size(self: List<(key, value)>) -> Int {
   when self is {
-    [] ->
-      0
-    [_, ..rest] ->
-      1 + do_size(rest)
+    [] -> 0
+    [_, ..rest] -> 1 + do_size(rest)
   }
 }
 
@@ -812,10 +794,8 @@ fn do_union(
   compare: fn(key, key) -> Ordering,
 ) -> List<(key, value)> {
   when left is {
-    [] ->
-      right
-    [(k, v), ..rest] ->
-      do_union(rest, do_insert(right, k, v, compare), compare)
+    [] -> right
+    [(k, v), ..rest] -> do_union(rest, do_insert(right, k, v, compare), compare)
   }
 }
 
@@ -893,8 +873,7 @@ fn do_union_with(
   compare: fn(key, key) -> Ordering,
 ) -> List<(key, value)> {
   when left is {
-    [] ->
-      right
+    [] -> right
     [(k, v), ..rest] ->
       do_union_with(
         rest,
@@ -923,8 +902,7 @@ fn do_insert_with(
           when with(k, v, v2) is {
             Some(combined) ->
               [(k, combined), ..rest]
-            None ->
-              rest
+            None -> rest
           }
         } else {
           [(k2, v2), ..do_insert_with(rest, k, v, with, compare)]

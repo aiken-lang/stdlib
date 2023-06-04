@@ -162,8 +162,7 @@ pub fn find_datum(
                         } else {
                           None
                         }
-                      _ ->
-                        None
+                      _ -> None
                     }
                   },
                 )
@@ -184,8 +183,7 @@ pub fn find_script_outputs(
            when output.address.payment_credential is {
              ScriptCredential(addr_script_hash) ->
                script_hash == addr_script_hash
-             VerificationKeyCredential(_) ->
-               False
+             VerificationKeyCredential(_) -> False
            }
          },
        )

@@ -112,8 +112,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
     {
       // -------- Constr
 
-      let (constr, fields) =
-        un_constr_data(self)
+      let (constr, fields) = un_constr_data(self)
 
       // NOTE: This is fundamentally the same logic for serializing list. However, the compiler
       // doesn't support mutual recursion just yet, so we can't extract that logic in a separate
@@ -122,8 +121,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
       // See [aiken-lang/aiken#389](https://github.com/aiken-lang/aiken/pull/389)
       let builder =
         when fields is {
-          [] ->
-            append_bytearray(#"5b5d29", builder)
+          [] -> append_bytearray(#"5b5d29", builder)
           _ -> {
             let (_, bytes) =
               list.foldr(
@@ -153,11 +151,9 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
     {
       // -------- Map
 
-      let elems =
-        un_map_data(self)
+      let elems = un_map_data(self)
       when elems is {
-        [] ->
-          append_bytearray(#"7b7d", builder)
+        [] -> append_bytearray(#"7b7d", builder)
         _ -> {
           let (_, bytes) =
             list.foldr(
@@ -179,11 +175,9 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
     {
       // -------- List
 
-      let elems =
-        un_list_data(self)
+      let elems = un_list_data(self)
       when elems is {
-        [] ->
-          append_bytearray(#"5b5d", builder)
+        [] -> append_bytearray(#"5b5d", builder)
         _ -> {
           let (_, bytes) =
             list.foldr(
@@ -203,8 +197,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
       |> from_int(builder),
     {
       // -------- ByteArray
-      let bytes =
-        un_b_data(self)
+      let bytes = un_b_data(self)
 
       bytes
         |> encode_base16(
@@ -220,12 +213,9 @@ fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
   if ix < 0 {
     builder
   } else {
-    let byte =
-      index_bytearray(bytes, ix)
-    let msb =
-      byte / 16
-    let lsb =
-      byte % 16
+    let byte = index_bytearray(bytes, ix)
+    let msb = byte / 16
+    let lsb = byte % 16
     let builder =
       cons_bytearray(
         msb + if msb < 10 {
