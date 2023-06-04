@@ -306,3 +306,8 @@ test flatten_with_2() {
     },
   ) == [("a", "2"), ("b", "")]
 }
+
+/// Convert the value into a dictionary of dictionaries.
+pub fn to_dict(self: Value) -> Dict<PolicyId, Dict<AssetName, Int>> {
+  self.inner
+}
