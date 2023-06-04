@@ -257,7 +257,7 @@ fn do_fold(
 ) -> result {
   when self is {
     [] -> zero
-    [(k, v), ..rest] -> with(k, v, do_fold(rest, zero, with))
+    [(k, v), ..rest] -> do_fold(rest, with(k, v, zero), with)
   }
 }
 
