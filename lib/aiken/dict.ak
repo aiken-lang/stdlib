@@ -569,20 +569,19 @@ test has_key_4() {
   )
 }
 
-/// Insert a value in the dictionary at a given key key. If the key already exists, its value is **overridden**.
+/// Insert a value in the dictionary at a given key. If the key already exists, its value is **overridden**. If you need ways to combine keys together, use (insert_with)[#insert_with].
 ///
 /// ```aiken
 /// use aiken/bytearray
 ///
-/// let foo: ByteArray = #"00"
-///
 /// let result =
 ///   dict.new()
-///     |> dict.insert(key: foo, value: "Foo", compare: bytearray.compare)
-///     |> dict.insert(key: foo, value: "Aiken", compare: bytearray.compare)
+///     |> dict.insert(key: "foo", value: 1, compare: bytearray.compare)
+///     |> dict.insert(key: "bar", value: 2, compare: bytearray.compare)
+///     |> dict.insert(key: "foo", value: 3, compare: bytearray.compare)
 ///     |> dict.to_list()
 ///
-/// result == [(foo, "Aiken")]
+/// result == [("bar", 2), ("foo", 3)]
 /// ```
 pub fn insert(
   self: Dict<key, value>,
@@ -638,6 +637,90 @@ test insert_2() {
     42,
     bytearray.compare,
   )
+}
+
+/// Insert a value in the dictionary at a given key. When the key already exist, the provided
+/// merge function is called.
+///
+/// ```aiken
+/// use aiken/bytearray
+///
+/// let sum =
+///   fn (_k, a, b) { a + b }
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert_with(key: "foo", value: 1, with: sum, compare: bytearray.compare)
+///     |> dict.insert_with(key: "bar", value: 2, with: sum, compare: bytearray.compare)
+///     |> dict.insert_with(key: "foo", value: 3, with: sum, compare: bytearray.compare)
+///     |> dict.to_list()
+///
+/// result == [("bar", 2), ("foo", 4)]
+/// ```
+pub fn insert_with(
+  self: Dict<key, value>,
+  key k: key,
+  value v: value,
+  with: fn(key, value, value) -> value,
+  compare: fn(key, key) -> Ordering,
+) -> Dict<key, value> {
+  Dict {
+    inner: do_insert_with(
+      self.inner,
+      k,
+      v,
+      fn(k, v1, v2) { Some(with(k, v2, v1)) },
+      compare,
+    ),
+  }
+}
+
+test insert_with_1() {
+  let sum =
+    fn(_k, a, b) { a + b }
+
+  let result =
+    new()
+      |> insert_with(key: "foo", value: 1, with: sum, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 2, with: sum, compare: bytearray.compare)
+      |> to_list()
+
+  result == [("bar", 2), ("foo", 1)]
+}
+
+test insert_with_2() {
+  let sum =
+    fn(_k, a, b) { a + b }
+
+  let result =
+    new()
+      |> insert_with(key: "foo", value: 1, with: sum, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 2, with: sum, compare: bytearray.compare)
+      |> insert_with(key: "foo", value: 3, with: sum, compare: bytearray.compare)
+      |> to_list()
+
+  result == [("bar", 2), ("foo", 4)]
+}
+
+test insert_with_3() {
+  let with =
+    fn(k, a, b) {
+      if k == "foo" {
+        a
+      } else {
+        b
+      }
+    }
+
+  let result =
+    new()
+      |> insert_with(key: "foo", value: 1, with: with, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 2, with: with, compare: bytearray.compare)
+      |> insert_with(key: "foo", value: 3, with: with, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 4, with: with, compare: bytearray.compare)
+      |> to_list()
+
+  result == [("bar", 4), ("foo", 1)]
 }
 
 /// Efficiently checks whether a dictionary is empty.
@@ -879,7 +962,8 @@ test union_4() {
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
-/// in both dictionaries.
+/// in both dictionaries. The first value received correspond to the value in the left
+/// dictionnary, whereas the second argument corresponds to the value in the right dictionnary.
 ///
 /// When passing `None`, the value is removed and not present in the union.
 ///
