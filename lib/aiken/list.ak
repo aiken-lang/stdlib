@@ -87,6 +87,44 @@ test any_3() {
   any([], fn(n) { n == 42 }) == False
 }
 
+/// Count how many items in the list satisfy the given predicate.
+///
+/// ```aiken
+/// list.count([], fn(a) { a > 2}) == 0
+/// list.count([1, 2, 3], fn(a) { n > 0 }) == 3
+/// list.count([1, 2, 3], fn(a) { n >= 2 }) == 2
+/// list.count([1, 2, 3], fn(a) { n > 5 }) == 0
+/// ```
+pub fn count(self: List<a>, predicate: fn(a) -> Bool) -> Int {
+  foldl(
+    self,
+    fn(item, total) {
+      if predicate(item) {
+        total + 1
+      } else {
+        total
+      }
+    },
+    0,
+  )
+}
+
+test count_empty() {
+  count([], fn(a) { a > 2 }) == 0
+}
+
+test count_all() {
+  count([1, 2, 3], fn(a) { a > 0 }) == 3
+}
+
+test count_some() {
+  count([1, 2, 3], fn(a) { a >= 2 }) == 2
+}
+
+test count_none() {
+  count([1, 2, 3], fn(a) { a > 5 }) == 0
+}
+
 /// Return Some(item) at the index or None if the index is out of range. The index is 0-based.
 ///
 /// ```aiken
