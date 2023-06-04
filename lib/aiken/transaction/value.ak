@@ -178,11 +178,11 @@ test add_3() {
 ///
 /// Handy to manipulate values as uniform lists.
 pub fn flatten(self: Value) -> List<(PolicyId, AssetName, Int)> {
-  dict.fold(
+  dict.foldr(
     self.inner,
     [],
     fn(policy_id, asset, assets) {
-      dict.fold(
+      dict.foldr(
         asset,
         assets,
         fn(asset_name, quantity, xs) {
@@ -233,11 +233,11 @@ pub fn flatten_with(
   self: Value,
   transform: fn(PolicyId, AssetName, Int) -> Option<result>,
 ) -> List<result> {
-  dict.fold(
+  dict.foldr(
     self.inner,
     [],
     fn(policy_id, asset, assets) {
-      dict.fold(
+      dict.foldr(
         asset,
         assets,
         fn(asset_name, quantity, xs) {
