@@ -180,9 +180,11 @@ test add_3() {
 pub fn flatten(self: Value) -> List<(PolicyId, AssetName, Int)> {
   dict.fold(
     self.inner,
+    [],
     fn(policy_id, asset, assets) {
       dict.fold(
         asset,
+        assets,
         fn(asset_name, quantity, xs) {
           if quantity == 0 {
             xs
@@ -190,10 +192,8 @@ pub fn flatten(self: Value) -> List<(PolicyId, AssetName, Int)> {
             [(policy_id, asset_name, quantity), ..xs]
           }
         },
-        assets,
       )
     },
-    [],
   )
 }
 
@@ -235,9 +235,11 @@ pub fn flatten_with(
 ) -> List<result> {
   dict.fold(
     self.inner,
+    [],
     fn(policy_id, asset, assets) {
       dict.fold(
         asset,
+        assets,
         fn(asset_name, quantity, xs) {
           when transform(policy_id, asset_name, quantity) is {
             None -> xs
@@ -245,10 +247,8 @@ pub fn flatten_with(
               [x, ..xs]
           }
         },
-        assets,
       )
     },
-    [],
   )
 }
 

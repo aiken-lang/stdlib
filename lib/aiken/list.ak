@@ -98,6 +98,7 @@ test any_3() {
 pub fn count(self: List<a>, predicate: fn(a) -> Bool) -> Int {
   foldl(
     self,
+    0,
     fn(item, total) {
       if predicate(item) {
         total + 1
@@ -105,7 +106,6 @@ pub fn count(self: List<a>, predicate: fn(a) -> Bool) -> Int {
         total
       }
     },
-    0,
   )
 }
 
@@ -392,6 +392,7 @@ test filter_3() {
     fn(xs, f) {
       foldr(
         xs,
+        [],
         fn(x, ys) {
           if f(x) {
             [x, ..ys]
@@ -399,7 +400,6 @@ test filter_3() {
             ys
           }
         },
-        [],
       )
     }
 
@@ -481,7 +481,7 @@ test find_3() {
 /// list.flat_map([1, 2, 3], fn(a) { [a, 2*a] }) == [1, 2, 2, 4, 3, 6]
 /// ```
 pub fn flat_map(self: List<a>, with: fn(a) -> List<b>) -> List<b> {
-  foldr(self, fn(x, xs) { concat(with(x), xs) }, [])
+  foldr(self, [], fn(x, xs) { concat(with(x), xs) })
 }
 
 test flat_map_1() {
@@ -495,48 +495,49 @@ test flat_map_2() {
 /// Reduce a list from left to right.
 ///
 /// ```aiken
-/// list.foldl([1, 2, 3], fn(n, total) { n + total }, 0) == 6
-/// list.foldl([1, 2, 3], fn(x, xs) { [x, ..xs] }, []) == [3, 2, 1]
+/// list.foldl([1, 2, 3], 0, fn(n, total) { n + total }) == 6
+/// list.foldl([1, 2, 3], [], fn(x, xs) { [x, ..xs] }) == [3, 2, 1]
 /// ```
-pub fn foldl(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
+pub fn foldl(self: List<a>, zero: b, with: fn(a, b) -> b) -> b {
   when self is {
     [] -> zero
-    [x, ..xs] -> foldl(xs, with, with(x, zero))
+    [x, ..xs] -> foldl(xs, with(x, zero), with)
   }
 }
 
 test foldl_1() {
-  foldl([], fn(_, _) { 1 }, 0) == 0
+  foldl([], 0, fn(_, _) { 1 }) == 0
 }
 
 test foldl_2() {
-  foldl([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
+  foldl([1, 2, 3, 4, 5], 0, fn(n, total) { n + total }) == 15
 }
 
 test foldl_3() {
-  foldl([1, 2, 3, 4], fn(x, xs) { [x, ..xs] }, []) == [4, 3, 2, 1]
+  foldl([1, 2, 3, 4], [], fn(x, xs) { [x, ..xs] }) == [4, 3, 2, 1]
 }
 
 /// Reduce a list from right to left.
 ///
 /// ```aiken
-/// list.foldr([1, 2, 3], fn(n, total) { n + total }, 0) == 6
-/// list.foldr([1, 2, 3], fn(x, xs) { [x, ..xs] }, []) == [1, 2, 3]
+/// list.foldr([1, 2, 3], 0, fn(n, total) { n + total }) == 6
+/// list.foldr([1, 2, 3], [], fn(x, xs) { [x, ..xs] }) == [1, 2, 3]
 /// ```
-pub fn foldr(self: List<a>, with: fn(a, b) -> b, zero: b) -> b {
+pub fn foldr(self: List<a>, zero: b, with: fn(a, b) -> b) -> b {
   when self is {
     [] -> zero
-    [x, ..xs] -> with(x, foldr(xs, with, zero))
+    [x, ..xs] -> with(x, foldr(xs, zero, with))
   }
 }
 
 test foldr_1() {
-  foldr([1, 2, 3, 4, 5], fn(n, total) { n + total }, 0) == 15
+  foldr([1, 2, 3, 4, 5], 0, fn(n, total) { n + total }) == 15
 }
 
 test foldr_2() {
   foldr(
     [1, 2, 3],
+    "",
     fn(n, _str) {
       if builtin.mod_integer(n, 2) == 0 {
         "foo"
@@ -544,12 +545,11 @@ test foldr_2() {
         "bar"
       }
     },
-    "",
   ) == "bar"
 }
 
 test foldr_3() {
-  foldr([1, 2, 3, 4], fn(x, xs) { [x, ..xs] }, []) == [1, 2, 3, 4]
+  foldr([1, 2, 3, 4], [], fn(x, xs) { [x, ..xs] }) == [1, 2, 3, 4]
 }
 
 /// Return all elements except the last one.
@@ -643,7 +643,7 @@ test head_2() {
 ///
 /// ```aiken
 /// let group = fn(i, x, xs) { [(i, x), ..xs] }
-/// list.indexed_foldr(["a", "b", "c"], group, []) == [
+/// list.indexed_foldr(["a", "b", "c"], [], group) == [
 ///   (0, "a"),
 ///   (1, "b"),
 ///   (2, "c")
@@ -651,32 +651,32 @@ test head_2() {
 /// ```
 pub fn indexed_foldr(
   self: List<a>,
-  with: fn(Int, a, result) -> result,
   zero: result,
+  with: fn(Int, a, result) -> result,
 ) -> result {
-  do_indexed_foldr(0, self, with, zero)
+  do_indexed_foldr(0, self, zero, with)
 }
 
 fn do_indexed_foldr(
   n: Int,
   self: List<a>,
-  with: fn(Int, a, result) -> result,
   zero: result,
+  with: fn(Int, a, result) -> result,
 ) -> result {
   when self is {
     [] -> zero
-    [x, ..xs] -> with(n, x, do_indexed_foldr(n + 1, xs, with, zero))
+    [x, ..xs] -> with(n, x, do_indexed_foldr(n + 1, xs, zero, with))
   }
 }
 
 test indexed_foldr_1() {
-  indexed_foldr([], fn(i, x, xs) { i + x + xs }, 0) == 0
+  indexed_foldr([], 0, fn(i, x, xs) { i + x + xs }) == 0
 }
 
 test indexed_foldr_2() {
   let letters =
     ["a", "b", "c"]
-  indexed_foldr(letters, fn(i, x, xs) { [(i, x), ..xs] }, []) == [
+  indexed_foldr(letters, [], fn(i, x, xs) { [(i, x), ..xs] }) == [
     (0, "a"),
     (1, "b"),
     (2, "c"),
@@ -955,7 +955,7 @@ test repeat_2() {
 /// list.reverse([1, 2, 3]) == [3, 2, 1]
 /// ```
 pub fn reverse(self: List<a>) -> List<a> {
-  foldl(self, fn(x, xs) { [x, ..xs] }, [])
+  foldl(self, [], fn(x, xs) { [x, ..xs] })
 }
 
 test reverse_1() {
@@ -1333,26 +1333,26 @@ test zip_3() {
 /// list.reduce([#[1], #[2], #[3]], bytearray.concat, #[0]) == #[0, 1, 2, 3]
 /// list.reduce([True, False, True], fn(b, a) { or([b, a]) }, False) == True
 /// ```
-pub fn reduce(self: List<a>, with: fn(b, a) -> b, zero: b) -> b {
-  foldl(self, flip(with), zero)
+pub fn reduce(self: List<a>, zero: b, with: fn(b, a) -> b) -> b {
+  foldl(self, zero, flip(with))
 }
 
 test reduce_1() {
-  reduce([], fn(n, total) { n + total }, 0) == 0
+  reduce([], 0, fn(n, total) { n + total }) == 0
 }
 
 test reduce_2() {
-  reduce([1, 2, 3], fn(n, total) { n + total }, 0) == 6
+  reduce([1, 2, 3], 0, fn(n, total) { n + total }) == 6
 }
 
 test reduce_3() {
-  reduce([True, False, True], fn(left, right) { or([left, right]) }, False) == True
+  reduce([True, False, True], False, fn(left, right) { or([left, right]) }) == True
 }
 
 test reduce_4() {
   reduce(
     [#[1], #[2], #[3]],
-    fn(left, right) { bytearray.concat(left, right) },
     #[9],
+    fn(left, right) { bytearray.concat(left, right) },
   ) == #[9, 1, 2, 3]
 }

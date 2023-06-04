@@ -238,35 +238,35 @@ test find_4() {
 ///     |> dict.insert(key: 1, value: 100, compare: int.compare)
 ///     |> dict.insert(key: 2, value: 200, compare: int.compare)
 ///     |> dict.insert(key: 3, value: 300, compare: int.compare)
-///     |> dict.fold(fn(_k, v, r) { v + r }, 0)
+///     |> dict.fold(0, fn(_k, v, r) { v + r })
 ///
 /// result == 600
 /// ```
 pub fn fold(
   self: Dict<key, value>,
-  with: fn(key, value, result) -> result,
   zero: result,
+  with: fn(key, value, result) -> result,
 ) -> result {
-  do_fold(self.inner, with, zero)
+  do_fold(self.inner, zero, with)
 }
 
 fn do_fold(
   self: List<(key, value)>,
-  with: fn(key, value, result) -> result,
   zero: result,
+  with: fn(key, value, result) -> result,
 ) -> result {
   when self is {
     [] -> zero
-    [(k, v), ..rest] -> with(k, v, do_fold(rest, with, zero))
+    [(k, v), ..rest] -> with(k, v, do_fold(rest, zero, with))
   }
 }
 
-test fold_2() {
-  fold(fixture_1(), with: fn(_, v, total) { v + total }, zero: 0) == 56
+test fold_1() {
+  fold(new(), 14, fn(_, _, _) { 42 }) == 14
 }
 
-test fold_1() {
-  fold(new(), fn(_, _, _) { 42 }, 14) == 14
+test fold_2() {
+  fold(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
 }
 
 /// Construct a dictionary from a list of key-value pairs. Note that when a key is present
