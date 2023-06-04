@@ -16,11 +16,7 @@ pub opaque type Rational {
 pub fn check_rational(num: UncheckedRational) -> Rational {
   let UncheckedRational { numerator, denominator } =
     num
-  if denominator < 0 {
-    Rational { numerator: -numerator, denominator: -denominator }
-  } else {
-    Rational { numerator, denominator }
-  }
+  div_int(numerator, denominator)
 }
 
 pub fn mul(a: Rational, b: Rational) -> Rational {
@@ -37,8 +33,12 @@ pub fn div(a: Rational, b: Rational) -> Rational {
   }
 }
 
-pub fn div_int(a: Int, b: Int) -> Rational {
-  Rational { numerator: a, denominator: b }
+pub fn div_int(numerator: Int, denominator: Int) -> Rational {
+  if denominator < 0 {
+    Rational { numerator: -numerator, denominator: -denominator }
+  } else {
+    Rational { numerator, denominator }
+  }
 }
 
 pub fn add(a: Rational, b: Rational) -> Rational {
