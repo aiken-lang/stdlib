@@ -126,10 +126,10 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
             let (_, bytes) =
               list.foldr(
                 fields,
+                (#"5d", append_bytearray(#"29", builder)),
                 fn(e: Data, st: (ByteArray, ByteArray)) {
                   (#"2c20", do_diagnostic(e, append_bytearray(st.1st, st.2nd)))
                 },
-                (#"5d", append_bytearray(#"29", builder)),
               )
             append_bytearray(#"5b5f20", bytes)
           }
@@ -158,6 +158,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
           let (_, bytes) =
             list.foldr(
               elems,
+              (#"207d", builder),
               fn(e: (Data, Data), st: (ByteArray, ByteArray)) {
                 let value =
                   do_diagnostic(e.2nd, append_bytearray(st.1st, st.2nd))
@@ -166,7 +167,6 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
                   do_diagnostic(e.1st, append_bytearray(#"3a20", value)),
                 )
               },
-              (#"207d", builder),
             )
           append_bytearray(#"7b5f20", bytes)
         }
@@ -182,10 +182,10 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
           let (_, bytes) =
             list.foldr(
               elems,
+              (#"5d", builder),
               fn(e: Data, st: (ByteArray, ByteArray)) {
                 (#"2c20", do_diagnostic(e, append_bytearray(st.1st, st.2nd)))
               },
-              (#"5d", builder),
             )
           append_bytearray(#"5b5f20", bytes)
         }
