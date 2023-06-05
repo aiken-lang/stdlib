@@ -1,8 +1,4 @@
 // Rationals
-// Authors:
-// Micah Kendall
-// Ken Fritschy
-// <other authors go here>
 
 use aiken/math
 
