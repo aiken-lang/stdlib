@@ -392,9 +392,18 @@ test to_value_3() {
 
 test to_value_4() {
   let assets =
-    [("p0", "a0", 1), ("p0", "a0", -1)]
+    [
+      ("", "", 0),
+      ("p0", "a0", 1),
+      ("p1", "a0", 1),
+      ("p0", "a0", 1),
+      ("p1", "a1", 1),
+    ]
 
-  flatten(to_value(from_list(assets))) == []
+  let result =
+    [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
+
+  flatten(to_value(from_list(assets))) == result
 }
 
 test to_value_5() {
