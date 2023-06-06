@@ -32,6 +32,7 @@ pub fn compare(left: Int, right: Int) -> Ordering {
 pub fn from_utf8(bytes: ByteArray) -> Option<Int> {
   bytes
     |> bytearray.foldr(
+         Some((0, 0)),
          fn(byte, st) {
            when st is {
              None -> None
@@ -50,7 +51,6 @@ pub fn from_utf8(bytes: ByteArray) -> Option<Int> {
                }
            }
          },
-         Some((0, 0)),
        )
     |> option.map(fn(tuple) { tuple.1st })
 }

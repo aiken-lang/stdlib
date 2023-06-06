@@ -228,7 +228,8 @@ test find_4() {
   ) == Some(baz)
 }
 
-/// Fold over the key-value pairs in a dictionary.
+/// Fold over the key-value pairs in a dictionary. The fold direction follows keys
+/// in ascending order and is done from right-to-left.
 ///
 /// ```aiken
 /// use aiken/int
@@ -238,35 +239,77 @@ test find_4() {
 ///     |> dict.insert(key: 1, value: 100, compare: int.compare)
 ///     |> dict.insert(key: 2, value: 200, compare: int.compare)
 ///     |> dict.insert(key: 3, value: 300, compare: int.compare)
-///     |> dict.fold(fn(_k, v, r) { v + r }, 0)
+///     |> dict.foldr(0, fn(_k, v, r) { v + r })
 ///
 /// result == 600
 /// ```
-pub fn fold(
+pub fn foldr(
   self: Dict<key, value>,
-  with: fn(key, value, result) -> result,
   zero: result,
+  with: fn(key, value, result) -> result,
 ) -> result {
-  do_fold(self.inner, with, zero)
+  do_foldr(self.inner, zero, with)
 }
 
-fn do_fold(
+fn do_foldr(
   self: List<(key, value)>,
-  with: fn(key, value, result) -> result,
   zero: result,
+  with: fn(key, value, result) -> result,
 ) -> result {
   when self is {
     [] -> zero
-    [(k, v), ..rest] -> with(k, v, do_fold(rest, with, zero))
+    [(k, v), ..rest] -> with(k, v, do_foldr(rest, zero, with))
   }
 }
 
-test fold_2() {
-  fold(fixture_1(), with: fn(_, v, total) { v + total }, zero: 0) == 56
+test foldr_1() {
+  foldr(new(), 14, fn(_, _, _) { 42 }) == 14
+}
+
+test foldr_2() {
+  foldr(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
+}
+
+/// Fold over the key-value pairs in a dictionary. The fold direction follows keys
+/// in ascending order and is done from left-to-right.
+///
+/// ```aiken
+/// use aiken/int
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: 1, value: 100, compare: int.compare)
+///     |> dict.insert(key: 2, value: 200, compare: int.compare)
+///     |> dict.insert(key: 3, value: 300, compare: int.compare)
+///     |> dict.foldl(0, fn(_k, v, r) { v + r })
+///
+/// result == 600
+/// ```
+pub fn foldl(
+  self: Dict<key, value>,
+  zero: result,
+  with: fn(key, value, result) -> result,
+) -> result {
+  do_foldl(self.inner, zero, with)
+}
+
+fn do_foldl(
+  self: List<(key, value)>,
+  zero: result,
+  with: fn(key, value, result) -> result,
+) -> result {
+  when self is {
+    [] -> zero
+    [(k, v), ..rest] -> do_foldl(rest, with(k, v, zero), with)
+  }
 }
 
 test fold_1() {
-  fold(new(), fn(_, _, _) { 42 }, 14) == 14
+  foldl(new(), 14, fn(_, _, _) { 42 }) == 14
+}
+
+test fold_2() {
+  foldl(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
 }
 
 /// Construct a dictionary from a list of key-value pairs. Note that when a key is present
@@ -526,20 +569,19 @@ test has_key_4() {
   )
 }
 
-/// Insert a value in the dictionary at a given key key. If the key already exists, its value is **overridden**.
+/// Insert a value in the dictionary at a given key. If the key already exists, its value is **overridden**. If you need ways to combine keys together, use (`insert_with`)[#insert_with].
 ///
 /// ```aiken
 /// use aiken/bytearray
 ///
-/// let foo: ByteArray = #"00"
-///
 /// let result =
 ///   dict.new()
-///     |> dict.insert(key: foo, value: "Foo", compare: bytearray.compare)
-///     |> dict.insert(key: foo, value: "Aiken", compare: bytearray.compare)
+///     |> dict.insert(key: "foo", value: 1, compare: bytearray.compare)
+///     |> dict.insert(key: "bar", value: 2, compare: bytearray.compare)
+///     |> dict.insert(key: "foo", value: 3, compare: bytearray.compare)
 ///     |> dict.to_list()
 ///
-/// result == [(foo, "Aiken")]
+/// result == [("bar", 2), ("foo", 3)]
 /// ```
 pub fn insert(
   self: Dict<key, value>,
@@ -595,6 +637,90 @@ test insert_2() {
     42,
     bytearray.compare,
   )
+}
+
+/// Insert a value in the dictionary at a given key. When the key already exist, the provided
+/// merge function is called.
+///
+/// ```aiken
+/// use aiken/bytearray
+///
+/// let sum =
+///   fn (_k, a, b) { Some(a + b) }
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert_with(key: "foo", value: 1, with: sum, compare: bytearray.compare)
+///     |> dict.insert_with(key: "bar", value: 2, with: sum, compare: bytearray.compare)
+///     |> dict.insert_with(key: "foo", value: 3, with: sum, compare: bytearray.compare)
+///     |> dict.to_list()
+///
+/// result == [("bar", 2), ("foo", 4)]
+/// ```
+pub fn insert_with(
+  self: Dict<key, value>,
+  key k: key,
+  value v: value,
+  with: fn(key, value, value) -> Option<value>,
+  compare: fn(key, key) -> Ordering,
+) -> Dict<key, value> {
+  Dict {
+    inner: do_insert_with(
+      self.inner,
+      k,
+      v,
+      fn(k, v1, v2) { with(k, v2, v1) },
+      compare,
+    ),
+  }
+}
+
+test insert_with_1() {
+  let sum =
+    fn(_k, a, b) { Some(a + b) }
+
+  let result =
+    new()
+      |> insert_with(key: "foo", value: 1, with: sum, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 2, with: sum, compare: bytearray.compare)
+      |> to_list()
+
+  result == [("bar", 2), ("foo", 1)]
+}
+
+test insert_with_2() {
+  let sum =
+    fn(_k, a, b) { Some(a + b) }
+
+  let result =
+    new()
+      |> insert_with(key: "foo", value: 1, with: sum, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 2, with: sum, compare: bytearray.compare)
+      |> insert_with(key: "foo", value: 3, with: sum, compare: bytearray.compare)
+      |> to_list()
+
+  result == [("bar", 2), ("foo", 4)]
+}
+
+test insert_with_3() {
+  let with =
+    fn(k, a, _b) {
+      if k == "foo" {
+        Some(a)
+      } else {
+        None
+      }
+    }
+
+  let result =
+    new()
+      |> insert_with(key: "foo", value: 1, with: with, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 2, with: with, compare: bytearray.compare)
+      |> insert_with(key: "foo", value: 3, with: with, compare: bytearray.compare)
+      |> insert_with(key: "bar", value: 4, with: with, compare: bytearray.compare)
+      |> to_list()
+
+  result == [("foo", 1)]
 }
 
 /// Efficiently checks whether a dictionary is empty.
@@ -836,7 +962,8 @@ test union_4() {
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
-/// in both dictionaries.
+/// in both dictionaries. The first value received correspond to the value in the left
+/// dictionnary, whereas the second argument corresponds to the value in the right dictionnary.
 ///
 /// When passing `None`, the value is removed and not present in the union.
 ///
