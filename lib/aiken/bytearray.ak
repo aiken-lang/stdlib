@@ -400,3 +400,48 @@ test to_string_1() {
 test to_string_2() {
   to_string("ABC") == @"ABC"
 }
+
+/// Encode a `ByteArray` as a hexidecimal `String`.
+///
+/// ```aiken
+/// use aiken/bytearray
+///
+/// bytearray.to_hex("Hello world!") == @"48656c6c6f20776f726c6421"
+/// ```
+pub fn to_hex(self: ByteArray) -> String {
+  foldl(
+    self,
+    @"",
+    fn(byte, acc) {
+      acc
+        |> builtin.append_string(byte_hex_encode(byte / 16))
+        |> builtin.append_string(byte_hex_encode(byte % 16))
+    },
+  )
+}
+
+fn byte_hex_encode(int: Int) -> String {
+  when int is {
+    0 -> @"0"
+    1 -> @"1"
+    2 -> @"2"
+    3 -> @"3"
+    4 -> @"4"
+    5 -> @"5"
+    6 -> @"6"
+    7 -> @"7"
+    8 -> @"8"
+    9 -> @"9"
+    10 -> @"a"
+    11 -> @"b"
+    12 -> @"c"
+    13 -> @"d"
+    14 -> @"e"
+    15 -> @"f"
+    _ -> error @"unreachable"
+  }
+}
+
+test to_hex_1() {
+  to_hex("Hello world!") == @"48656c6c6f20776f726c6421"
+}
