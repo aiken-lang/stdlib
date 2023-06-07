@@ -91,6 +91,44 @@ test without_lovelace_3() {
   without_lovelace(v) == without_lovelace(v2) && without_lovelace(v) == v2
 }
 
+/// Takes a value and gives back a tuple containing lovelace amount and any other values
+/// Useful in cases where you want a greater than or equal to match on lovelace, but want other values
+/// to match exactly
+pub fn lovelace_and_other_values(self: Value) -> (Int, Value) {
+  when dict.get(self.inner, ada_policy_id) is {
+    Some(ada_amount) -> {
+      let other_value = dict.delete(self.inner, ada_policy_id) |> Value
+
+      when dict.to_list(ada_amount) is {
+        [] -> (0, other_value)
+        [(_, ada_quantity), ..] -> (ada_quantity, other_value)
+      }
+    }
+    None -> (0, self)
+  }
+}
+
+test lovelace_and_other_values_1() {
+  let v = from_lovelace(1000000)
+  lovelace_and_other_values(v) == (1000000, zero())
+}
+
+test lovelace_and_other_values_2() {
+  let v =
+    from_asset(#"010203", #"040506", 100)
+      |> add(ada_policy_id, ada_asset_name, 100000000)
+
+  let v2 = without_lovelace(v)
+  lovelace_and_other_values(v) == (100000000, v2)
+}
+
+test lovelace_and_other_values_3() {
+  let v = from_asset(#"010203", #"040506", 100)
+
+  let v2 = without_lovelace(v)
+  lovelace_and_other_values(v) == (0, v2)
+}
+
 /// Negates quantities of all tokens (including Ada) in that `Value`.
 ///
 /// ```
