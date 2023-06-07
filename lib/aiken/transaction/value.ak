@@ -96,7 +96,7 @@ test without_lovelace_3() {
 /// ```
 /// v1
 ///   |> value.negate
-///   |> value.add
+///   |> value.merge(v1)
 ///   |> value.is_zero
 /// // True
 /// ```
@@ -325,9 +325,71 @@ pub opaque type MintedValue {
   inner: Dict<PolicyId, Dict<AssetName, Int>>,
 }
 
-/// Convert a 'MintedValue' into a 'Value'.
-pub fn to_value(self: MintedValue) -> Value {
-  self.inner |> dict.delete("") |> Value
+/// Convert a [`MintedValue`](#MintedValue) into a [`Value`](#Value).
+pub fn from_minted_value(self: MintedValue) -> Value {
+  self.inner |> dict.delete(ada_policy_id) |> Value
+}
+
+/// Convert a [`Value`](#Value) into a [`MintedValue`](#MintedValue).
+pub fn to_minted_value(self: Value) -> MintedValue {
+  self.inner |> MintedValue
+}
+
+test from_minted_value_1() {
+  flatten(from_minted_value(from_list([]))) == []
+}
+
+test from_minted_value_2() {
+  flatten(from_minted_value(from_list([("p0", "a0", 1)]))) == [("p0", "a0", 1)]
+}
+
+test from_minted_value_3() {
+  let assets =
+    [("p0", "a0", 1), ("p1", "a0", 1), ("p0", "a0", 1), ("p1", "a1", 1)]
+
+  let result =
+    [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
+
+  flatten(from_minted_value(from_list(assets))) == result
+}
+
+test from_minted_value_4() {
+  let assets =
+    [
+      ("", "", 0),
+      ("p0", "a0", 1),
+      ("p1", "a0", 1),
+      ("p0", "a0", 1),
+      ("p1", "a1", 1),
+    ]
+
+  let result =
+    [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
+
+  flatten(from_minted_value(from_list(assets))) == result
+}
+
+test from_minted_value_5() {
+  let assets =
+    [
+      ("p0", "a0", 1),
+      ("p0", "a1", 1),
+      ("p1", "a0", 1),
+      ("p1", "a1", 1),
+      ("p1", "a2", 1),
+      ("p2", "a0", 1),
+      ("p2", "a1", 1),
+      ("p3", "a0", 1),
+      ("p3", "a1", 1),
+      ("p3", "a2", 1),
+      ("p3", "a3", 1),
+      ("p3", "a4", 1),
+      ("p3", "a5", 1),
+      ("p3", "a6", 1),
+      ("p3", "a7", 1),
+    ]
+
+  flatten(from_minted_value(from_list(assets))) == assets
 }
 
 /// Convert a list of tokens into a `MintedValue`.
@@ -340,12 +402,12 @@ fn from_list(xs: List<(PolicyId, AssetName, Int)>) -> MintedValue {
     MintedValue(dict.new()),
     fn(elem, st) {
       let (policy_id, asset_name, quantity) = elem
-      add_minted(st, policy_id, asset_name, quantity)
+      unchecked_add(st, policy_id, asset_name, quantity)
     },
   )
 }
 
-fn add_minted(
+fn unchecked_add(
   self: MintedValue,
   policy_id: PolicyId,
   asset_name: AssetName,
@@ -370,87 +432,4 @@ fn add_minted(
       bytearray.compare,
     ),
   )
-}
-
-test to_value_1() {
-  flatten(to_value(from_list([]))) == []
-}
-
-test to_value_2() {
-  flatten(to_value(from_list([("p0", "a0", 1)]))) == [("p0", "a0", 1)]
-}
-
-test to_value_3() {
-  let assets =
-    [("p0", "a0", 1), ("p1", "a0", 1), ("p0", "a0", 1), ("p1", "a1", 1)]
-
-  let result =
-    [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
-
-  flatten(to_value(from_list(assets))) == result
-}
-
-test to_value_4() {
-  let assets =
-    [
-      ("", "", 0),
-      ("p0", "a0", 1),
-      ("p1", "a0", 1),
-      ("p0", "a0", 1),
-      ("p1", "a1", 1),
-    ]
-
-  let result =
-    [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
-
-  flatten(to_value(from_list(assets))) == result
-}
-
-test to_value_5() {
-  let assets =
-    [
-      ("p0", "a0", 1),
-      ("p0", "a1", 1),
-      ("p1", "a0", 1),
-      ("p1", "a1", 1),
-      ("p1", "a2", 1),
-      ("p2", "a0", 1),
-      ("p2", "a1", 1),
-      ("p3", "a0", 1),
-      ("p3", "a1", 1),
-      ("p3", "a2", 1),
-      ("p3", "a3", 1),
-      ("p3", "a4", 1),
-      ("p3", "a5", 1),
-      ("p3", "a6", 1),
-      ("p3", "a7", 1),
-    ]
-
-  flatten(to_value(from_list(assets))) == assets
-}
-
-/// Construct an empty `MintedValue` with nothing in it.
-/// Used mainly for unit testing purposes
-pub fn mint_zero() -> MintedValue {
-  MintedValue { inner: dict.new() }
-}
-
-/// Construct a `Value` from an asset identifier (i.e. `PolicyId` + `AssetName`)
-/// and a given quantity. Used mainly for unit testing purposes
-pub fn mint_from_asset(
-  policy_id: PolicyId,
-  asset_name: AssetName,
-  quantity: Int,
-) -> MintedValue {
-  if quantity == 0 {
-    dict.new()
-      |> MintedValue
-  } else {
-    let asset =
-      dict.new()
-        |> dict.insert(asset_name, quantity, bytearray.compare)
-    dict.new()
-      |> dict.insert(policy_id, asset, bytearray.compare)
-      |> MintedValue
-  }
 }
