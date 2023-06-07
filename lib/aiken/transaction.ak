@@ -127,16 +127,16 @@ pub type Redeemer =
 ///       ctx.purpose
 ///
 ///     expect Some(input) =
-///       ctx.transaction
+///       ctx.transaction.inputs
 ///         |> transaction.find_input(my_output_reference)
 ///   }
 /// }
 /// ```
 pub fn find_input(
-  transaction: Transaction,
+  inputs: List<Input>,
   output_reference: OutputReference,
 ) -> Option<Input> {
-  transaction.inputs
+  inputs
     |> list.find(fn(input) { input.output_reference == output_reference })
 }
 
@@ -144,14 +144,15 @@ pub fn find_input(
 /// datums in the witness set, and then for inline datums if it doesn't find any in
 /// witnesses.
 pub fn find_datum(
-  transaction: Transaction,
+  outputs: List<Output>,
+  datums: Dict<Hash<Blake2b_256, Data>, Data>,
   datum_hash: Hash<Blake2b_256, Data>,
 ) -> Option<Data> {
-  transaction.datums
+  datums
     |> dict.get(datum_hash)
     |> option.or_try(
          fn(_) {
-           transaction.outputs
+           outputs
              |> list.filter_map(
                   fn(output) {
                     when output.datum is {
@@ -175,10 +176,10 @@ pub fn find_datum(
 /// Find all outputs that are paying into the given script hash, if any. This is useful for
 /// contracts running over multiple transactions.
 pub fn find_script_outputs(
-  transaction: Transaction,
+  outputs: List<Output>,
   script_hash: Hash<Blake2b_224, Script>,
 ) -> List<Output> {
-  transaction.outputs
+  outputs
     |> list.filter(
          fn(output) {
            when output.address.payment_credential is {
