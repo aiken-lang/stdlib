@@ -93,7 +93,7 @@ test without_lovelace_3() {
 
 /// Takes a value and gives back a tuple containing lovelace amount and any other values
 /// Useful in cases where you want a greater than or equal to match on lovelace, but want other values
-/// to match exactly
+/// to match exactly.
 pub fn lovelace_and_other_values(self: Value) -> (Int, Value) {
   when dict.get(self.inner, ada_policy_id) is {
     Some(ada_amount) -> {
