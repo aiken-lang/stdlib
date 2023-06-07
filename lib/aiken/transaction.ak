@@ -10,8 +10,7 @@ use aiken/transaction/credential.{
   Address, Script, ScriptCredential, StakeCredential, VerificationKey,
   VerificationKeyCredential,
 }
-use aiken/transaction/minted_value.{MintedValue}
-use aiken/transaction/value.{PolicyId, Value}
+use aiken/transaction/value.{MintedValue, PolicyId, Value}
 
 /// A context given to a script by the Cardano ledger when being executed.
 ///
