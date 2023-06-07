@@ -409,39 +409,47 @@ test to_string_2() {
 /// bytearray.to_hex("Hello world!") == @"48656c6c6f20776f726c6421"
 /// ```
 pub fn to_hex(self: ByteArray) -> String {
-  foldl(
-    self,
-    @"",
-    fn(byte, acc) {
-      acc
-        |> builtin.append_string(byte_hex_encode(byte / 16))
-        |> builtin.append_string(byte_hex_encode(byte % 16))
-    },
-  )
+  self
+    |> encode_base16(builtin.length_of_bytearray(self) - 1, "")
+    |> builtin.decode_utf8
 }
 
-fn byte_hex_encode(int: Int) -> String {
-  when int is {
-    0 -> @"0"
-    1 -> @"1"
-    2 -> @"2"
-    3 -> @"3"
-    4 -> @"4"
-    5 -> @"5"
-    6 -> @"6"
-    7 -> @"7"
-    8 -> @"8"
-    9 -> @"9"
-    10 -> @"a"
-    11 -> @"b"
-    12 -> @"c"
-    13 -> @"d"
-    14 -> @"e"
-    15 -> @"f"
-    _ -> error @"unreachable"
+// Construct an hex string in reverse order, from the back. The 'builder' is an
+// accumulator. It works fast because `index_bytearray` follows a constant-time cost
+// model
+fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
+  if ix < 0 {
+    builder
+  } else {
+    let byte = builtin.index_bytearray(bytes, ix)
+    let msb = byte / 16
+    let lsb = byte % 16
+    encode_base16(
+      bytes,
+      ix - 1,
+      builtin.cons_bytearray(
+        msb + if msb < 10 {
+          48
+        } else {
+          87
+        },
+        builtin.cons_bytearray(
+          lsb + if lsb < 10 {
+            48
+          } else {
+            87
+          },
+          builder,
+        ),
+      ),
+    )
   }
 }
 
 test to_hex_1() {
   to_hex("Hello world!") == @"48656c6c6f20776f726c6421"
+}
+
+test to_hex_2() {
+  to_hex("The quick brown fox jumps over the lazy dog") == @"54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f67"
 }
