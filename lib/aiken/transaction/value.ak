@@ -1,6 +1,7 @@
 use aiken/bytearray
 use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Hash}
+use aiken/list
 use aiken/option
 use aiken/transaction/credential.{Script}
 
@@ -95,7 +96,7 @@ test without_lovelace_3() {
 /// ```
 /// v1
 ///   |> value.negate
-///   |> value.add
+///   |> value.merge(v1)
 ///   |> value.is_zero
 /// // True
 /// ```
@@ -310,4 +311,125 @@ test flatten_with_2() {
 /// Convert the value into a dictionary of dictionaries.
 pub fn to_dict(self: Value) -> Dict<PolicyId, Dict<AssetName, Int>> {
   self.inner
+}
+
+/// A multi-asset value that can be found when minting transaction. Note that
+/// because of historical reasons, this is slightly different from `Value` found
+/// in transaction outputs.
+///
+/// Note that you're never expected to construct a `MintedValue` yourself. If you need to
+/// manipulate multi-asset values, use [Value](/value.html#Value)
+///
+/// See also [`to_value`](#to_value).
+pub opaque type MintedValue {
+  inner: Dict<PolicyId, Dict<AssetName, Int>>,
+}
+
+/// Convert a [`MintedValue`](#MintedValue) into a [`Value`](#Value).
+pub fn from_minted_value(self: MintedValue) -> Value {
+  self.inner |> dict.delete(ada_policy_id) |> Value
+}
+
+/// Convert a [`Value`](#Value) into a [`MintedValue`](#MintedValue).
+pub fn to_minted_value(self: Value) -> MintedValue {
+  self.inner |> MintedValue
+}
+
+test from_minted_value_1() {
+  flatten(from_minted_value(from_list([]))) == []
+}
+
+test from_minted_value_2() {
+  flatten(from_minted_value(from_list([("p0", "a0", 1)]))) == [("p0", "a0", 1)]
+}
+
+test from_minted_value_3() {
+  let assets =
+    [("p0", "a0", 1), ("p1", "a0", 1), ("p0", "a0", 1), ("p1", "a1", 1)]
+
+  let result =
+    [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
+
+  flatten(from_minted_value(from_list(assets))) == result
+}
+
+test from_minted_value_4() {
+  let assets =
+    [
+      ("", "", 0),
+      ("p0", "a0", 1),
+      ("p1", "a0", 1),
+      ("p0", "a0", 1),
+      ("p1", "a1", 1),
+    ]
+
+  let result =
+    [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
+
+  flatten(from_minted_value(from_list(assets))) == result
+}
+
+test from_minted_value_5() {
+  let assets =
+    [
+      ("p0", "a0", 1),
+      ("p0", "a1", 1),
+      ("p1", "a0", 1),
+      ("p1", "a1", 1),
+      ("p1", "a2", 1),
+      ("p2", "a0", 1),
+      ("p2", "a1", 1),
+      ("p3", "a0", 1),
+      ("p3", "a1", 1),
+      ("p3", "a2", 1),
+      ("p3", "a3", 1),
+      ("p3", "a4", 1),
+      ("p3", "a5", 1),
+      ("p3", "a6", 1),
+      ("p3", "a7", 1),
+    ]
+
+  flatten(from_minted_value(from_list(assets))) == assets
+}
+
+/// Convert a list of tokens into a `MintedValue`.
+///
+/// NOTE: Not exposed because we do not want people to construct `MintedValue`. Only
+/// get them from the script context.
+fn from_list(xs: List<(PolicyId, AssetName, Int)>) -> MintedValue {
+  list.foldr(
+    xs,
+    MintedValue(dict.new()),
+    fn(elem, st) {
+      let (policy_id, asset_name, quantity) = elem
+      unchecked_add(st, policy_id, asset_name, quantity)
+    },
+  )
+}
+
+fn unchecked_add(
+  self: MintedValue,
+  policy_id: PolicyId,
+  asset_name: AssetName,
+  quantity: Int,
+) -> MintedValue {
+  MintedValue(
+    dict.insert_with(
+      self.inner,
+      policy_id,
+      dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
+      fn(_, left, _right) {
+        Some(
+          dict.insert_with(
+            left,
+            asset_name,
+            quantity,
+            fn(_k, ql, qr) { Some(ql + qr) },
+            bytearray.compare,
+          ),
+        )
+      },
+      bytearray.compare,
+    ),
+  )
 }

@@ -400,3 +400,56 @@ test to_string_1() {
 test to_string_2() {
   to_string("ABC") == @"ABC"
 }
+
+/// Encode a `ByteArray` as a hexidecimal `String`.
+///
+/// ```aiken
+/// use aiken/bytearray
+///
+/// bytearray.to_hex("Hello world!") == @"48656c6c6f20776f726c6421"
+/// ```
+pub fn to_hex(self: ByteArray) -> String {
+  self
+    |> encode_base16(builtin.length_of_bytearray(self) - 1, "")
+    |> builtin.decode_utf8
+}
+
+// Construct an hex string in reverse order, from the back. The 'builder' is an
+// accumulator. It works fast because `index_bytearray` follows a constant-time cost
+// model
+fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
+  if ix < 0 {
+    builder
+  } else {
+    let byte = builtin.index_bytearray(bytes, ix)
+    let msb = byte / 16
+    let lsb = byte % 16
+    encode_base16(
+      bytes,
+      ix - 1,
+      builtin.cons_bytearray(
+        msb + if msb < 10 {
+          48
+        } else {
+          87
+        },
+        builtin.cons_bytearray(
+          lsb + if lsb < 10 {
+            48
+          } else {
+            87
+          },
+          builder,
+        ),
+      ),
+    )
+  }
+}
+
+test to_hex_1() {
+  to_hex("Hello world!") == @"48656c6c6f20776f726c6421"
+}
+
+test to_hex_2() {
+  to_hex("The quick brown fox jumps over the lazy dog") == @"54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f67"
+}

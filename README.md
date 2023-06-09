@@ -1,8 +1,6 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/aiken-lang/branding/main/assets/logo-light.png?sanitize=true#gh-dark-mode-only" alt="Aiken" height="150" />
-  <img src="https://raw.githubusercontent.com/aiken-lang/branding/main/assets/logo-dark.png?sanitize=true#gh-light-mode-only" alt="Aiken" height="150" />
   <hr />
-    <h2 align="center" style="border-bottom: none">Aiken Standard Library</h2>
+    <h2 align="center" style="border-bottom: none"><img style="position: relative; top: 0.25rem;" src="https://raw.githubusercontent.com/aiken-lang/branding/main/assets/icon.png" alt="Aiken" height="30" /> Aiken Standard Library</h2>
 
 [![Licence](https://img.shields.io/github/license/aiken-lang/stdlib)](https://github.com/aiken-lang/stdlib/blob/main/LICENSE)
 [![Continuous Integration](https://github.com/aiken-lang/stdlib/actions/workflows/continuous-integration.yml/badge.svg?branch=main)](https://github.com/aiken-lang/stdlib/actions/workflows/continuous-integration.yml)
