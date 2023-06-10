@@ -200,3 +200,26 @@ test log_4_4() {
 test log_4_43() {
   log(4, base: 43) == 0
 }
+
+/// The greatest common divisor of two integers.
+/// 
+/// ```aiken
+/// math.gcd(42, 14) == 14
+/// math.gcd(14, 42) == 14
+/// math.gcd(0, 0) == 0
+/// ```
+pub fn gcd(a: Int, b: Int) -> Int {
+  do_gcd(abs(a), abs(b))
+}
+
+fn do_gcd(a: Int, b: Int) -> Int {
+  if b == 0 {
+    a
+  } else {
+    do_gcd(b, a % b)
+  }
+}
+
+test gcd_42_14() {
+  gcd(42, 14) == 14
+}
