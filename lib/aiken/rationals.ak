@@ -36,7 +36,7 @@ pub opaque type Rational {
 /// ```
 pub fn check_rational(num: UncheckedRational) -> Option<Rational> {
   let UncheckedRational { numerator, denominator } = num
-  div_int(numerator, denominator)
+  ratio(numerator, denominator)
 }
 
 /// Unsafely converts an UncheckedRational to a Rational
@@ -46,7 +46,7 @@ pub fn check_rational(num: UncheckedRational) -> Option<Rational> {
 /// ```
 pub fn unsafe_check_rational(num: UncheckedRational) -> Rational {
   let UncheckedRational { numerator, denominator } = num
-  unsafe_div_int(numerator, denominator)
+  unsafe_ratio(numerator, denominator)
 }
 
 /// Multiplication
@@ -61,14 +61,14 @@ pub fn mul(a: Rational, b: Rational) -> Rational {
 }
 
 test mul_1() {
-  ( unsafe_div_int(2, 3) |> mul(unsafe_div_int(3, 4)) ) == Rational {
+  ( unsafe_ratio(2, 3) |> mul(unsafe_ratio(3, 4)) ) == Rational {
     numerator: 6,
     denominator: 12,
   }
 }
 
 test mul_2() {
-  ( unsafe_div_int(-2, 3) |> mul(unsafe_div_int(-3, 4)) ) == Rational {
+  ( unsafe_ratio(-2, 3) |> mul(unsafe_ratio(-3, 4)) ) == Rational {
     numerator: 6,
     denominator: 12,
   }
@@ -88,34 +88,33 @@ pub fn div(a: Rational, b: Rational) -> Option<Rational> {
 /// quotient of two rational values
 /// panics if the second value is 0 (unsafe)
 /// ```aiken
-/// unsafe_div_int(x, y) |> unsafe_div(unsafe_div_int(a, b)) == Rational { numerator: x*b, denominator: y*a }
+/// unsafe_ratio(x, y) |> unsafe_div(unsafe_ratio(a, b)) == Rational { numerator: x*b, denominator: y*a }
 /// ```
 pub fn unsafe_div(a: Rational, b: Rational) -> Rational {
   unsafe_recip(b) |> mul(a)
 }
 
 test div_1() {
-  ( unsafe_div_int(2, 3) |> unsafe_div(unsafe_div_int(3, 4)) ) == Rational {
+  ( unsafe_ratio(2, 3) |> unsafe_div(unsafe_ratio(3, 4)) ) == Rational {
     numerator: 8,
     denominator: 9,
   }
 }
 
 test div_2() {
-  ( unsafe_div_int(2, 3) |> unsafe_div(unsafe_div_int(-3, 4)) ) == Rational {
+  ( unsafe_ratio(2, 3) |> unsafe_div(unsafe_ratio(-3, 4)) ) == Rational {
     numerator: -8,
     denominator: 9,
   }
 }
 
-/// Division of integers, giving a rational
-/// quotient of two integers
+/// Ratio of integers, a rational
 /// none if the second value is 0
 /// ```aiken
-/// div_int(x, 0) == None
-/// div_int(x, y) == Some(Rational { numerator: x, denominator: y })
+/// ratio(x, 0) == None
+/// ratio(x, y) == Some(Rational { numerator: x, denominator: y })
 /// ```
-pub fn div_int(numerator: Int, denominator: Int) -> Option<Rational> {
+pub fn ratio(numerator: Int, denominator: Int) -> Option<Rational> {
   if denominator == 0 {
     None
   } else if denominator < 0 {
@@ -125,42 +124,42 @@ pub fn div_int(numerator: Int, denominator: Int) -> Option<Rational> {
   }
 }
 
-test div_int_byzero() {
-  div_int(2, 0) == None
+test ratio_zero() {
+  ratio(2, 0) == None
 }
 
-test div_int_1() {
-  div_int(2, 3) == Some(Rational { numerator: 2, denominator: 3 })
+test ratio_1() {
+  ratio(2, 3) == Some(Rational { numerator: 2, denominator: 3 })
 }
 
-test div_int_2() {
-  div_int(-2, 3) == Some(Rational { numerator: -2, denominator: 3 })
+test ratio_2() {
+  ratio(-2, 3) == Some(Rational { numerator: -2, denominator: 3 })
 }
 
-test div_int_3() {
-  div_int(2, -3) == Some(Rational { numerator: -2, denominator: 3 })
+test ratio_3() {
+  ratio(2, -3) == Some(Rational { numerator: -2, denominator: 3 })
 }
 
-test div_int_4() {
-  div_int(2, 4) == Some(Rational { numerator: 2, denominator: 4 })
+test ratio_4() {
+  ratio(2, 4) == Some(Rational { numerator: 2, denominator: 4 })
 }
 
-test div_int_5() {
-  div_int(-2, -3) == Some(Rational { numerator: 2, denominator: 3 })
+test ratio_5() {
+  ratio(-2, -3) == Some(Rational { numerator: 2, denominator: 3 })
 }
 
-test div_int_6() {
-  div_int(-2, -4) == Some(Rational { numerator: 2, denominator: 4 })
+test ratio_6() {
+  ratio(-2, -4) == Some(Rational { numerator: 2, denominator: 4 })
 }
 
 /// Create a new Rational
 /// quotient of two integers
 /// panics if the second value is 0 (unsafe)
 /// ```aiken
-/// unsafe_div_int(x, y) == Rational { numerator: x, denominator: y }
-/// unsafe_div_int(x, 0) == error
+/// unsafe_ratio(x, y) == Rational { numerator: x, denominator: y }
+/// unsafe_ratio(x, 0) == error
 /// ```
-pub fn unsafe_div_int(numerator: Int, denominator: Int) -> Rational {
+pub fn unsafe_ratio(numerator: Int, denominator: Int) -> Rational {
   if denominator == 0 {
     error @"Division by 0"
   } else if denominator < 0 {
@@ -170,28 +169,28 @@ pub fn unsafe_div_int(numerator: Int, denominator: Int) -> Rational {
   }
 }
 
-test unsafe_div_int_1() {
-  unsafe_div_int(2, 3) == Rational { numerator: 2, denominator: 3 }
+test unsafe_ratio_1() {
+  unsafe_ratio(2, 3) == Rational { numerator: 2, denominator: 3 }
 }
 
-test unsafe_div_int_2() {
-  unsafe_div_int(-2, 3) == Rational { numerator: -2, denominator: 3 }
+test unsafe_ratio_2() {
+  unsafe_ratio(-2, 3) == Rational { numerator: -2, denominator: 3 }
 }
 
-test unsafe_div_int_3() {
-  unsafe_div_int(2, -3) == Rational { numerator: -2, denominator: 3 }
+test unsafe_ratio_3() {
+  unsafe_ratio(2, -3) == Rational { numerator: -2, denominator: 3 }
 }
 
-test unsafe_div_int_4() {
-  unsafe_div_int(2, 4) == Rational { numerator: 2, denominator: 4 }
+test unsafe_ratio_4() {
+  unsafe_ratio(2, 4) == Rational { numerator: 2, denominator: 4 }
 }
 
-test unsafe_div_int_5() {
-  unsafe_div_int(-2, -3) == Rational { numerator: 2, denominator: 3 }
+test unsafe_ratio_5() {
+  unsafe_ratio(-2, -3) == Rational { numerator: 2, denominator: 3 }
 }
 
-test unsafe_div_int_6() {
-  unsafe_div_int(-2, -4) == Rational { numerator: 2, denominator: 4 }
+test unsafe_ratio_6() {
+  unsafe_ratio(-2, -4) == Rational { numerator: 2, denominator: 4 }
 }
 
 /// Addition
@@ -206,7 +205,7 @@ pub fn add(a: Rational, b: Rational) -> Rational {
 }
 
 test add_1() {
-  ( unsafe_div_int(2, 3) |> add(unsafe_div_int(3, 4)) ) == Rational {
+  ( unsafe_ratio(2, 3) |> add(unsafe_ratio(3, 4)) ) == Rational {
     numerator: 17,
     denominator: 12,
   }
@@ -215,7 +214,7 @@ test add_1() {
 /// Subtraction
 /// difference of two rational values
 /// ```aiken
-/// unsafe_div_int(x, y) |> sub(unsafe_div_int(a, b)) == Rational { numerator: x*b - a*y, denominator: y*b }
+/// unsafe_ratio(x, y) |> sub(unsafe_ratio(a, b)) == Rational { numerator: x*b - a*y, denominator: y*b }
 /// ```
 pub fn sub(a: Rational, b: Rational) -> Rational {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -224,7 +223,7 @@ pub fn sub(a: Rational, b: Rational) -> Rational {
 }
 
 test sub_1() {
-  ( unsafe_div_int(2, 3) |> sub(unsafe_div_int(3, 4)) ) == Rational {
+  ( unsafe_ratio(2, 3) |> sub(unsafe_ratio(3, 4)) ) == Rational {
     numerator: -1,
     denominator: 12,
   }
@@ -242,11 +241,11 @@ pub fn gt(a: Rational, b: Rational) -> Bool {
 }
 
 test gt_1() {
-  unsafe_div_int(2, 3) |> gt(unsafe_div_int(1, 3))
+  unsafe_ratio(2, 3) |> gt(unsafe_ratio(1, 3))
 }
 
 test gt_2() {
-  ( unsafe_div_int(2, 3) |> gt(unsafe_div_int(2, 3)) ) == False
+  ( unsafe_ratio(2, 3) |> gt(unsafe_ratio(2, 3)) ) == False
 }
 
 /// Less than
@@ -261,11 +260,11 @@ pub fn lt(a: Rational, b: Rational) -> Bool {
 }
 
 test lt_1() {
-  unsafe_div_int(2, 3) |> lt(unsafe_div_int(3, 4))
+  unsafe_ratio(2, 3) |> lt(unsafe_ratio(3, 4))
 }
 
 test lt_2() {
-  ( unsafe_div_int(2, 3) |> lt(unsafe_div_int(2, 3)) ) == False
+  ( unsafe_ratio(2, 3) |> lt(unsafe_ratio(2, 3)) ) == False
 }
 
 /// Greater than or equal
@@ -281,11 +280,11 @@ pub fn ge(a: Rational, b: Rational) -> Bool {
 }
 
 test ge_1() {
-  unsafe_div_int(2, 3) |> ge(unsafe_div_int(1, 3))
+  unsafe_ratio(2, 3) |> ge(unsafe_ratio(1, 3))
 }
 
 test ge_2() {
-  unsafe_div_int(2, 3) |> ge(unsafe_div_int(2, 3))
+  unsafe_ratio(2, 3) |> ge(unsafe_ratio(2, 3))
 }
 
 /// Less than or equal
@@ -301,11 +300,11 @@ pub fn le(a: Rational, b: Rational) -> Bool {
 }
 
 test le_1() {
-  unsafe_div_int(2, 3) |> le(unsafe_div_int(3, 4))
+  unsafe_ratio(2, 3) |> le(unsafe_ratio(3, 4))
 }
 
 test le_2() {
-  unsafe_div_int(2, 3) |> le(unsafe_div_int(2, 3))
+  unsafe_ratio(2, 3) |> le(unsafe_ratio(2, 3))
 }
 
 /// Equal
@@ -321,14 +320,14 @@ pub fn eq(a: Rational, b: Rational) -> Bool {
 }
 
 test eq_1() {
-  unsafe_div_int(2, 3) |> eq(unsafe_div_int(2, 3))
+  unsafe_ratio(2, 3) |> eq(unsafe_ratio(2, 3))
 }
 
 /// Not Equal
 /// ```aiken
 /// neq(Rational { numerator: 5, denominator: 7 }, Rational { numerator: 5, denominator: 6 }) == True
 /// neq(Rational (5, 6), Rational (5, 7)) == True
-/// unsafe_div_int(5, 6) |> neq(Rational(5,7)) == True
+/// unsafe_ratio(5, 6) |> neq(Rational(5,7)) == True
 /// ```
 pub fn neq(a: Rational, b: Rational) -> Bool {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -337,7 +336,7 @@ pub fn neq(a: Rational, b: Rational) -> Bool {
 }
 
 test neq_1() {
-  unsafe_div_int(2, 3) |> neq(unsafe_div_int(1, 3))
+  unsafe_ratio(2, 3) |> neq(unsafe_ratio(1, 3))
 }
 
 /// Create a new Rational from an Int
@@ -351,16 +350,16 @@ pub fn from_int(a: Int) -> Rational {
 }
 
 test from_int_1() {
-  from_int(3) == unsafe_div_int(3, 1)
+  from_int(3) == unsafe_ratio(3, 1)
 }
 
 /// Truncate a Rational to convert it to an Int
 /// ```aiken
-/// truncate(unsafe_div_int(5, 2)) == 2
-/// truncate(unsafe_div_int(5, 3)) == 1
-/// truncate(unsafe_div_int(5, 4)) == 1
-/// truncate(unsafe_div_int(5, 5)) == 1
-/// truncate(unsafe_div_int(5, 6)) == 0
+/// truncate(unsafe_ratio(5, 2)) == 2
+/// truncate(unsafe_ratio(5, 3)) == 1
+/// truncate(unsafe_ratio(5, 4)) == 1
+/// truncate(unsafe_ratio(5, 5)) == 1
+/// truncate(unsafe_ratio(5, 6)) == 0
 /// ```
 pub fn truncate(a: Rational) -> Int {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -368,7 +367,7 @@ pub fn truncate(a: Rational) -> Int {
 }
 
 test truncate_1() {
-  ( unsafe_div_int(8, 3) |> truncate ) == 2
+  ( unsafe_ratio(8, 3) |> truncate ) == 2
 }
 
 /// Change the sign of a Rational
@@ -382,7 +381,7 @@ pub fn neg(a: Rational) -> Rational {
 }
 
 test neg_1() {
-  ( unsafe_div_int(2, 3) |> neg ) == Rational { numerator: -2, denominator: 3 }
+  ( unsafe_ratio(2, 3) |> neg ) == Rational { numerator: -2, denominator: 3 }
 }
 
 /// Absolute value of a Rational
@@ -396,14 +395,14 @@ pub fn abs(a: Rational) -> Rational {
 }
 
 test abs_1() {
-  ( unsafe_div_int(-2, 3) |> abs ) == Rational { numerator: 2, denominator: 3 }
+  ( unsafe_ratio(-2, 3) |> abs ) == Rational { numerator: 2, denominator: 3 }
 }
 
 /// Reciprocal of a Rational
 /// ```aiken
-/// unsafe_div_int(5, 2) |> recip() == Some(Rational { numerator: 2, denominator: 5 })
-/// unsafe_div_int(-5, 2) |> recip() == Some(Rational { numerator: -2, denominator: 5 })
-/// unsafe_div_int(0, 2) |> recip() == None
+/// unsafe_ratio(5, 2) |> recip() == Some(Rational { numerator: 2, denominator: 5 })
+/// unsafe_ratio(-5, 2) |> recip() == Some(Rational { numerator: -2, denominator: 5 })
+/// unsafe_ratio(0, 2) |> recip() == None
 /// ```
 pub fn recip(a: Rational) -> Option<Rational> {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -417,18 +416,18 @@ pub fn recip(a: Rational) -> Option<Rational> {
 }
 
 test recip_1() {
-  ( div_int(2, 3) |> option.map(recip) ) == Some(div_int(3, 2))
+  ( ratio(2, 3) |> option.map(recip) ) == Some(ratio(3, 2))
 }
 
 test recip_2() {
-  ( div_int(-2, 3) |> option.map(recip) ) == Some(div_int(-3, 2))
+  ( ratio(-2, 3) |> option.map(recip) ) == Some(ratio(-3, 2))
 }
 
 /// Reciprocal of a Rational (unsafe)
 /// ```aiken
-/// unsafe_div_int(5, 2) |> unsafe_recip() == Rational { numerator: 2, denominator: 5 }
-/// unsafe_div_int(-6, 7) |> unsafe_recip() == Rational { numerator: -7, denominator: 6 }
-/// unsafe_div_int(0, 2) |> unsafe_recip() == error
+/// unsafe_ratio(5, 2) |> unsafe_recip() == Rational { numerator: 2, denominator: 5 }
+/// unsafe_ratio(-6, 7) |> unsafe_recip() == Rational { numerator: -7, denominator: 6 }
+/// unsafe_ratio(0, 2) |> unsafe_recip() == error
 /// ```
 pub fn unsafe_recip(a: Rational) -> Rational {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -442,17 +441,17 @@ pub fn unsafe_recip(a: Rational) -> Rational {
 }
 
 test unsafe_recip_1() {
-  ( div_int(2, 3) |> option.map(unsafe_recip) ) == div_int(3, 2)
+  ( ratio(2, 3) |> option.map(unsafe_recip) ) == ratio(3, 2)
 }
 
 test unsafe_recip_2() {
-  ( div_int(-2, 3) |> option.map(unsafe_recip) ) == div_int(-3, 2)
+  ( ratio(-2, 3) |> option.map(unsafe_recip) ) == ratio(-3, 2)
 }
 
 /// Reduce a rational to its irreducible form
 /// Making the numerator and denominator coprime
 /// ```aiken
-/// div_int(80, 200) |> option.map(reduce) == Some(Rational { numerator: 2, denominator: 5 })
+/// ratio(80, 200) |> option.map(reduce) == Some(Rational { numerator: 2, denominator: 5 })
 /// div_(-5, 1) |> option.map(reduce) == Some(Rational { numerator: -5, denominator: 1 })
 /// ```
 pub fn reduce(a: Rational) -> Rational {
@@ -462,19 +461,19 @@ pub fn reduce(a: Rational) -> Rational {
 }
 
 test reduce_1() {
-  ( div_int(5040, 18018) |> option.map(reduce) ) == div_int(40, 143)
+  ( ratio(5040, 18018) |> option.map(reduce) ) == ratio(40, 143)
 }
 
 test reduce_2() {
-  ( div_int(-20, 4) |> option.map(reduce) ) == div_int(-5, 1)
+  ( ratio(-20, 4) |> option.map(reduce) ) == ratio(-5, 1)
 }
 
 /// Compare two rationals for an ordering
 /// ```aiken
-/// div_int(5, 2) |> option.map(compare(_, unsafe_div_int(5, 2))) == Some(Equal)
-/// div_int(5, 2) |> option.map(compare(_, Rational { numerator: 10, denominator: 4 })) == Some(Equal)
+/// ratio(5, 2) |> option.map(compare(_, unsafe_ratio(5, 2))) == Some(Equal)
+/// ratio(5, 2) |> option.map(compare(_, Rational { numerator: 10, denominator: 4 })) == Some(Equal)
 /// compare(Rational { numerator: 5, denominator: 2 }, Rational { numerator: 5, denominator: 3 }) == Greater
-/// unsafe_div_int(5, 2) |> compare(Rational { numerator: 5, denominator: 1 }) == Less
+/// unsafe_ratio(5, 2) |> compare(Rational { numerator: 5, denominator: 1 }) == Less
 /// ```
 pub fn compare(left: Rational, right: Rational) -> Ordering {
   if left |> lt(right) {
@@ -487,17 +486,17 @@ pub fn compare(left: Rational, right: Rational) -> Ordering {
 }
 
 test compare_1() {
-  ( div_int(3, 8) |> option.map(compare(_, unsafe_div_int(-2, 4))) ) == Some(
+  ( ratio(3, 8) |> option.map(compare(_, unsafe_ratio(-2, 4))) ) == Some(
     Greater,
   )
 }
 
 test compare_2() {
-  ( unsafe_div_int(3, 8) |> compare(unsafe_div_int(2, 4)) ) == Less
+  ( unsafe_ratio(3, 8) |> compare(unsafe_ratio(2, 4)) ) == Less
 }
 
 test compare_3() {
-  ( unsafe_div_int(3, 8) |> compare(unsafe_div_int(3, 8)) ) == Equal
+  ( unsafe_ratio(3, 8) |> compare(unsafe_ratio(3, 8)) ) == Equal
 }
 
 /// The `Rational` for zero.
