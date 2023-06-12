@@ -208,15 +208,14 @@ test log_4_43() {
 /// math.gcd(14, 42) == 14
 /// math.gcd(0, 0) == 0
 /// ```
-pub fn gcd(a: Int, b: Int) -> Int {
-  do_gcd(abs(a), abs(b))
+pub fn gcd(x: Int, y: Int) -> Int {
+  abs(do_gcd(x, y))
 }
 
-fn do_gcd(a: Int, b: Int) -> Int {
-  if b == 0 {
-    a
-  } else {
-    do_gcd(b, a % b)
+fn do_gcd(x: Int, y: Int) -> Int {
+  when y is {
+    0 -> x
+    _ -> do_gcd(y, x % y)
   }
 }
 

@@ -74,6 +74,20 @@ test mul_2() {
   }
 }
 
+test mul_3() {
+  (
+    unsafe_ratio(2, 5)
+      |> mul(unsafe_ratio(1, 8))
+      |> mul(unsafe_ratio(3, 10))
+      |> mul(unsafe_ratio(21, 100))
+      |> mul(unsafe_ratio(3, 5))
+      |> mul(unsafe_ratio(2, 8))
+      |> mul(unsafe_ratio(4, 10))
+      |> mul(unsafe_ratio(22, 100))
+      |> reduce()
+  ) == Rational { numerator: 2079, denominator: 50000000 }
+}
+
 /// Division
 /// quotient of two rational values
 /// none if the second value is 0
@@ -326,8 +340,8 @@ test eq_1() {
 /// Not Equal
 /// ```aiken
 /// neq(Rational { numerator: 5, denominator: 7 }, Rational { numerator: 5, denominator: 6 }) == True
-/// neq(Rational (5, 6), Rational (5, 7)) == True
-/// unsafe_ratio(5, 6) |> neq(Rational(5,7)) == True
+/// neq(Rational (5, 6), Rational{numerator: 5, denominator: 7}) == True
+/// unsafe_ratio(5, 6) |> neq(Rational{numerator: 5, denominator: 7}) == True
 /// ```
 pub fn neq(a: Rational, b: Rational) -> Bool {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -368,6 +382,103 @@ pub fn truncate(a: Rational) -> Int {
 
 test truncate_1() {
   ( unsafe_ratio(8, 3) |> truncate ) == 2
+}
+
+/// Rounds the argument up towards positive infinity.
+pub fn ceiling(x: Rational) -> Int {
+  let Rational { numerator, denominator } = x
+  if numerator % denominator == 0 {
+    numerator / denominator
+  } else {
+    numerator / denominator + 1
+  }
+}
+
+test ceiling_test1() {
+  ceiling(unsafe_ratio(13, 5)) == 3
+}
+
+test ceiling_test2() {
+  ceiling(unsafe_ratio(15, 5)) == 3
+}
+
+test ceiling_test3() {
+  ceiling(unsafe_ratio(16, 5)) == 4
+}
+
+test ceiling_test4() {
+  ceiling(unsafe_ratio(-3, 5)) == 0
+}
+
+test ceiling_test5() {
+  ceiling(unsafe_ratio(-5, 5)) == -1
+}
+
+test ceiling_test6() {
+  ceiling(unsafe_ratio(-6, 5)) == -1
+}
+
+/// Return the proper fraction of the argument.
+pub fn proper_fraction(x: Rational) -> (Int, Rational) {
+  let Rational { numerator, denominator } = x
+  (
+    numerator / denominator,
+    Rational { numerator: numerator % denominator, denominator },
+  )
+}
+
+test proper_fraction_test1() {
+  proper_fraction(unsafe_ratio(10, 7)) == (
+    1,
+    Rational { numerator: 3, denominator: 7 },
+  )
+}
+
+test proper_fraction_test2() {
+  proper_fraction(unsafe_ratio(-10, 7)) == (
+    -2,
+    Rational { numerator: 4, denominator: 7 },
+  )
+}
+
+/// Round the argument to the nearest whole number. If the argument is equidistant between two
+/// values, the nearest even number will be given.
+pub fn round(x: Rational) -> Int {
+  let (n, r) = proper_fraction(x)
+  let m =
+    if lt(r, from_int(0)) {
+      n - 1
+    } else {
+      n + 1
+    }
+  let flag = sub(abs(r), unsafe_ratio(1, 2))
+  if lt(flag, from_int(0)) {
+    n
+  } else if flag == from_int(0) {
+    if n % 2 == 0 {
+      n
+    } else {
+      m
+    }
+  } else {
+    m
+  }
+}
+
+test round_test1() {
+  round(unsafe_ratio(-10, 7)) == -1
+}
+
+test round_test2() {
+  round(unsafe_ratio(10, 7)) == 1
+}
+
+test round_test3() {
+  round(unsafe_ratio(3, 2)) == 2
+}
+
+test round_test4() {
+  round(unsafe_ratio(5, 2)) == 3
 }
 
 /// Change the sign of a Rational
@@ -441,11 +552,15 @@ pub fn unsafe_recip(a: Rational) -> Rational {
 }
 
 test unsafe_recip_1() {
-  ( ratio(2, 3) |> option.map(unsafe_recip) ) == ratio(3, 2)
+  ( ratio(2, 3) |> option.map(unsafe_recip) ) == Some(
+    Rational { numerator: 3, denominator: 2 },
+  )
 }
 
 test unsafe_recip_2() {
-  ( ratio(-2, 3) |> option.map(unsafe_recip) ) == ratio(-3, 2)
+  ( ratio(-2, 3) |> option.map(unsafe_recip) ) == Some(
+    Rational { numerator: -3, denominator: 2 },
+  )
 }
 
 /// Reduce a rational to its irreducible form
@@ -461,11 +576,15 @@ pub fn reduce(a: Rational) -> Rational {
 }
 
 test reduce_1() {
-  ( ratio(5040, 18018) |> option.map(reduce) ) == ratio(40, 143)
+  ( ratio(5040, 18018) |> option.map(reduce) ) == Some(
+    Rational { numerator: 40, denominator: 143 },
+  )
 }
 
 test reduce_2() {
-  ( ratio(-20, 4) |> option.map(reduce) ) == ratio(-5, 1)
+  ( ratio(-20, 4) |> option.map(reduce) ) == Some(
+    Rational { numerator: -5, denominator: 1 },
+  )
 }
 
 /// Compare two rationals for an ordering
