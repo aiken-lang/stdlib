@@ -220,6 +220,14 @@ fn do_gcd(a: Int, b: Int) -> Int {
   }
 }
 
-test gcd_42_14() {
+test gcd_test1() {
+  gcd(10, 300) == 10
+}
+
+test gcd_test2() {
+  gcd(-10, 300) == 10
+}
+
+test gcd_test3() {
   gcd(42, 14) == 14
 }

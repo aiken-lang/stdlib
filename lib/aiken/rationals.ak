@@ -1,4 +1,13 @@
-//// Rationals
+//// This module implements operations between data structures of type Rational.
+////
+//// Rational numbers are represented as a pair of integers, a numerator and a denominator.
+////
+//// - the denominator is always positive
+//// - the sign is managed in the numerator.
+//// - the denominator is never 0.
+//// - the numerator and denominator are not explicitly reduced. This is done on demand.
+////
+//// Reducing should be done before write (e.g validating datum output)
 
 // todo: more comments (good docs)
 //      finish compare tests
@@ -23,7 +32,7 @@ pub opaque type Rational {
 /// Converts an UncheckedRational to a Rational
 ///
 /// ```aiken
-/// check_rational(UncheckedRational { numerator: 2, denominator: 3 }) == Some(Rational { numerator: 2, denominator: 3 })
+/// UncheckedRational { numerator: 2, denominator: 3 } |> check_rational() == Some(Rational { numerator: 2, denominator: 3 })
 /// ```
 pub fn check_rational(num: UncheckedRational) -> Option<Rational> {
   let UncheckedRational { numerator, denominator } = num
@@ -441,6 +450,7 @@ test unsafe_recip_2() {
 }
 
 /// Reduce a rational to its irreducible form
+/// Making the numerator and denominator coprime
 /// ```aiken
 /// div_int(80, 200) |> option.map(reduce) == Some(Rational { numerator: 2, denominator: 5 })
 /// div_(-5, 1) |> option.map(reduce) == Some(Rational { numerator: -5, denominator: 1 })
@@ -488,4 +498,13 @@ test compare_2() {
 
 test compare_3() {
   ( unsafe_div_int(3, 8) |> compare(unsafe_div_int(3, 8)) ) == Equal
+}
+
+/// The `Rational` for zero.
+pub fn zero() -> Rational {
+  0 |> from_int
+}
+
+test zero_1() {
+  zero() == Rational { numerator: 0, denominator: 1 }
 }
