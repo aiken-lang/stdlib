@@ -318,7 +318,7 @@ pub fn to_dict(self: Value) -> Dict<PolicyId, Dict<AssetName, Int>> {
 /// in transaction outputs.
 ///
 /// Note that you're never expected to construct a `MintedValue` yourself. If you need to
-/// manipulate multi-asset values, use [Value](/value.html#Value)
+/// manipulate multi-asset values, use [Value](#Value)
 ///
 /// See also [`from_minted_value`](#from_minted_value).
 pub opaque type MintedValue {
