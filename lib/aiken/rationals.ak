@@ -9,9 +9,6 @@
 ////
 //// Reducing should be done before write (e.g validating datum output)
 
-// todo: more comments (good docs)
-//      finish compare tests
-
 use aiken/math
 use aiken/option
 
@@ -56,7 +53,7 @@ test mul_3() {
       |> mul(expect_new(2, 8))
       |> mul(expect_new(4, 10))
       |> mul(expect_new(22, 100))
-      |> reduce()
+      |> reduce
   ) == Rational { numerator: 2079, denominator: 50000000 }
 }
 
@@ -182,7 +179,7 @@ test expect_new_6() {
 /// Addition
 /// sum of two rational values
 /// ```aiken
-/// add(new(x, y), new(a, b)) == new(x*b + a*y, y*b)
+/// add(expect_new(x, y), expect_new(a, b)) == expect_new(x*b + a*y, y*b)
 /// ```
 pub fn add(a: Rational, b: Rational) -> Rational {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -226,6 +223,14 @@ pub fn gt(a: Rational, b: Rational) -> Bool {
   a_n * b_d > b_n * a_d
 }
 
+test gt_examples() {
+  [
+    gt(expect_new(5, 7), expect_new(5, 6)) == False,
+    gt(expect_new(5, 6), expect_new(5, 7)) == True,
+  ]
+    |> all
+}
+
 test gt_1() {
   expect_new(2, 3) |> gt(expect_new(1, 3))
 }
@@ -243,6 +248,14 @@ pub fn lt(a: Rational, b: Rational) -> Bool {
   let Rational { numerator: a_n, denominator: a_d } = a
   let Rational { numerator: b_n, denominator: b_d } = b
   a_n * b_d < b_n * a_d
+}
+
+test lt_examples() {
+  [
+    lt(expect_new(5, 7), expect_new(5, 6)) == True,
+    lt(expect_new(5, 6), expect_new(5, 7)) == False,
+  ]
+    |> all
 }
 
 test lt_1() {
@@ -265,6 +278,15 @@ pub fn ge(a: Rational, b: Rational) -> Bool {
   a_n * b_d >= b_n * a_d
 }
 
+test ge_examples() {
+  [
+    ge(expect_new(5, 7), expect_new(5, 6)) == False,
+    ge(expect_new(5, 6), expect_new(5, 7)) == True,
+    ge(expect_new(5, 6), expect_new(5, 6)) == True,
+  ]
+    |> all
+}
+
 test ge_1() {
   expect_new(2, 3) |> ge(expect_new(1, 3))
 }
@@ -285,6 +307,15 @@ pub fn le(a: Rational, b: Rational) -> Bool {
   a_n * b_d <= b_n * a_d
 }
 
+test le_examples() {
+  [
+    le(expect_new(5, 7), expect_new(5, 6)) == True,
+    le(expect_new(5, 6), expect_new(5, 7)) == False,
+    le(expect_new(5, 6), expect_new(5, 6)) == True,
+  ]
+    |> all
+}
+
 test le_1() {
   expect_new(2, 3) |> le(expect_new(3, 4))
 }
@@ -296,7 +327,7 @@ test le_2() {
 /// Equal
 /// ```aiken
 /// eq(expect_new(5, 7), expect_new(5, 6)) == False
-/// eq(expect_new(5, 6), expect_new(5, 7)) == False
+/// ( expect_new(5, 6) |> eq(expect_new(5, 7)) ) == False
 /// eq(expect_new(5, 6), expect_new(5, 6)) == True
 /// ```
 pub fn eq(a: Rational, b: Rational) -> Bool {
@@ -305,20 +336,38 @@ pub fn eq(a: Rational, b: Rational) -> Bool {
   a_n * b_d == b_n * a_d
 }
 
+test eq_examples() {
+  [
+    eq(expect_new(5, 7), expect_new(5, 6)) == False,
+    ( expect_new(5, 6) |> eq(expect_new(5, 7)) ) == False,
+    eq(expect_new(5, 6), expect_new(5, 6)) == True,
+  ]
+    |> all
+}
+
 test eq_1() {
   expect_new(2, 3) |> eq(expect_new(2, 3))
 }
 
 /// Not Equal
 /// ```aiken
-/// neq(Rational expect_new(5, 7), expect_new(5, 6)}) == True
-/// neq(Rational (5, 6), expect_new(5, 7)) == True
-/// expect_new(5, 6) |> neq(expect_new(5, 7)) == True
+/// neq(expect_new(5, 7), expect_new(5, 6)) == True
+/// neq(expect_new(5, 6), expect_new(5, 7)) == True
+/// ( expect_new(5, 6) |> neq(expect_new(5, 7)) ) == True
 /// ```
 pub fn neq(a: Rational, b: Rational) -> Bool {
   let Rational { numerator: a_n, denominator: a_d } = a
   let Rational { numerator: b_n, denominator: b_d } = b
   a_n * b_d != b_n * a_d
+}
+
+test neq_examples() {
+  [
+    neq(expect_new(5, 7), expect_new(5, 6)) == True,
+    neq(expect_new(5, 6), expect_new(5, 7)) == True,
+    ( expect_new(5, 6) |> neq(expect_new(5, 7)) ) == True,
+  ]
+    |> all
 }
 
 test neq_1() {
@@ -327,12 +376,21 @@ test neq_1() {
 
 /// Create a new Rational from an Int
 /// ```aiken
-/// from_int(-5) == expect_new(-5, 1)
-/// from_int(3) == expect_new(3, 1)
+/// ( -5 |> from_int ) == expect_new(-5, 1)
+/// ( 3 |> from_int ) == expect_new(3, 1)
 /// from_int(0) == expect_new(0, 1)
 /// ```
 pub fn from_int(a: Int) -> Rational {
   Rational { numerator: a, denominator: 1 }
+}
+
+test from_int_examples() {
+  [
+    ( -5 |> from_int ) == expect_new(-5, 1),
+    ( 3 |> from_int ) == expect_new(3, 1),
+    from_int(0) == expect_new(0, 1),
+  ]
+    |> all
 }
 
 test from_int_1() {
@@ -352,11 +410,29 @@ pub fn truncate(a: Rational) -> Int {
   a_n / a_d
 }
 
+test truncate_examples() {
+  [
+    truncate(expect_new(5, 2)) == 2,
+    truncate(expect_new(5, 3)) == 1,
+    truncate(expect_new(5, 4)) == 1,
+    truncate(expect_new(5, 5)) == 1,
+    truncate(expect_new(5, 6)) == 0,
+  ]
+    |> all
+}
+
 test truncate_1() {
   ( expect_new(8, 3) |> truncate ) == 2
 }
 
 /// Rounds the argument up towards positive infinity.
+/// ```aiken
+/// ceiling(expect_new(13, 5)) == 3
+/// ceiling(expect_new(15, 5)) == 3
+/// ( expect_new(16, 5) |> ceiling ) == 4
+/// ceiling(expect_new(-3, 5)) == 0
+/// ( expect_new(-5, 5) |> ceiling ) == -1
+/// ```
 pub fn ceiling(x: Rational) -> Int {
   let Rational { numerator, denominator } = x
   if numerator % denominator == 0 {
@@ -364,6 +440,17 @@ pub fn ceiling(x: Rational) -> Int {
   } else {
     numerator / denominator + 1
   }
+}
+
+test ceiling_examples() {
+  [
+    ceiling(expect_new(13, 5)) == 3,
+    ceiling(expect_new(15, 5)) == 3,
+    ( expect_new(16, 5) |> ceiling ) == 4,
+    ceiling(expect_new(-3, 5)) == 0,
+    ( expect_new(-5, 5) |> ceiling ) == -1,
+  ]
+    |> all
 }
 
 test ceiling_test1() {
@@ -454,12 +541,21 @@ test round_test5() {
 /// Change the sign of a Rational
 /// ```aiken
 /// neg(expect_new(5, 2)) == expect_new(-5, 2)
-/// neg(expect_new(-5, 2)) == expect_new(5, 2)
+/// ( expect_new(-5, 2) |> neg ) == expect_new(5, 2)
 /// neg(neg(x)) == x
 /// ```
 pub fn neg(a: Rational) -> Rational {
   let Rational { numerator: a_n, denominator: a_d } = a
   Rational { numerator: -a_n, denominator: a_d }
+}
+
+test neg_examples() {
+  [
+    neg(expect_new(5, 2)) == expect_new(-5, 2),
+    ( expect_new(-5, 2) |> neg ) == expect_new(5, 2),
+    neg(neg(expect_new(5, 2))) == expect_new(5, 2),
+  ]
+    |> all
 }
 
 test neg_1() {
@@ -468,7 +564,7 @@ test neg_1() {
 
 /// Absolute value of a Rational
 /// ```aiken
-/// abs(expect_new(5, 2)) == expect_new(5, 2)
+/// ( expect_new(5, 2) |> abs ) == expect_new(5, 2)
 /// abs(expect_new(-5, 2)) == expect_new(5, 2)
 /// abs(expect_new(x, y)) == abs(expect_new(-x, y))
 /// ```
@@ -477,15 +573,24 @@ pub fn abs(a: Rational) -> Rational {
   Rational { numerator: math.abs(a_n), denominator: a_d }
 }
 
+test abs_examples() {
+  [
+    ( expect_new(5, 2) |> abs ) == expect_new(5, 2),
+    abs(expect_new(-5, 2)) == expect_new(5, 2),
+    abs(expect_new(5, 2)) == abs(expect_new(-5, 2)),
+  ]
+    |> all
+}
+
 test abs_1() {
   ( expect_new(-2, 3) |> abs ) == Rational { numerator: 2, denominator: 3 }
 }
 
 /// Reciprocal of a Rational
 /// ```aiken
-/// expect_new(5, 2) |> recip() == new(2, 5)
-/// expect_new(-5, 2) |> recip() == new(-2, 5)
-/// expect_new(0, 2) |> recip() == None
+/// ( expect_new(5, 2) |> recip ) == new(2, 5)
+/// ( expect_new(-5, 2) |> recip ) == new(-2, 5)
+/// ( expect_new(0, 2) |> recip ) == None
 /// ```
 pub fn recip(a: Rational) -> Option<Rational> {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -496,6 +601,15 @@ pub fn recip(a: Rational) -> Option<Rational> {
   } else {
     None
   }
+}
+
+test recip_examples() {
+  [
+    ( expect_new(5, 2) |> recip ) == new(2, 5),
+    ( expect_new(-5, 2) |> recip ) == new(-2, 5),
+    ( expect_new(0, 2) |> recip ) == None,
+  ]
+    |> all
 }
 
 test recip_1() {
@@ -509,9 +623,9 @@ test recip_2() {
 /// Reciprocal of a Rational
 /// Expects the numerator to be non-zero
 /// ```aiken
-/// expect_new(5, 2) |> expect_recip() == expect_new(2, 5)
-/// expect_new(-6, 7) |> expect_recip() == expect_new(-7, 6)
-/// expect_new(0, 2) |> expect_recip() == error
+/// ( expect_new(5, 2) |> expect_recip ) == expect_new(2, 5)
+/// ( expect_new(-6, 7) |> expect_recip ) == expect_new(-7, 6)
+/// ( expect_new(0, 2) |> expect_recip ) == error
 /// ```
 pub fn expect_recip(a: Rational) -> Rational {
   let Rational { numerator: a_n, denominator: a_d } = a
@@ -522,6 +636,14 @@ pub fn expect_recip(a: Rational) -> Rational {
   } else {
     error @"Denominator cannot be 0"
   }
+}
+
+test except_recip_examples() {
+  [
+    ( expect_new(5, 2) |> expect_recip ) == expect_new(2, 5),
+    ( expect_new(-6, 7) |> expect_recip ) == expect_new(-7, 6),
+  ]
+    |> all
 }
 
 test expect_recip_1() {
@@ -539,13 +661,21 @@ test expect_recip_2() {
 /// Reduce a rational to its irreducible form
 /// Making the numerator and denominator coprime
 /// ```aiken
-/// new(80, 200) |> option.map(reduce) == new(2, 5)
-/// div_(-5, 1) |> option.map(reduce) == new(-5, 1)
+/// ( new(80, 200) |> option.map(reduce) ) == new(2, 5)
+/// ( new(-5, 1) |> option.map(reduce) ) == new(-5, 1)
 /// ```
 pub fn reduce(a: Rational) -> Rational {
   let Rational { numerator: a_n, denominator: a_d } = a
   let d = math.gcd(a_n, a_d)
   Rational { numerator: a_n / d, denominator: a_d / d }
+}
+
+test reduce_examples() {
+  [
+    ( new(80, 200) |> option.map(reduce) ) == new(2, 5),
+    ( new(-5, 1) |> option.map(reduce) ) == new(-5, 1),
+  ]
+    |> all
 }
 
 test reduce_1() {
@@ -562,10 +692,10 @@ test reduce_2() {
 
 /// Compare two rationals for an ordering
 /// ```aiken
-/// new(5, 2) |> option.map(compare(_, expect_new(5, 2))) == Some(Equal)
-/// new(5, 2) |> option.map(compare(_, expect_new(10, 4))) == Some(Equal)
+/// ( new(5, 2) |> option.map(compare(_, expect_new(5, 2))) ) == Some(Equal)
+/// ( new(5, 2) |> option.map(compare(_, expect_new(10, 4))) ) == Some(Equal)
 /// compare(expect_new(5, 2), expect_new(5, 3)) == Greater
-/// expect_new(5, 2) |> compare(expect_new(5, 1)) == Less
+/// ( expect_new(5, 2) |> compare(expect_new(5, 1)) ) == Less
 /// ```
 pub fn compare(left: Rational, right: Rational) -> Ordering {
   if left |> lt(right) {
@@ -575,6 +705,16 @@ pub fn compare(left: Rational, right: Rational) -> Ordering {
   } else {
     Equal
   }
+}
+
+test compare_examples() {
+  [
+    ( new(5, 2) |> option.map(compare(_, expect_new(5, 2))) ) == Some(Equal),
+    ( new(5, 2) |> option.map(compare(_, expect_new(10, 4))) ) == Some(Equal),
+    compare(expect_new(5, 2), expect_new(5, 3)) == Greater,
+    ( expect_new(5, 2) |> compare(expect_new(5, 1)) ) == Less,
+  ]
+    |> all
 }
 
 test compare_1() {
@@ -596,4 +736,12 @@ pub fn zero() -> Rational {
 
 test zero_1() {
   zero() == Rational { numerator: 0, denominator: 1 }
+}
+
+// used for testing
+fn all(list: List<Bool>) -> Bool {
+  when list is {
+    [x, ..xs] -> x && all(xs)
+    [] -> True
+  }
 }
