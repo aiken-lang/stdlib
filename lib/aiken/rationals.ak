@@ -5,7 +5,7 @@
 //// - the denominator is always positive
 //// - the sign is managed in the numerator.
 //// - the denominator is never 0.
-//// - the numerator and denominator are not explicitly reduced. This is done on demand.
+//// - the numerator and denominator are not implicitly reduced. This is done on demand.
 ////
 //// Reducing should be done before write (e.g validating datum output)
 
