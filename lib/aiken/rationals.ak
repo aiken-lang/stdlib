@@ -73,7 +73,7 @@ pub fn div(a: Rational, b: Rational) -> Option<Rational> {
 /// ```aiken
 /// expect_new(x, y) |> expect_div(expect_new(a, b)) == new(x*b, y*a)
 /// ```
-pub fn expect_div(a: Rational, b: Rational) -> Rational {
+fn expect_div(a: Rational, b: Rational) -> Rational {
   expect_recip(b) |> mul(a)
 }
 
@@ -142,7 +142,7 @@ test new_6() {
 /// Some(expect_new(x, y)) == new(x, y)
 /// expect_new(x, 0) == error
 /// ```
-pub fn expect_new(numerator: Int, denominator: Int) -> Rational {
+fn expect_new(numerator: Int, denominator: Int) -> Rational {
   if denominator == 0 {
     error @"Division by 0"
   } else if denominator < 0 {
@@ -627,7 +627,7 @@ test recip_2() {
 /// ( expect_new(-6, 7) |> expect_recip ) == expect_new(-7, 6)
 /// ( expect_new(0, 2) |> expect_recip ) == error
 /// ```
-pub fn expect_recip(a: Rational) -> Rational {
+fn expect_recip(a: Rational) -> Rational {
   let Rational { numerator: a_n, denominator: a_d } = a
   if a_n < 0 {
     Rational { numerator: -a_d, denominator: -a_n }
