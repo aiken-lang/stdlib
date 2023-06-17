@@ -329,7 +329,8 @@ test proper_fraction_3() {
 }
 
 /// Round the argument to the nearest whole number. If the argument is
-/// equidistant between two values, the greater value is returned.
+/// equidistant between two values, the greater value is returned (it
+/// rounds half towards positive infinity).
 ///
 /// ```aiken
 /// expect Some(x) = rational.new(2, 3)
@@ -342,7 +343,9 @@ test proper_fraction_3() {
 /// rational.round(z) == -1
 /// ```
 ///
-/// ⚠️  This behaves differently than _Haskell_. If you're coming from `PlutusTx`, beware that in Haskell, rounding on equidistant depends on the whole number being odd or even.
+/// ⚠️  This behaves differently than _Haskell_. If you're coming from
+/// `PlutusTx`, beware that in Haskell, rounding on equidistant depends on the
+/// whole number being odd or even. If you need this behaviour, use [`rounding_even`](#rounding_even).
 pub fn round(self: Rational) -> Int {
   let (n, f) = proper_fraction(self)
 
@@ -367,6 +370,56 @@ test round_1() {
     (round(ratio(-2, 3)) == -1)?,
     (round(ratio(-10, 7)) == -1)?,
     (round(ratio(4, 2)) == 2)?,
+  ]
+    |> list.and
+}
+
+/// Round the argument to the nearest whole number. If the argument is
+/// equidistant between two values, it returns the value that is even (it
+/// rounds half to even, also known as 'banker's rounding').
+///
+/// ```aiken
+/// expect Some(w) = rational.new(2, 3)
+/// rational.round_even(w) == 1
+///
+/// expect Some(x) = rational.new(3, 2)
+/// rational.round_even(x) == 2
+///
+/// expect Some(y) = rational.new(5, 2)
+/// rational.round_even(y) == 2
+///
+/// expect Some(y) = rational.new(-3, 2)
+/// rational.round_even(y) == -2
+/// ```
+pub fn round_even(self: Rational) -> Int {
+  let (n, f) = proper_fraction(self)
+
+  let m =
+    when compare(f, ratio(0, 1)) is {
+      Less -> -1
+      _ -> 1
+    }
+
+  let is_even = n % 2 == 0
+
+  when compare(abs(f), ratio(1, 2)) is {
+    Less -> n
+    Equal if is_even -> n
+    Equal -> n + m
+    Greater -> n + m
+  }
+}
+
+test round_even_1() {
+  [
+    (round_even(ratio(10, 7)) == 1)?,
+    (round_even(ratio(11, 7)) == 2)?,
+    (round_even(ratio(3, 2)) == 2)?,
+    (round_even(ratio(5, 2)) == 2)?,
+    (round_even(ratio(-3, 2)) == -2)?,
+    (round_even(ratio(-2, 3)) == -1)?,
+    (round_even(ratio(-10, 7)) == -1)?,
+    (round_even(ratio(4, 2)) == 2)?,
   ]
     |> list.and
 }
