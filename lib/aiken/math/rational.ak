@@ -9,6 +9,7 @@
 ////
 //// Comparing rational values should, therefore, only happen after reduction (see [reduce](#reduce)) or via the [compare](#compare) method.
 
+use aiken/builtin
 use aiken/list
 use aiken/math
 use aiken/option
@@ -212,7 +213,7 @@ test from_int_1() {
 /// ```
 pub fn truncate(self: Rational) -> Int {
   let Rational { numerator: a_n, denominator: a_d } = self
-  a_n / a_d
+  builtin.quotient_integer(a_n, a_d)
 }
 
 test truncate_1() {
@@ -272,10 +273,10 @@ test floor_1() {
 /// ```
 pub fn ceil(self: Rational) -> Int {
   let Rational { numerator, denominator } = self
-  if numerator % denominator == 0 {
-    numerator / denominator
+  if builtin.remainder_integer(numerator, denominator) > 0 {
+    builtin.quotient_integer(numerator, denominator) + 1
   } else {
-    numerator / denominator + 1
+    builtin.quotient_integer(numerator, denominator)
   }
 }
 
@@ -301,8 +302,11 @@ test ceil_1() {
 pub fn proper_fraction(self: Rational) -> (Int, Rational) {
   let Rational { numerator, denominator } = self
   (
-    numerator / denominator,
-    Rational { numerator: numerator % denominator, denominator },
+    builtin.quotient_integer(numerator, denominator),
+    Rational {
+      numerator: builtin.remainder_integer(numerator, denominator),
+      denominator,
+    },
   )
 }
 
@@ -325,7 +329,7 @@ test proper_fraction_3() {
 }
 
 /// Round the argument to the nearest whole number. If the argument is
-/// equidistant between two / values, the greater value is returned.
+/// equidistant between two values, the greater value is returned.
 ///
 /// ```aiken
 /// expect Some(x) = rational.new(2, 3)
@@ -337,31 +341,32 @@ test proper_fraction_3() {
 /// expect Some(z) = rational.new(-3, 2)
 /// rational.round(z) == -1
 /// ```
+///
+/// ⚠️  This behaves differently than _Haskell_. If you're coming from `PlutusTx`, beware that in Haskell, rounding on equidistant depends on the whole number being odd or even.
 pub fn round(self: Rational) -> Int {
-  let (n, r) = proper_fraction(self)
+  let (n, f) = proper_fraction(self)
 
-  let m =
-    when compare(r, from_int(0)) is {
-      Less -> n - 1
-      _ -> n + 1
-    }
+  let is_negative = f.numerator < 0
 
-  let flag = sub(abs(r), ratio(1, 2))
-
-  when compare(flag, from_int(0)) is {
+  when compare(abs(f), ratio(1, 2)) is {
     Less -> n
-    _ -> m
+    Equal if is_negative -> n
+    Equal -> n + 1
+    Greater if is_negative -> n - 1
+    Greater -> n + 1
   }
 }
 
 test round_1() {
   [
-    (round(ratio(-10, 7)) == -1)?,
     (round(ratio(10, 7)) == 1)?,
     (round(ratio(11, 7)) == 2)?,
     (round(ratio(3, 2)) == 2)?,
     (round(ratio(5, 2)) == 3)?,
     (round(ratio(-3, 2)) == -1)?,
+    (round(ratio(-2, 3)) == -1)?,
+    (round(ratio(-10, 7)) == -1)?,
+    (round(ratio(4, 2)) == 2)?,
   ]
     |> list.and
 }
