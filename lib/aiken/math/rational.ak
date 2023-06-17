@@ -344,8 +344,8 @@ test proper_fraction_3() {
 /// ```
 ///
 /// ⚠️  This behaves differently than _Haskell_. If you're coming from
-/// `PlutusTx`, beware that in Haskell, rounding on equidistant depends on the
-/// whole number being odd or even. If you need this behaviour, use [`rounding_even`](#rounding_even).
+/// `PlutusTx`, beware that in Haskell, rounding on equidistant values depends on the
+/// whole number being odd or even. If you need this behaviour, use [`round_even`](#round_even).
 pub fn round(self: Rational) -> Int {
   let (n, f) = proper_fraction(self)
 
