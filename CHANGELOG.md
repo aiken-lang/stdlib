@@ -1,19 +1,39 @@
 # Changelog
 
-## next - unreleased
+## v1.2.0 - 2023-06-17
 
 ### Added
 
-- [`transaction/value.MintedValue`](https://aiken-lang.github.io/stdlib/aiken/transaction/value.html#MintedValue) 
+- [`transaction/value.MintedValue`](https://aiken-lang.github.io/stdlib/aiken/transaction/value.html#MintedValue)
 - [`transaction/value.from_minted_value`](https://aiken-lang.github.io/stdlib/aiken/transaction/value.html#from_minted_value): Convert from `MintedValue` to `Value`
 - [`transaction/value.to_minted_value`](https://aiken-lang.github.io/stdlib/aiken/transaction/value.html#to_minted_value): Convert from `Value` to `MintedValue`
 - [`transaction/bytearray.to_hex`](https://aiken-lang.github.io/stdlib/aiken/bytearray.html#to_hex): Convert a `ByteArray` to a hex encoded `String`
+- [`math/rational`](https://aiken-lang.github.io/stdlib/aiken/math/rational.html): Working with rational numbers.
+    - [x] `abs`
+    - [x] `add`
+    - [x] `ceil`
+    - [x] `compare`
+    - [x] `compare_with`
+    - [x] `div`
+    - [x] `floor`
+    - [x] `from_int`
+    - [x] `mul`
+    - [x] `negate`
+    - [x] `new`
+    - [x] `proper_fraction`
+    - [x] `reciprocal`
+    - [x] `reduce`
+    - [x] `round`
+    - [x] `round_even`
+    - [x] `sub`
+    - [x] `truncate`
+    - [x] `zero`
 
 ### Removed
 
 - module `MintedValue` was merged with `Value`
 
-## v1.1.0 - 2023-06-06 
+## v1.1.0 - 2023-06-06
 
 ### Added
 
