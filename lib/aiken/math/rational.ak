@@ -69,8 +69,8 @@ test new_1() {
 /// expect Some(x) = rational.new(2, 3)
 /// rational.numerator(x) == 2
 /// ```
-pub fn numerator(some: Rational) -> Int {
-  some.numerator
+pub fn numerator(self: Rational) -> Int {
+  self.numerator
 }
 
 test numerator_1() {
