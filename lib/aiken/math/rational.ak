@@ -94,8 +94,8 @@ test numerator_1() {
 /// expect Some(x) = rational.new(2, 3)
 /// rational.denominator(x) == 3
 /// ```
-pub fn denominator(some: Rational) -> Int {
-  some.denominator
+pub fn denominator(self: Rational) -> Int {
+  self.denominator
 }
 
 test denominator_1() {
