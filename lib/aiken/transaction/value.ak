@@ -189,7 +189,7 @@ pub fn add(
       policy_id,
       dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
       fn(_, left, _right) {
-        Some(
+        let inner_result =
           dict.insert_with(
             left,
             asset_name,
@@ -203,12 +203,41 @@ pub fn add(
               }
             },
             bytearray.compare,
-          ),
-        )
+          )
+        // if the inner dict is empty then its zero
+        if dict.is_empty(inner_result) {
+          None
+        } else {
+          Some(inner_result)
+        }
       },
       bytearray.compare,
     ),
   )
+}
+
+test adding_values_together1() {
+  let v =
+    zero()
+      |> add(#"acab", #"beef", 321)
+      |> add(#"acab", #"beef", -321)
+  v == zero()
+}
+
+test adding_values_together2() {
+  let v =
+    from_lovelace(123)
+      |> add(#"acab", #"beef", 321)
+      |> add(#"acab", #"beef", -1 * 321)
+  v == from_lovelace(123)
+}
+
+test adding_values_together3() {
+  let v =
+    from_lovelace(1)
+      |> add(#"", #"", 2)
+      |> add(#"", #"", 3)
+  v == from_lovelace(6)
 }
 
 /// Extract the quantity of a given asset.
