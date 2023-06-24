@@ -230,3 +230,46 @@ test gcd_test2() {
 test gcd_test3() {
   gcd(42, 14) == 14
 }
+
+/// Calculates the square root of an integer using the babylonian
+/// method. This will return either the exact result or the smallest integer
+/// nearest to the square. The function will error for negative values as it
+/// is designed for positive integers only.
+///
+/// ```aiken
+/// math.sqrt(0) == 0
+/// math.sqrt(25) == 5
+/// math.sqrt(44203) == 210
+/// ```
+pub fn sqrt(number: Int) -> Int {
+  sqrt_babylonian(number, number, ( number + 1 ) / 2)
+}
+
+/// This is great as it converges quickly with only just a few operations.
+fn sqrt_babylonian(number: Int, x: Int, y: Int) -> Int {
+  if y >= x {
+    x
+  } else if number < 0 {
+    error @"Number Must Be Positive"
+  } else if number == 0 {
+    0
+  } else {
+    sqrt_babylonian(number, y, ( y + number / y ) / 2)
+  }
+}
+
+test sqrt1() {
+  sqrt(0) == 0
+}
+
+test sqrt2() {
+  sqrt(25) == 5
+}
+
+test sqrt3() {
+  sqrt(44203) == 210
+}
+
+test sqrt4() {
+  sqrt(975461057789971041) == 987654321
+}
