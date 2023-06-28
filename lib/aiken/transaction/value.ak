@@ -235,8 +235,8 @@ test adding_values_together2() {
 test adding_values_together3() {
   let v =
     from_lovelace(1)
-      |> add(#"", #"", 2)
-      |> add(#"", #"", 3)
+      |> add(ada_policy_id, ada_asset_name, 2)
+      |> add(ada_policy_id, ada_asset_name, 3)
   v == from_lovelace(6)
 }
 
