@@ -202,7 +202,7 @@ test log_4_43() {
 }
 
 /// The greatest common divisor of two integers.
-/// 
+///
 /// ```aiken
 /// math.gcd(42, 14) == 14
 /// math.gcd(14, 42) == 14
@@ -229,4 +229,64 @@ test gcd_test2() {
 
 test gcd_test3() {
   gcd(42, 14) == 14
+}
+
+/// Calculates the square root of an integer using the [Babylonian
+/// method](https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method). This returns either the exact result or the smallest integer
+/// nearest to the square root.
+///
+/// Returns `None` for negative values.
+///
+/// ```aiken
+/// math.sqrt(0) == Some(0)
+/// math.sqrt(25) == Some(5)
+/// math.sqrt(44203) == Some(210)
+/// math.sqrt(-42) == None
+/// ```
+pub fn sqrt(self: Int) -> Option<Int> {
+  if self < 0 {
+    None
+  } else if self <= 1 {
+    Some(self)
+  } else {
+    Some(sqrt_babylonian(self, self, ( self + 1 ) / 2))
+  }
+}
+
+// The basic idea is that if x is an overestimate to the square root of a
+// non-negative real number S then S/x will be an underestimate, or vice versa,
+// and so the average of these two numbers may reasonably be expected to provide a
+// better approximation (though the formal proof of that assertion depends on the
+// inequality of arithmetic and geometric means that shows this average is always
+// an overestimate of the square root.
+fn sqrt_babylonian(self: Int, x: Int, y: Int) -> Int {
+  if y >= x {
+    x
+  } else {
+    sqrt_babylonian(self, y, ( y + self / y ) / 2)
+  }
+}
+
+test sqrt1() {
+  sqrt(0) == Some(0)
+}
+
+test sqrt2() {
+  sqrt(1) == Some(1)
+}
+
+test sqrt3() {
+  sqrt(25) == Some(5)
+}
+
+test sqrt4() {
+  sqrt(44203) == Some(210)
+}
+
+test sqrt5() {
+  sqrt(975461057789971041) == Some(987654321)
+}
+
+test sqrt6() {
+  sqrt(-42) == None
 }
