@@ -63,6 +63,56 @@ test new_1() {
   )
 }
 
+/// Get the numerator of a rational value.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// rational.numerator(x) == 2
+/// ```
+pub fn numerator(self: Rational) -> Int {
+  self.numerator
+}
+
+test numerator_1() {
+  expect Some(x) = new(2, 3)
+  expect Some(y) = new(-2, 3)
+  expect Some(z) = new(2, -3)
+  expect Some(w) = new(-2, -3)
+  list.and(
+    [
+      (numerator(x) == 2)?,
+      (numerator(y) == -2)?,
+      (numerator(z) == -2)?,
+      (numerator(w) == 2)?,
+    ],
+  )
+}
+
+/// Get the denominator of a rational value.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// rational.denominator(x) == 3
+/// ```
+pub fn denominator(self: Rational) -> Int {
+  self.denominator
+}
+
+test denominator_1() {
+  expect Some(x) = new(2, 3)
+  expect Some(y) = new(-2, 3)
+  expect Some(z) = new(2, -3)
+  expect Some(w) = new(-2, -3)
+  list.and(
+    [
+      (denominator(x) == 3)?,
+      (denominator(y) == 3)?,
+      (denominator(z) == 3)?,
+      (denominator(w) == 3)?,
+    ],
+  )
+}
+
 /// A null `Rational`.
 pub fn zero() -> Rational {
   Rational { numerator: 0, denominator: 1 }
