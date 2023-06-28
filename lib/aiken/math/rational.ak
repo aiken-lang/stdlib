@@ -703,3 +703,56 @@ test compare_with_lt() {
 
   lt(x, y)? && !lt(y, x)? && !lt(x, x)?
 }
+
+/// Calculate the geometric mean between two `Rational` types. This returns either the exact result or the smallest integer
+/// nearest to the square root for the numerator and denominator.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(1, 3)
+/// expect Some(y) = rational.new(1, 6)
+///
+/// rational.geometric_mean(x, y) == rational.new(1, 4)
+/// ```
+pub fn geometric_mean(left: Rational, right: Rational) -> Option<Rational> {
+  let Rational { numerator: a_n, denominator: a_d } = left
+  let Rational { numerator: b_n, denominator: b_d } = right
+  when math.sqrt(a_n * b_n) is {
+    Some(numerator) ->
+      when math.sqrt(a_d * b_d) is {
+        Some(denominator) -> Some(Rational { numerator, denominator })
+        None -> None
+      }
+    None -> None
+  }
+}
+
+test geometric_mean1() {
+  expect Some(x) = new(1, 2)
+  expect Some(y) = new(1, 2)
+  geometric_mean(x, y) == new(1, 2)
+}
+
+test geometric_mean2() {
+  expect Some(x) = new(-1, 2)
+  expect Some(y) = new(1, 2)
+  geometric_mean(x, y) == None
+}
+
+test geometric_mean3() {
+  expect Some(x) = new(1, 2)
+  expect Some(y) = new(-1, 2)
+  geometric_mean(x, y) == None
+}
+
+test geometric_mean4() {
+  expect Some(x) = new(1, 3)
+  expect Some(y) = new(1, 6)
+  geometric_mean(x, y) == new(1, 4)
+}
+
+test geometric_mean5() {
+  expect Some(x) = new(67, 2500)
+  expect Some(y) = new(35331, 1000)
+  expect Some(yi) = reciprocal(y)
+  geometric_mean(x, yi) == new(258, 9398)
+}
