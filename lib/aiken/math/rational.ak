@@ -704,8 +704,59 @@ test compare_with_lt() {
   lt(x, y)? && !lt(y, x)? && !lt(x, x)?
 }
 
-/// Calculate the geometric mean between two `Rational` types. This returns either the exact result or the smallest integer
-/// nearest to the square root for the numerator and denominator.
+/// Calculate the arithmetic mean between two `Rational` values.
+///
+/// ```aiken
+/// let x = rational.from_int(0)
+/// let y = rational.from_int(1)
+/// let z = rational.from_int(2)
+///
+/// expect Some(result) = rational.arithmetic_mean([x, y, z])
+///
+/// rational.compare(result, y) == Equal
+/// ```
+pub fn arithmetic_mean(self: List<Rational>) -> Option<Rational> {
+  div(list.foldr(self, zero(), add), from_int(list.length(self)))
+}
+
+test tmp() {
+  let x = from_int(0)
+  let y = from_int(1)
+
+  option.map2(arithmetic_mean([x, y]), new(1, 2), compare) == Some(Equal)
+}
+
+test arithmetic_mean_1() {
+  let x = ratio(1, 2)
+  let y = ratio(1, 2)
+  expect Some(z) = arithmetic_mean([x, y])
+  reduce(z) == ratio(1, 2)
+}
+
+test arithmetic_mean_2() {
+  let x = ratio(1, 1)
+  let y = ratio(2, 1)
+  expect Some(z) = arithmetic_mean([x, y])
+  reduce(z) == ratio(3, 2)
+}
+
+test arithmetic_mean_3() {
+  let xs =
+    [
+      ratio(1, 1),
+      ratio(2, 1),
+      ratio(3, 1),
+      ratio(4, 1),
+      ratio(5, 1),
+      ratio(6, 1),
+    ]
+  expect Some(z) = arithmetic_mean(xs)
+  reduce(z) == ratio(7, 2)
+}
+
+/// Calculate the geometric mean between two `Rational` values. This returns
+/// either the exact result or the smallest integer nearest to the square root
+/// for the numerator and denominator.
 ///
 /// ```aiken
 /// expect Some(x) = rational.new(1, 3)
