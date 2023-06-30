@@ -719,13 +719,6 @@ pub fn arithmetic_mean(self: List<Rational>) -> Option<Rational> {
   div(list.foldr(self, zero(), add), from_int(list.length(self)))
 }
 
-test tmp() {
-  let x = from_int(0)
-  let y = from_int(1)
-
-  option.map2(arithmetic_mean([x, y]), new(1, 2), compare) == Some(Equal)
-}
-
 test arithmetic_mean_1() {
   let x = ratio(1, 2)
   let y = ratio(1, 2)
