@@ -107,34 +107,34 @@ pub fn negate(self: Value) -> Value {
 
 /// Combine two `Value` together.
 pub fn merge(left v0: Value, right v1: Value) -> Value {
-  dict.union_with(
-    v0.inner,
-    v1.inner,
-    fn(_, a0, a1) {
-      let result =
-        dict.union_with(
-          a0,
-          a1,
-          fn(_, q0, q1) {
-            let q = q0 + q1
-            if q == 0 {
-              None
-            } else {
-              Some(q)
-            }
-          },
-          bytearray.compare,
-        )
-
-      if dict.is_empty(result) {
-        None
-      } else {
-        Some(result)
-      }
-    },
-    bytearray.compare,
+  Value(
+    dict.union_with(
+      v0.inner,
+      v1.inner,
+      fn(_, a0, a1) {
+        let result =
+          dict.union_with(
+            a0,
+            a1,
+            fn(_, q0, q1) {
+              let q = q0 + q1
+              if q == 0 {
+                None
+              } else {
+                Some(q)
+              }
+            },
+            bytearray.compare,
+          )
+        if dict.is_empty(result) {
+          None
+        } else {
+          Some(result)
+        }
+      },
+      bytearray.compare,
+    ),
   )
-    |> Value
 }
 
 test merge_1() {
@@ -175,6 +175,13 @@ test merge_3() {
   flatten(v) == [(#"01", #"", 1)]
 }
 
+test merge_4() {
+  let v1 = from_asset(#"00", #"", 1)
+  let v2 = from_asset(#"00", #"", -1)
+
+  merge(v1, v2) == zero()
+}
+
 /// Add a (positive or negative) quantity of a single token to a value.
 /// This is more efficient than [`merge`](#merge) for a single asset.
 pub fn add(
@@ -204,7 +211,6 @@ pub fn add(
             },
             bytearray.compare,
           )
-        // if the inner dict is empty then its zero
         if dict.is_empty(inner_result) {
           None
         } else {
@@ -216,7 +222,7 @@ pub fn add(
   )
 }
 
-test adding_values_together1() {
+test add_1() {
   let v =
     zero()
       |> add(#"acab", #"beef", 321)
@@ -224,7 +230,7 @@ test adding_values_together1() {
   v == zero()
 }
 
-test adding_values_together2() {
+test add_2() {
   let v =
     from_lovelace(123)
       |> add(#"acab", #"beef", 321)
@@ -232,7 +238,7 @@ test adding_values_together2() {
   v == from_lovelace(123)
 }
 
-test adding_values_together3() {
+test add_3() {
   let v =
     from_lovelace(1)
       |> add(ada_policy_id, ada_asset_name, 2)
