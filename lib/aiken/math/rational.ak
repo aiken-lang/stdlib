@@ -313,13 +313,13 @@ test floor_1() {
 ///
 /// ```aiken
 /// expect Some(x) = rational.new(2, 3)
-/// rational.truncate(x) == 0
+/// rational.ceil(x) == 0
 ///
 /// expect Some(y) = rational.new(44, 14)
-/// rational.truncate(y) == 3
+/// rational.ceil(y) == 4
 ///
 /// expect Some(z) = rational.new(-14, 3)
-/// rational.truncate(z) == -4
+/// rational.ceil(z) == -4
 /// ```
 pub fn ceil(self: Rational) -> Int {
   let Rational { numerator, denominator } = self
@@ -339,6 +339,7 @@ test ceil_1() {
     (ceil(ratio(-5, 5)) == -1)?,
     (ceil(ratio(-14, 3)) == -4)?,
     (ceil(ratio(-14, 6)) == -2)?,
+    (ceil(ratio(44, 14)) == 4)?,
   ]
     |> list.and
 }
