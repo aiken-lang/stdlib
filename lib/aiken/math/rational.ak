@@ -313,13 +313,13 @@ test floor_1() {
 ///
 /// ```aiken
 /// expect Some(x) = rational.new(2, 3)
-/// rational.truncate(x) == 0
+/// rational.ceil(x) == 0
 ///
 /// expect Some(y) = rational.new(44, 14)
-/// rational.truncate(y) == 3
+/// rational.ceil(y) == 4
 ///
 /// expect Some(z) = rational.new(-14, 3)
-/// rational.truncate(z) == -4
+/// rational.ceil(z) == -4
 /// ```
 pub fn ceil(self: Rational) -> Int {
   let Rational { numerator, denominator } = self
@@ -339,6 +339,7 @@ test ceil_1() {
     (ceil(ratio(-5, 5)) == -1)?,
     (ceil(ratio(-14, 3)) == -4)?,
     (ceil(ratio(-14, 6)) == -2)?,
+    (ceil(ratio(44, 14)) == 4)?,
   ]
     |> list.and
 }
@@ -701,4 +702,108 @@ test compare_with_lt() {
   expect Some(y) = new(3, 4)
 
   lt(x, y)? && !lt(y, x)? && !lt(x, x)?
+}
+
+/// Calculate the arithmetic mean between two `Rational` values.
+///
+/// ```aiken
+/// let x = rational.from_int(0)
+/// let y = rational.from_int(1)
+/// let z = rational.from_int(2)
+///
+/// expect Some(result) = rational.arithmetic_mean([x, y, z])
+///
+/// rational.compare(result, y) == Equal
+/// ```
+pub fn arithmetic_mean(self: List<Rational>) -> Option<Rational> {
+  div(list.foldr(self, zero(), add), from_int(list.length(self)))
+}
+
+test tmp() {
+  let x = from_int(0)
+  let y = from_int(1)
+
+  option.map2(arithmetic_mean([x, y]), new(1, 2), compare) == Some(Equal)
+}
+
+test arithmetic_mean_1() {
+  let x = ratio(1, 2)
+  let y = ratio(1, 2)
+  expect Some(z) = arithmetic_mean([x, y])
+  reduce(z) == ratio(1, 2)
+}
+
+test arithmetic_mean_2() {
+  let x = ratio(1, 1)
+  let y = ratio(2, 1)
+  expect Some(z) = arithmetic_mean([x, y])
+  reduce(z) == ratio(3, 2)
+}
+
+test arithmetic_mean_3() {
+  let xs =
+    [
+      ratio(1, 1),
+      ratio(2, 1),
+      ratio(3, 1),
+      ratio(4, 1),
+      ratio(5, 1),
+      ratio(6, 1),
+    ]
+  expect Some(z) = arithmetic_mean(xs)
+  reduce(z) == ratio(7, 2)
+}
+
+/// Calculate the geometric mean between two `Rational` values. This returns
+/// either the exact result or the smallest integer nearest to the square root
+/// for the numerator and denominator.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(1, 3)
+/// expect Some(y) = rational.new(1, 6)
+///
+/// rational.geometric_mean(x, y) == rational.new(1, 4)
+/// ```
+pub fn geometric_mean(left: Rational, right: Rational) -> Option<Rational> {
+  let Rational { numerator: a_n, denominator: a_d } = left
+  let Rational { numerator: b_n, denominator: b_d } = right
+  when math.sqrt(a_n * b_n) is {
+    Some(numerator) ->
+      when math.sqrt(a_d * b_d) is {
+        Some(denominator) -> Some(Rational { numerator, denominator })
+        None -> None
+      }
+    None -> None
+  }
+}
+
+test geometric_mean1() {
+  expect Some(x) = new(1, 2)
+  expect Some(y) = new(1, 2)
+  geometric_mean(x, y) == new(1, 2)
+}
+
+test geometric_mean2() {
+  expect Some(x) = new(-1, 2)
+  expect Some(y) = new(1, 2)
+  geometric_mean(x, y) == None
+}
+
+test geometric_mean3() {
+  expect Some(x) = new(1, 2)
+  expect Some(y) = new(-1, 2)
+  geometric_mean(x, y) == None
+}
+
+test geometric_mean4() {
+  expect Some(x) = new(1, 3)
+  expect Some(y) = new(1, 6)
+  geometric_mean(x, y) == new(1, 4)
+}
+
+test geometric_mean5() {
+  expect Some(x) = new(67, 2500)
+  expect Some(y) = new(35331, 1000)
+  expect Some(yi) = reciprocal(y)
+  geometric_mean(x, yi) == new(258, 9398)
 }
