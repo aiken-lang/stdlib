@@ -1330,8 +1330,8 @@ test zip_3() {
 /// Said differently, this is [`foldl`](#foldl) with callback arguments swapped.
 ///
 /// ```aiken
-/// list.reduce([#[1], #[2], #[3]], bytearray.concat, #[0]) == #[0, 1, 2, 3]
-/// list.reduce([True, False, True], fn(b, a) { or([b, a]) }, False) == True
+/// list.reduce([#[1], #[2], #[3]], #[0], bytearray.concat) == #[0, 1, 2, 3]
+/// list.reduce([True, False, True], False, fn(b, a) { or([b, a]) }) == True
 /// ```
 pub fn reduce(self: List<a>, zero: b, with: fn(b, a) -> b) -> b {
   foldl(self, zero, flip(with))
