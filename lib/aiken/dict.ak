@@ -510,6 +510,48 @@ test get_3() {
   get(m, key: baz) == None
 }
 
+/// Get a value in the dict by its key. Assumes ascending order and uses the function to 
+/// stop searching early if current key index is greater than and not equal to the requested key.
+///
+/// ```aiken
+/// use aiken/bytearray
+/// use aiken/builtin
+///
+/// let foo: ByteArray = #"00"
+///
+/// let result =
+///   dict.new()
+///     |> dict.insert(key: foo, value: "Aiken", compare: bytearray.compare)
+///     |> dict.get_less_than(key: foo, builtin.less_than_bytearray)
+///
+///  result == Some("Aiken")
+/// ```
+pub fn get_less_than(
+  self: Dict<key, value>,
+  key: key,
+  less_than: fn(key, key) -> Bool,
+) -> Option<value> {
+  do_get_less_than(self.inner, key, less_than)
+}
+
+fn do_get_less_than(
+  self: List<(key, value)>,
+  key k: key,
+  less_than: fn(key, key) -> Bool,
+) -> Option<value> {
+  when self is {
+    [] -> None
+    [(k2, v), ..rest] ->
+      if k == k2 {
+        Some(v)
+      } else if less_than(k2, k) {
+        do_get_less_than(rest, k, less_than)
+      } else {
+        None
+      }
+  }
+}
+
 /// Check if a key exists in the dictionary.
 ///
 /// ```aiken

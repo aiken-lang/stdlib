@@ -1,3 +1,4 @@
+use aiken/builtin
 use aiken/bytearray
 use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Hash}
@@ -94,8 +95,10 @@ test without_lovelace_3() {
 /// Takes a value and gives back a tuple containing lovelace amount and any other values
 /// Useful in cases where you want a greater than or equal to match on lovelace, 
 /// but want other values to match exactly.
-pub fn lovelace_and_other_values(self: Value) -> (Int, Value) {
-  when dict.get(self.inner, ada_policy_id) is {
+pub fn explode(self: Value) -> (Int, Value) {
+  when
+    dict.get_less_than(self.inner, ada_policy_id, builtin.less_than_bytearray)
+  is {
     Some(ada_amount) -> {
       let other_value = dict.delete(self.inner, ada_policy_id) |> Value
 
@@ -108,25 +111,25 @@ pub fn lovelace_and_other_values(self: Value) -> (Int, Value) {
   }
 }
 
-test lovelace_and_other_values_1() {
+test explode_1() {
   let v = from_lovelace(1000000)
-  lovelace_and_other_values(v) == (1000000, zero())
+  explode(v) == (1000000, zero())
 }
 
-test lovelace_and_other_values_2() {
+test explode_2() {
   let v =
     from_asset(#"010203", #"040506", 100)
       |> add(ada_policy_id, ada_asset_name, 100000000)
 
   let v2 = without_lovelace(v)
-  lovelace_and_other_values(v) == (100000000, v2)
+  explode(v) == (100000000, v2)
 }
 
-test lovelace_and_other_values_3() {
+test explode_3() {
   let v = from_asset(#"010203", #"040506", 100)
 
   let v2 = without_lovelace(v)
-  lovelace_and_other_values(v) == (0, v2)
+  explode(v) == (0, v2)
 }
 
 /// Negates quantities of all tokens (including Ada) in that `Value`.
@@ -291,8 +294,10 @@ pub fn quantity_of(
   asset_name: AssetName,
 ) -> Int {
   self.inner
-    |> dict.get(policy_id)
-    |> option.and_then(dict.get(_, asset_name))
+    |> dict.get_less_than(policy_id, builtin.less_than_bytearray)
+    |> option.and_then(
+         dict.get_less_than(_, asset_name, builtin.less_than_bytearray),
+       )
     |> option.or_else(0)
 }
 
@@ -304,7 +309,7 @@ pub fn lovelace_of(self: Value) -> Int {
 /// Get all tokens associated with a given policy.
 pub fn tokens(self: Value, policy_id: PolicyId) -> Dict<AssetName, Int> {
   self.inner
-    |> dict.get(policy_id)
+    |> dict.get_less_than(policy_id, builtin.less_than_bytearray)
     |> option.or_else(dict.new())
 }
 

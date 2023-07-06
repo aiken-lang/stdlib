@@ -148,7 +148,7 @@ pub fn find_datum(
   datum_hash: Hash<Blake2b_256, Data>,
 ) -> Option<Data> {
   datums
-    |> dict.get(datum_hash)
+    |> dict.get_less_than(datum_hash, builtin.less_than_bytearray)
     |> option.or_try(
          fn(_) {
            outputs
