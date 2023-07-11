@@ -12,6 +12,8 @@
 //// executed, but we can reason about the interval bounds to validate pieces of
 //// logic.
 
+use aiken/list
+
 /// A type to represent intervals of values. Interval are inhabited by a type
 /// `a` which is useful for non-infinite intervals that have a finite
 /// lower-bound and/or upper-bound.
@@ -561,4 +563,63 @@ test hull_3() {
   let iv1 = strictly_after(0)
   let iv2 = between(10, 42)
   hull(iv1, iv2) == strictly_after(0)
+}
+
+/// Check whether `self` is strictly enclosed by the `enclosing` interval.
+/// Ignores interval bounds inclusion for performance vs significance reasons.
+pub fn is_enclosed_by(self: Interval<Int>, enclosing: Interval<Int>) -> Bool {
+  when self.lower_bound.bound_type is {
+    Finite(self_val) ->
+      when enclosing.lower_bound.bound_type is {
+        Finite(enclosing_val) -> enclosing_val < self_val
+        NegativeInfinity -> True
+        _ -> False
+      }
+    _ -> False
+  } && when self.upper_bound.bound_type is {
+    Finite(self_val) ->
+      when enclosing.upper_bound.bound_type is {
+        Finite(enclosing_val) -> enclosing_val > self_val
+        PositiveInfinity -> True
+        _ -> False
+      }
+    _ -> False
+  }
+}
+
+test is_enclosed_by_infinites() {
+  is_enclosed_by(everything(), everything()) == False
+}
+
+test is_enclosed_by_equal_finite_bounds() {
+  is_enclosed_by(between(2, 4), between(2, 4)) == False
+}
+
+test is_enclosed_by_negative_cases() {
+  list.and(
+    [
+      // Lower fine, upper equal
+      is_enclosed_by(between(2, 4), between(1, 4)) == False,
+      // Lower fine, upper over
+      is_enclosed_by(between(2, 5), between(1, 4)) == False,
+      // Lower equal, upper fine
+      is_enclosed_by(between(1, 3), between(1, 4)) == False,
+      // Lower below, upper fine
+      is_enclosed_by(between(0, 3), between(1, 4)) == False,
+    ],
+  )
+}
+
+test is_enclosed_by_properly_enclosed() {
+  list.and(
+    [
+      is_enclosed_by(between(2, 3), between(1, 4)) == True,
+      // Lower fine, upper infinity
+      is_enclosed_by(between(2, 5), after(1)) == True,
+      // Lower neg infinity, upper fine
+      is_enclosed_by(between(0, 3), before(4)) == True,
+      // Enclosing is infinite
+      is_enclosed_by(between(0, 3), everything()) == True,
+    ],
+  )
 }
