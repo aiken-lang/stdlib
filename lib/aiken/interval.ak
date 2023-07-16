@@ -355,6 +355,114 @@ pub fn after(lower_bound: a) -> Interval<a> {
   }
 }
 
+// TODO: Replace 'Int' with a generic 'a' once we have comparable traits.
+
+/// Check whether the interval is entirely after the point "a"
+///
+/// ```aiken
+/// is_entirely_after(interval.after(10), 5) == True
+/// is_entirely_after(interval.after(10), 10) == False
+/// is_entirely_after(interval.after(10), 15) == False
+/// is_entirely_after(interval.between(10, 20), 30) == False
+/// is_entirely_after(interval.between(10, 20), 5) == True
+pub fn is_entirely_after(interval: Interval<Int>, point: Int) -> Bool {
+  when (interval.lower_bound.bound_type, interval.lower_bound.is_inclusive) is {
+    (Finite(low), True) -> point < low
+    (Finite(low), False) -> point <= low
+    _ -> False
+  }
+}
+
+test is_entirely_after_1() {
+  is_entirely_after(after(10), 5)
+}
+
+test is_entirely_after_2() {
+  !is_entirely_after(after(10), 10)
+}
+
+test is_entirely_after_3() {
+  !is_entirely_after(after(10), 15)
+}
+
+test is_entirely_after_4() {
+  !is_entirely_after(between(10, 20), 30)
+}
+
+test is_entirely_after_5() {
+  is_entirely_after(between(10, 20), 5)
+}
+
+test is_entirely_after_6() {
+  is_entirely_after(strictly_after(10), 10)
+}
+
+test is_entirely_after_7() {
+  !is_entirely_after(before(10), 5)
+}
+
+test is_entirely_after_8() {
+  !is_entirely_after(before(10), 15)
+}
+
+test is_entirely_after_9() {
+  !is_entirely_after(strictly_before(10), 5)
+}
+
+// TODO: Replace 'Int' with a generic 'a' once we have comparable traits.
+
+/// Check whether the interval is entirely before the point "a"
+///
+/// ```aiken
+/// is_entirely_before(interval.before(10), 15) == True
+/// is_entirely_before(interval.before(10), 10) == False
+/// is_entirely_before(interval.before(10), 5) == False
+/// is_entirely_before(interval.between(10, 20), 30) == True
+/// is_entirely_before(interval.between(10, 20), 5) == False
+pub fn is_entirely_before(interval: Interval<Int>, point: Int) -> Bool {
+  when (interval.upper_bound.bound_type, interval.upper_bound.is_inclusive) is {
+    (Finite(hi), True) -> hi < point
+    (Finite(hi), False) -> hi <= point
+    _ -> False
+  }
+}
+
+test is_entirely_before_1() {
+  is_entirely_before(before(10), 15)
+}
+
+test is_entirely_before_2() {
+  !is_entirely_before(before(10), 10)
+}
+
+test is_entirely_before_3() {
+  !is_entirely_before(before(10), 5)
+}
+
+test is_entirely_before_4() {
+  is_entirely_before(between(10, 20), 30)
+}
+
+test is_entirely_before_5() {
+  !is_entirely_before(between(10, 20), 5)
+}
+
+test is_entirely_before_6() {
+  is_entirely_before(strictly_before(10), 10)
+}
+
+test is_entirely_before_7() {
+  !is_entirely_before(after(10), 15)
+}
+
+test is_entirely_before_8() {
+  !is_entirely_before(after(10), 5)
+}
+
+test is_entirely_before_9() {
+  !is_entirely_before(strictly_after(10), 5)
+}
+
 /// Create an interval that includes all values strictly greater than the given bound, excluding the bound itself. i.e (lower_bound, +INF)
 ///
 /// ```aiken
