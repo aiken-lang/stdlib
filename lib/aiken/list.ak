@@ -167,6 +167,17 @@ test at_5() {
 ///
 /// Note: an empty list never satisfies the predicate.
 ///
+/// NOTICE: `or` behaves differently compared to the `||` operator related to the lazy evaluation.
+/// The following code fails:
+/// ```aiken
+/// list.or([True, {fail}])
+/// ```
+/// The following does not fail:
+/// ```
+/// True || {fail}
+/// ```
+///
+///
 /// ```aiken
 /// list.or([]) == False
 /// list.or([True, True]) == True
