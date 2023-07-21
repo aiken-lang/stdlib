@@ -173,7 +173,7 @@ test at_5() {
 /// list.or([True, {fail}])
 /// ```
 /// The following does not fail:
-/// ```
+/// ```aiken
 /// True || {fail}
 /// ```
 ///
