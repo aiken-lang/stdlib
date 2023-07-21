@@ -246,6 +246,21 @@ test add_3() {
   v == from_lovelace(6)
 }
 
+test add_4() {
+  let v =
+    zero()
+      |> add(#"acab", #"beef", 0)
+  v == zero()
+}
+
+test add_5() {
+  let v =
+    zero()
+      |> add(#"acab", #"beef", 0)
+      |> add(#"acab", #"beef", 0)
+  v == zero()
+}
+
 /// Extract the quantity of a given asset.
 pub fn quantity_of(
   self: Value,
