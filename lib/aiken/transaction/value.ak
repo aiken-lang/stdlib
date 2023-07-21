@@ -182,6 +182,13 @@ test merge_4() {
   merge(v1, v2) == zero()
 }
 
+test merge_5() {
+  let v = zero()
+      |> add(#"acab", #"beef", 0)
+
+  merge(zero(), v) == zero()
+}
+
 /// Add a (positive or negative) quantity of a single token to a value.
 /// This is more efficient than [`merge`](#merge) for a single asset.
 pub fn add(
