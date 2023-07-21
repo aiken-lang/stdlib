@@ -182,6 +182,14 @@ test merge_4() {
   merge(v1, v2) == zero()
 }
 
+test merge_5() {
+  let v =
+    zero()
+      |> add(#"acab", #"beef", 0)
+
+  merge(zero(), v) == zero()
+}
+
 /// Add a (positive or negative) quantity of a single token to a value.
 /// This is more efficient than [`merge`](#merge) for a single asset.
 pub fn add(
@@ -190,36 +198,40 @@ pub fn add(
   asset_name: AssetName,
   quantity: Int,
 ) -> Value {
-  Value(
-    dict.insert_with(
-      self.inner,
-      policy_id,
-      dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
-      fn(_, left, _right) {
-        let inner_result =
-          dict.insert_with(
-            left,
-            asset_name,
-            quantity,
-            fn(_k, ql, qr) {
-              let q = ql + qr
-              if q == 0 {
-                None
-              } else {
-                Some(q)
-              }
-            },
-            bytearray.compare,
-          )
-        if dict.is_empty(inner_result) {
-          None
-        } else {
-          Some(inner_result)
-        }
-      },
-      bytearray.compare,
-    ),
-  )
+  if quantity == 0 {
+    self
+  } else {
+    Value(
+      dict.insert_with(
+        self.inner,
+        policy_id,
+        dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
+        fn(_, left, _right) {
+          let inner_result =
+            dict.insert_with(
+              left,
+              asset_name,
+              quantity,
+              fn(_k, ql, qr) {
+                let q = ql + qr
+                if q == 0 {
+                  None
+                } else {
+                  Some(q)
+                }
+              },
+              bytearray.compare,
+            )
+          if dict.is_empty(inner_result) {
+            None
+          } else {
+            Some(inner_result)
+          }
+        },
+        bytearray.compare,
+      ),
+    )
+  }
 }
 
 test add_1() {
@@ -244,6 +256,21 @@ test add_3() {
       |> add(ada_policy_id, ada_asset_name, 2)
       |> add(ada_policy_id, ada_asset_name, 3)
   v == from_lovelace(6)
+}
+
+test add_4() {
+  let v =
+    zero()
+      |> add(#"acab", #"beef", 0)
+  v == zero()
+}
+
+test add_5() {
+  let v =
+    zero()
+      |> add(#"acab", #"beef", 0)
+      |> add(#"acab", #"beef", 0)
+  v == zero()
 }
 
 /// Extract the quantity of a given asset.
