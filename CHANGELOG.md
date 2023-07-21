@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.0 - 2023-07-21
+
+### Changed
+
+- Fixed missing null-check on `value.add`. Adding a null quantity of token is now correctly a no-op.
+
 ## v1.3.0 - 2023-06-30
 
 ### Added

@@ -183,7 +183,8 @@ test merge_4() {
 }
 
 test merge_5() {
-  let v = zero()
+  let v =
+    zero()
       |> add(#"acab", #"beef", 0)
 
   merge(zero(), v) == zero()
@@ -197,36 +198,40 @@ pub fn add(
   asset_name: AssetName,
   quantity: Int,
 ) -> Value {
-  Value(
-    dict.insert_with(
-      self.inner,
-      policy_id,
-      dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
-      fn(_, left, _right) {
-        let inner_result =
-          dict.insert_with(
-            left,
-            asset_name,
-            quantity,
-            fn(_k, ql, qr) {
-              let q = ql + qr
-              if q == 0 {
-                None
-              } else {
-                Some(q)
-              }
-            },
-            bytearray.compare,
-          )
-        if dict.is_empty(inner_result) {
-          None
-        } else {
-          Some(inner_result)
-        }
-      },
-      bytearray.compare,
-    ),
-  )
+  if quantity == 0 {
+    self
+  } else {
+    Value(
+      dict.insert_with(
+        self.inner,
+        policy_id,
+        dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
+        fn(_, left, _right) {
+          let inner_result =
+            dict.insert_with(
+              left,
+              asset_name,
+              quantity,
+              fn(_k, ql, qr) {
+                let q = ql + qr
+                if q == 0 {
+                  None
+                } else {
+                  Some(q)
+                }
+              },
+              bytearray.compare,
+            )
+          if dict.is_empty(inner_result) {
+            None
+          } else {
+            Some(inner_result)
+          }
+        },
+        bytearray.compare,
+      ),
+    )
+  }
 }
 
 test add_1() {
