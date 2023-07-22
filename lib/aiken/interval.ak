@@ -414,11 +414,11 @@ test is_entirely_after_9() {
 /// Check whether the interval is entirely before the point "a"
 ///
 /// ```aiken
-/// is_entirely_before(interval.before(10), 15) == True
-/// is_entirely_before(interval.before(10), 10) == False
-/// is_entirely_before(interval.before(10), 5) == False
-/// is_entirely_before(interval.between(10, 20), 30) == True
-/// is_entirely_before(interval.between(10, 20), 5) == False
+/// interval.is_entirely_before(interval.before(10), 15) == True
+/// interval.is_entirely_before(interval.before(10), 10) == False
+/// interval.is_entirely_before(interval.before(10), 5) == False
+/// interval.is_entirely_before(interval.between(10, 20), 30) == True
+/// interval.is_entirely_before(interval.between(10, 20), 5) == False
 pub fn is_entirely_before(interval: Interval<Int>, point: Int) -> Bool {
   when (interval.upper_bound.bound_type, interval.upper_bound.is_inclusive) is {
     (Finite(hi), True) -> hi < point
