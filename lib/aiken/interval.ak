@@ -200,7 +200,7 @@ test contains_1() {
 }
 
 test contains_2() {
-  let iv = strictly_before(15)
+  let iv = entirely_before(15)
   contains(iv, 14)
 }
 
@@ -210,12 +210,12 @@ test contains_3() {
 }
 
 test contains_4() {
-  let iv = strictly_before(14)
+  let iv = entirely_before(14)
   !contains(iv, 14)
 }
 
 test contains_5() {
-  let iv = strictly_after(13)
+  let iv = entirely_after(13)
   contains(iv, 14)
 }
 
@@ -225,7 +225,7 @@ test contains_6() {
 }
 
 test contains_7() {
-  let iv = strictly_after(14)
+  let iv = entirely_after(14)
   !contains(iv, 14)
 }
 
@@ -245,7 +245,7 @@ test contains_10() {
 }
 
 test contains_11() {
-  let iv = strictly_between(0, 42)
+  let iv = entirely_between(0, 42)
   !contains(iv, 0)
 }
 
@@ -316,12 +316,12 @@ pub fn between(lower_bound: a, upper_bound: a) -> Interval<a> {
 /// Create an interval that includes all values between two bounds, excluding the bounds. i.e. (lower_bound, upper_bound)
 ///
 /// ```aiken
-/// interval.strictly_between(10, 100) == Interval {
+/// interval.entirely_between(10, 100) == Interval {
 ///   lower_bound: IntervalBound { bound_type: Finite(10), is_inclusive: False },
 ///   upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: False },
 /// }
 /// ```
-pub fn strictly_between(lower_bound: a, upper_bound: a) -> Interval<a> {
+pub fn entirely_between(lower_bound: a, upper_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
       bound_type: Finite(lower_bound),
@@ -398,7 +398,7 @@ test is_entirely_after_5() {
 }
 
 test is_entirely_after_6() {
-  is_entirely_after(strictly_after(10), 10)
+  is_entirely_after(entirely_after(10), 10)
 }
 
 test is_entirely_after_7() {
@@ -410,7 +410,7 @@ test is_entirely_after_8() {
 }
 
 test is_entirely_after_9() {
-  !is_entirely_after(strictly_before(10), 5)
+  !is_entirely_after(entirely_before(10), 5)
 }
 
 // TODO: Replace 'Int' with a generic 'a' once we have comparable traits.
@@ -456,7 +456,7 @@ test is_entirely_before_5() {
 }
 
 test is_entirely_before_6() {
-  is_entirely_before(strictly_before(10), 10)
+  is_entirely_before(entirely_before(10), 10)
 }
 
 test is_entirely_before_7() {
@@ -468,18 +468,18 @@ test is_entirely_before_8() {
 }
 
 test is_entirely_before_9() {
-  !is_entirely_before(strictly_after(10), 5)
+  !is_entirely_before(entirely_after(10), 5)
 }
 
-/// Create an interval that includes all values strictly greater than the given bound, excluding the bound itself. i.e (lower_bound, +INF)
+/// Create an interval that includes all values after (and not including) the given bound. i.e (lower_bound, +INF)
 ///
 /// ```aiken
-/// interval.strictly_after(10) == Interval {
+/// interval.entirely_after(10) == Interval {
 ///   lower_bound: IntervalBound { bound_type: Finite(10), is_inclusive: False },
 ///   upper_bound: IntervalBound { bound_type: PositiveInfinity, is_inclusive: True },
 /// }
 /// ```
-pub fn strictly_after(lower_bound: a) -> Interval<a> {
+pub fn entirely_after(lower_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
       bound_type: Finite(lower_bound),
@@ -492,7 +492,7 @@ pub fn strictly_after(lower_bound: a) -> Interval<a> {
   }
 }
 
-/// Create an interval that includes all values less than the given bound. i.e (-INF, upper_bound]
+/// Create an interval that includes all values before (and including) the given bound. i.e (-INF, upper_bound]
 ///
 /// ```aiken
 /// interval.before(100) == Interval {
@@ -513,15 +513,15 @@ pub fn before(upper_bound: a) -> Interval<a> {
   }
 }
 
-/// Create an interval that includes all values strictly less than the given bound, excluding the bound itself. i.e (-INF, upper_bound)
+/// Create an interval that includes all values before (and not including) the given bound. i.e (-INF, upper_bound)
 ///
 /// ```aiken
-/// interval.strictly_before(10) == Interval {
+/// interval.entirely_before(10) == Interval {
 ///   lower_bound: IntervalBound { bound_type: NegativeInfinity, is_inclusive: True },
 ///   upper_bound: IntervalBound { bound_type: Finite(10), is_inclusive: False },
 /// }
 /// ```
-pub fn strictly_before(upper_bound: a) -> Interval<a> {
+pub fn entirely_before(upper_bound: a) -> Interval<a> {
   Interval {
     lower_bound: IntervalBound {
       bound_type: NegativeInfinity,
@@ -586,9 +586,9 @@ pub fn is_empty(self: Interval<Int>) -> Bool {
 /// let iv2 = interval.between(2, 14)
 /// interval.intersection(iv1, iv2) == interval.between(2, 10)
 ///
-/// let iv1 = interval.strictly_before(10)
-/// let iv2 = interval.strictly_after(0)
-/// interval.intersection(iv1, iv2) == interval.strictly_between(0, 10)
+/// let iv1 = interval.entirely_before(10)
+/// let iv2 = interval.entirely_after(0)
+/// interval.intersection(iv1, iv2) == interval.entirely_between(0, 10)
 ///
 /// let iv1 = interval.between(0, 1)
 /// let iv2 = interval.between(2, 3)
@@ -615,14 +615,14 @@ test intersection_2() {
 
 test intersection_3() {
   let iv1 = between(0, 1)
-  let iv2 = strictly_between(1, 2)
+  let iv2 = entirely_between(1, 2)
   intersection(iv1, iv2)
     |> is_empty
 }
 
 test intersection_4() {
-  let iv1 = strictly_between(0, 1)
-  let iv2 = strictly_between(1, 2)
+  let iv1 = entirely_between(0, 1)
+  let iv2 = entirely_between(1, 2)
   intersection(iv1, iv2)
     |> is_empty
 }
@@ -634,9 +634,9 @@ test intersection_5() {
 }
 
 test intersection_6() {
-  let iv1 = strictly_before(10)
-  let iv2 = strictly_after(0)
-  intersection(iv1, iv2) == strictly_between(0, 10)
+  let iv1 = entirely_before(10)
+  let iv2 = entirely_after(0)
+  intersection(iv1, iv2) == entirely_between(0, 10)
 }
 
 /// Computes the smallest interval containing the two given intervals, if any
@@ -650,9 +650,9 @@ test intersection_6() {
 /// let iv2 = before(0)
 /// hull(iv1, iv2) == before(10)
 ///
-/// let iv1 = strictly_after(0)
+/// let iv1 = entirely_after(0)
 /// let iv2 = between(10, 42)
-/// hull(iv1, iv2) = strictly_after(0)
+/// hull(iv1, iv2) = entirely_after(0)
 /// ```
 pub fn hull(iv1: Interval<Int>, iv2: Interval<Int>) -> Interval<Int> {
   Interval {
@@ -674,7 +674,7 @@ test hull_2() {
 }
 
 test hull_3() {
-  let iv1 = strictly_after(0)
+  let iv1 = entirely_after(0)
   let iv2 = between(10, 42)
-  hull(iv1, iv2) == strictly_after(0)
+  hull(iv1, iv2) == entirely_after(0)
 }
