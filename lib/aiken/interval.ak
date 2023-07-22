@@ -360,15 +360,19 @@ pub fn after(lower_bound: a) -> Interval<a> {
 /// Check whether the interval is entirely after the point "a"
 ///
 /// ```aiken
-/// is_entirely_after(interval.after(10), 5) == True
-/// is_entirely_after(interval.after(10), 10) == False
-/// is_entirely_after(interval.after(10), 15) == False
-/// is_entirely_after(interval.between(10, 20), 30) == False
-/// is_entirely_after(interval.between(10, 20), 5) == True
-pub fn is_entirely_after(interval: Interval<Int>, point: Int) -> Bool {
-  when (interval.lower_bound.bound_type, interval.lower_bound.is_inclusive) is {
-    (Finite(low), True) -> point < low
-    (Finite(low), False) -> point <= low
+/// interval.is_entirely_after(interval.after(10), 5) == True
+/// interval.is_entirely_after(interval.after(10), 10) == False
+/// interval.is_entirely_after(interval.after(10), 15) == False
+/// interval.is_entirely_after(interval.between(10, 20), 30) == False
+/// interval.is_entirely_after(interval.between(10, 20), 5) == True
+pub fn is_entirely_after(self: Interval<Int>, point: Int) -> Bool {
+  when self.lower_bound.bound_type is {
+    Finite(low) ->
+      if self.lower_bound.is_inclusive {
+        point < low
+      } else {
+        point <= low
+      }
     _ -> False
   }
 }
@@ -419,10 +423,14 @@ test is_entirely_after_9() {
 /// interval.is_entirely_before(interval.before(10), 5) == False
 /// interval.is_entirely_before(interval.between(10, 20), 30) == True
 /// interval.is_entirely_before(interval.between(10, 20), 5) == False
-pub fn is_entirely_before(interval: Interval<Int>, point: Int) -> Bool {
-  when (interval.upper_bound.bound_type, interval.upper_bound.is_inclusive) is {
-    (Finite(hi), True) -> hi < point
-    (Finite(hi), False) -> hi <= point
+pub fn is_entirely_before(self: Interval<Int>, point: Int) -> Bool {
+  when self.upper_bound.bound_type is {
+    Finite(hi) ->
+      if self.upper_bound.is_inclusive {
+        hi < point
+      } else {
+        hi <= point
+      }
     _ -> False
   }
 }
