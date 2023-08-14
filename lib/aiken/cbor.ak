@@ -141,7 +141,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
         } else if constr < 128 {
           1280 + constr - 7
         } else {
-          error @"What are you doing? No I mean, seriously."
+          fail @"What are you doing? No I mean, seriously."
         }
 
       builder

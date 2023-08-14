@@ -75,7 +75,7 @@ test or_try_2() {
   or_try(
     Some(42),
     fn(_) {
-      error
+      fail
     },
   ) == Some(42)
 }

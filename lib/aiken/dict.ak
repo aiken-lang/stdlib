@@ -428,7 +428,7 @@ fn check_ascending_list(
     [(x0, _), (x1, _) as e, ..rest] ->
       when compare(x0, x1) is {
         Less -> check_ascending_list([e, ..rest], compare)
-        _ -> error @"keys in associative list aren't in ascending order"
+        _ -> fail @"keys in associative list aren't in ascending order"
       }
   }
 }

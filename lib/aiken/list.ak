@@ -567,7 +567,7 @@ pub fn init(self: List<a>) -> Option<List<a>> {
 
 fn do_init(self: List<a>) -> List<a> {
   when self is {
-    [] -> error @"unreachable"
+    [] -> fail @"unreachable"
     [_] ->
       []
     [x, ..xs] ->
