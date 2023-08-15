@@ -1270,7 +1270,7 @@ test zip_3() {
 ///
 /// ```aiken
 /// list.reduce([#[1], #[2], #[3]], #[0], bytearray.concat) == #[0, 1, 2, 3]
-/// list.reduce([True, False, True], False, fn(b, a) { or([b, a]) }) == True
+/// list.reduce([True, False, True], False, fn(b, a) { or { b, a } }) == True
 /// ```
 pub fn reduce(self: List<a>, zero: b, with: fn(b, a) -> b) -> b {
   foldl(self, zero, flip(with))
@@ -1285,7 +1285,7 @@ test reduce_2() {
 }
 
 test reduce_3() {
-  reduce([True, False, True], False, fn(left, right) { or([left, right]) }) == True
+  reduce([True, False, True], False, fn(left, right) { left || right }) == True
 }
 
 test reduce_4() {
