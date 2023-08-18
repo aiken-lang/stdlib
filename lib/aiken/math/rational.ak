@@ -50,12 +50,15 @@ pub fn new(numerator: Int, denominator: Int) -> Option<Rational> {
 }
 
 test new_1() {
-  (new(2, 0) == None)? && (new(2, 3) == Some(ratio(2, 3)))? && (new(-2, 3) == Some(
-    ratio(-2, 3),
-  ))? && (new(2, -3) == Some(ratio(-2, 3)))? && (new(2, 4) == Some(ratio(2, 4)))? && (new(
-    -2,
-    -3,
-  ) == Some(ratio(2, 3)))? && (new(-2, -4) == Some(ratio(2, 4)))?
+  and {
+    (new(2, 0) == None)?,
+    (new(2, 3) == Some(ratio(2, 3)))?,
+    (new(-2, 3) == Some(ratio(-2, 3)))?,
+    (new(2, -3) == Some(ratio(-2, 3)))?,
+    (new(2, 4) == Some(ratio(2, 4)))?,
+    (new(-2, -3) == Some(ratio(2, 3)))?,
+    (new(-2, -4) == Some(ratio(2, 4)))?,
+  }
 }
 
 /// Get the numerator of a rational value.
@@ -73,9 +76,13 @@ test numerator_1() {
   expect Some(y) = new(-2, 3)
   expect Some(z) = new(2, -3)
   expect Some(w) = new(-2, -3)
-  (numerator(x) == 2)? && (numerator(y) == -2)? && (numerator(z) == -2)? && (numerator(
-    w,
-  ) == 2)?
+
+  and {
+    (numerator(x) == 2)?,
+    (numerator(y) == -2)?,
+    (numerator(z) == -2)?,
+    (numerator(w) == 2)?,
+  }
 }
 
 /// Get the denominator of a rational value.
@@ -93,9 +100,12 @@ test denominator_1() {
   expect Some(y) = new(-2, 3)
   expect Some(z) = new(2, -3)
   expect Some(w) = new(-2, -3)
-  (denominator(x) == 3)? && (denominator(y) == 3)? && (denominator(z) == 3)? && (denominator(
-    w,
-  ) == 3)?
+  and {
+    (denominator(x) == 3)?,
+    (denominator(y) == 3)?,
+    (denominator(z) == 3)?,
+    (denominator(w) == 3)?,
+  }
 }
 
 /// A null `Rational`.
@@ -225,9 +235,11 @@ pub fn from_int(numerator: Int) -> Rational {
 }
 
 test from_int_1() {
-  (from_int(14) == ratio(14, 1))? && (from_int(-5) == ratio(-5, 1))? && (from_int(
-    0,
-  ) == ratio(0, 1))?
+  and {
+    (from_int(14) == ratio(14, 1))?,
+    (from_int(-5) == ratio(-5, 1))?,
+    (from_int(0) == ratio(0, 1))?,
+  }
 }
 
 /// Returns the nearest `Int` between zero and a given `Rational`.
@@ -248,11 +260,15 @@ pub fn truncate(self: Rational) -> Int {
 }
 
 test truncate_1() {
-  (truncate(ratio(5, 2)) == 2)? && (truncate(ratio(5, 3)) == 1)? && (truncate(
-    ratio(5, 4),
-  ) == 1)? && (truncate(ratio(5, 5)) == 1)? && (truncate(ratio(5, 6)) == 0)? && (truncate(
-    ratio(8, 3),
-  ) == 2)? && (truncate(ratio(-14, 3)) == -4)?
+  and {
+    (truncate(ratio(5, 2)) == 2)?,
+    (truncate(ratio(5, 3)) == 1)?,
+    (truncate(ratio(5, 4)) == 1)?,
+    (truncate(ratio(5, 5)) == 1)?,
+    (truncate(ratio(5, 6)) == 0)?,
+    (truncate(ratio(8, 3)) == 2)?,
+    (truncate(ratio(-14, 3)) == -4)?,
+  }
 }
 
 /// Returns the greatest `Int` no greater than a given `Rational`
@@ -273,11 +289,15 @@ pub fn floor(self: Rational) -> Int {
 }
 
 test floor_1() {
-  (floor(ratio(5, 2)) == 2)? && (floor(ratio(5, 3)) == 1)? && (floor(
-    ratio(5, 4),
-  ) == 1)? && (floor(ratio(5, 5)) == 1)? && (floor(ratio(5, 6)) == 0)? && (floor(
-    ratio(8, 3),
-  ) == 2)? && (floor(ratio(-14, 3)) == -5)?
+  and {
+    (floor(ratio(5, 2)) == 2)?,
+    (floor(ratio(5, 3)) == 1)?,
+    (floor(ratio(5, 4)) == 1)?,
+    (floor(ratio(5, 5)) == 1)?,
+    (floor(ratio(5, 6)) == 0)?,
+    (floor(ratio(8, 3)) == 2)?,
+    (floor(ratio(-14, 3)) == -5)?,
+  }
 }
 
 /// Returns the smallest `Int` not less than a given `Rational`
@@ -302,11 +322,16 @@ pub fn ceil(self: Rational) -> Int {
 }
 
 test ceil_1() {
-  (ceil(ratio(13, 5)) == 3)? && (ceil(ratio(15, 5)) == 3)? && (ceil(
-    ratio(16, 5),
-  ) == 4)? && (ceil(ratio(-3, 5)) == 0)? && (ceil(ratio(-5, 5)) == -1)? && (ceil(
-    ratio(-14, 3),
-  ) == -4)? && (ceil(ratio(-14, 6)) == -2)? && (ceil(ratio(44, 14)) == 4)?
+  and {
+    (ceil(ratio(13, 5)) == 3)?,
+    (ceil(ratio(15, 5)) == 3)?,
+    (ceil(ratio(16, 5)) == 4)?,
+    (ceil(ratio(-3, 5)) == 0)?,
+    (ceil(ratio(-5, 5)) == -1)?,
+    (ceil(ratio(-14, 3)) == -4)?,
+    (ceil(ratio(-14, 6)) == -2)?,
+    (ceil(ratio(44, 14)) == 4)?,
+  }
 }
 
 /// Returns the proper fraction of a given `Rational` `r`. That is, a pair of
@@ -329,19 +354,31 @@ pub fn proper_fraction(self: Rational) -> (Int, Rational) {
 test proper_fraction_1() {
   let r = ratio(10, 7)
   let (n, f) = proper_fraction(r)
-  (n == 1)? && (f == ratio(3, 7))? && (r == add(from_int(n), f))?
+  and {
+    (n == 1)?,
+    (f == ratio(3, 7))?,
+    (r == add(from_int(n), f))?,
+  }
 }
 
 test proper_fraction_2() {
   let r = ratio(-10, 7)
   let (n, f) = proper_fraction(r)
-  (n == -1)? && (f == ratio(-3, 7))? && (r == add(from_int(n), f))?
+  and {
+    (n == -1)?,
+    (f == ratio(-3, 7))?,
+    (r == add(from_int(n), f))?,
+  }
 }
 
 test proper_fraction_3() {
   let r = ratio(4, 2)
   let (n, f) = proper_fraction(r)
-  (n == 2)? && (f == ratio(0, 2))? && (r == add(from_int(n), f))?
+  and {
+    (n == 2)?,
+    (f == ratio(0, 2))?,
+    (r == add(from_int(n), f))?,
+  }
 }
 
 /// Round the argument to the nearest whole number. If the argument is
@@ -377,11 +414,16 @@ pub fn round(self: Rational) -> Int {
 }
 
 test round_1() {
-  (round(ratio(10, 7)) == 1)? && (round(ratio(11, 7)) == 2)? && (round(
-    ratio(3, 2),
-  ) == 2)? && (round(ratio(5, 2)) == 3)? && (round(ratio(-3, 2)) == -1)? && (round(
-    ratio(-2, 3),
-  ) == -1)? && (round(ratio(-10, 7)) == -1)? && (round(ratio(4, 2)) == 2)?
+  and {
+    (round(ratio(10, 7)) == 1)?,
+    (round(ratio(11, 7)) == 2)?,
+    (round(ratio(3, 2)) == 2)?,
+    (round(ratio(5, 2)) == 3)?,
+    (round(ratio(-3, 2)) == -1)?,
+    (round(ratio(-2, 3)) == -1)?,
+    (round(ratio(-10, 7)) == -1)?,
+    (round(ratio(4, 2)) == 2)?,
+  }
 }
 
 /// Round the argument to the nearest whole number. If the argument is
@@ -421,11 +463,16 @@ pub fn round_even(self: Rational) -> Int {
 }
 
 test round_even_1() {
-  (round_even(ratio(10, 7)) == 1)? && (round_even(ratio(11, 7)) == 2)? && (round_even(
-    ratio(3, 2),
-  ) == 2)? && (round_even(ratio(5, 2)) == 2)? && (round_even(ratio(-3, 2)) == -2)? && (round_even(
-    ratio(-2, 3),
-  ) == -1)? && (round_even(ratio(-10, 7)) == -1)? && (round_even(ratio(4, 2)) == 2)?
+  and {
+    (round_even(ratio(10, 7)) == 1)?,
+    (round_even(ratio(11, 7)) == 2)?,
+    (round_even(ratio(3, 2)) == 2)?,
+    (round_even(ratio(5, 2)) == 2)?,
+    (round_even(ratio(-3, 2)) == -2)?,
+    (round_even(ratio(-2, 3)) == -1)?,
+    (round_even(ratio(-10, 7)) == -1)?,
+    (round_even(ratio(4, 2)) == 2)?,
+  }
 }
 
 /// Change the sign of a `Rational`.
@@ -443,9 +490,11 @@ pub fn negate(a: Rational) -> Rational {
 }
 
 test negate_1() {
-  (negate(ratio(5, 2)) == ratio(-5, 2))? && (negate(ratio(-5, 2)) == ratio(5, 2))? && (negate(
-    negate(ratio(5, 2)),
-  ) == ratio(5, 2))?
+  and {
+    (negate(ratio(5, 2)) == ratio(-5, 2))?,
+    (negate(ratio(-5, 2)) == ratio(5, 2))?,
+    (negate(negate(ratio(5, 2))) == ratio(5, 2))?,
+  }
 }
 
 /// Absolute value of a `Rational`.
@@ -463,9 +512,11 @@ pub fn abs(self: Rational) -> Rational {
 }
 
 test abs_examples() {
-  (abs(ratio(5, 2)) == ratio(5, 2))? && (abs(ratio(-5, 2)) == ratio(5, 2))? && (abs(
-    ratio(5, 2),
-  ) == abs(ratio(-5, 2)))?
+  and {
+    (abs(ratio(5, 2)) == ratio(5, 2))?,
+    (abs(ratio(-5, 2)) == ratio(5, 2))?,
+    (abs(ratio(5, 2)) == abs(ratio(-5, 2)))?,
+  }
 }
 
 /// Reciprocal of a `Rational` number. That is, a new `Rational` where the
@@ -490,13 +541,13 @@ pub fn reciprocal(self: Rational) -> Option<Rational> {
 }
 
 test reciprocal_1() {
-  (reciprocal(ratio(5, 2)) == new(2, 5))? && (reciprocal(ratio(-5, 2)) == new(
-    -2,
-    5,
-  ))? && (reciprocal(ratio(0, 2)) == None)? && (reciprocal(ratio(2, 3)) == new(
-    3,
-    2,
-  ))? && (reciprocal(ratio(-2, 3)) == new(-3, 2))?
+  and {
+    (reciprocal(ratio(5, 2)) == new(2, 5))?,
+    (reciprocal(ratio(-5, 2)) == new(-2, 5))?,
+    (reciprocal(ratio(0, 2)) == None)?,
+    (reciprocal(ratio(2, 3)) == new(3, 2))?,
+    (reciprocal(ratio(-2, 3)) == new(-3, 2))?,
+  }
 }
 
 /// Reduce a rational to its irreducible form. This operation makes the
@@ -513,10 +564,11 @@ pub fn reduce(self: Rational) -> Rational {
 }
 
 test reduce_1() {
-  (reduce(ratio(80, 200)) == ratio(2, 5))? && (reduce(ratio(-5, 1)) == ratio(
-    -5,
-    1,
-  ))? && (reduce(ratio(0, 3)) == ratio(0, 1))?
+  and {
+    (reduce(ratio(80, 200)) == ratio(2, 5))?,
+    (reduce(ratio(-5, 1)) == ratio(-5, 1))?,
+    (reduce(ratio(0, 3)) == ratio(0, 1))?,
+  }
 }
 
 /// Compare two rationals for an ordering. This is safe to use even for
@@ -552,11 +604,12 @@ test compare_1() {
   expect Some(x) = new(2, 3)
   expect Some(y) = new(3, 4)
   expect Some(z) = new(4, 6)
-
-  compare(x, y) == Less && compare(y, x) == Greater && compare(x, x) == Equal && compare(
-    x,
-    z,
-  ) == Equal
+  and {
+    compare(x, y) == Less,
+    compare(y, x) == Greater,
+    compare(x, x) == Equal,
+    compare(x, z) == Equal,
+  }
 }
 
 /// Comparison of two rational values using a chosen heuristic. For example:

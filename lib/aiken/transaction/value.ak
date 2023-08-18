@@ -201,33 +201,36 @@ pub fn add(
   if quantity == 0 {
     self
   } else {
+    let helper =
+      fn(_, left, _right) {
+        let inner_result =
+          dict.insert_with(
+            left,
+            asset_name,
+            quantity,
+            fn(_k, ql, qr) {
+              let q = ql + qr
+              if q == 0 {
+                None
+              } else {
+                Some(q)
+              }
+            },
+            bytearray.compare,
+          )
+        if dict.is_empty(inner_result) {
+          None
+        } else {
+          Some(inner_result)
+        }
+      }
+
     Value(
       dict.insert_with(
         self.inner,
         policy_id,
         dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
-        fn(_, left, _right) {
-          let inner_result =
-            dict.insert_with(
-              left,
-              asset_name,
-              quantity,
-              fn(_k, ql, qr) {
-                let q = ql + qr
-                if q == 0 {
-                  None
-                } else {
-                  Some(q)
-                }
-              },
-              bytearray.compare,
-            )
-          if dict.is_empty(inner_result) {
-            None
-          } else {
-            Some(inner_result)
-          }
-        },
+        helper,
         bytearray.compare,
       ),
     )
