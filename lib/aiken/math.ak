@@ -18,6 +18,8 @@
 //// 3 * 4   // 12
 //// 10 % 3  // 1
 
+use aiken/builtin
+
 /// Calculate the absolute value of an integer.
 ///
 /// ```aiken
@@ -153,6 +155,63 @@ test pow_0_0() {
 
 test pow_513_3() {
   pow(513, 3) == 135005697
+}
+
+test pow_2_4() {
+  pow(2, 4) == 16
+}
+
+test pow_2_42() {
+  pow(2, 42) == 4398046511104
+}
+
+/// Calculates the power of 2 for a given exponent `e`. Much cheaper than
+/// using `pow(2, _)` for small exponents (0 < e < 256).
+///
+/// ```aiken
+/// math.pow2(-2) == 0
+/// math.pow2(0) == 1
+/// math.pow2(1) == 2
+/// math.pow2(4) == 16
+/// math.pow2(42) == 4398046511104
+/// ```
+pub fn pow2(e: Int) -> Int {
+  // do_pow2(e, 1)
+  if e < 8 {
+    if e < 0 {
+      0
+    } else {
+      builtin.index_bytearray(#[1, 2, 4, 8, 16, 32, 64, 128], e)
+    }
+  } else if e < 32 {
+    256 * pow2(e - 8)
+  } else {
+    4294967296 * pow2(e - 32)
+  }
+}
+
+test pow2_neg() {
+  pow2(-2) == 0
+}
+
+test pow2_0() {
+  pow2(0) == 1
+}
+
+test pow2_1() {
+  pow2(1) == 2
+}
+
+test pow2_4() {
+  pow2(4) == 16
+}
+
+test pow2_42() {
+  pow2(42) == 4398046511104
+}
+
+test pow2_256() {
+  pow2(256) == 115792089237316195423570985008687907853269984665640564039457584007913129639936
 }
 
 /// The logarithm in base `b` of an element using integer divisions.

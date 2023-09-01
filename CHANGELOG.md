@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.6.0 - unreleased
+
+### Added
+
+- [`math.pow2`](https://aiken-lang.github.io/stdlib/aiken/math.html#pow2): For faster exponentions for powers of two.
+
 ## v1.5.0 - 2023-08-16
 
 ### Removed
