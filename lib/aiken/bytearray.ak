@@ -1,4 +1,5 @@
 use aiken/builtin
+use aiken/math
 use aiken/option
 
 /// Compare two bytearrays lexicographically.
@@ -452,4 +453,70 @@ test to_hex_1() {
 
 test to_hex_2() {
   to_hex("The quick brown fox jumps over the lazy dog") == @"54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f67"
+}
+
+/// Checks whether a bit (Most-Significant-Bit first) is set in the given 'ByteArray'.
+///
+/// For example, consider the following bytearray: `#"8b765f"`. It can also be written as the
+/// following bits sequence:
+///
+/// | `8`    | `b`    | `7`    | `6`    | `5`    | `f`    |
+/// | ---    | ---    | ---    | ---    | ---    | ---    |
+/// | `1000` | `1011` | `0111` | `0110` | `0101` | `1111` |
+///
+/// And thus, we have:
+///
+/// ```aiken
+/// test_bit(#"8b765f", 0) == True
+/// test_bit(#"8b765f", 1) == False
+/// test_bit(#"8b765f", 2) == False
+/// test_bit(#"8b765f", 3) == False
+/// test_bit(#"8b765f", 7) == True
+/// test_bit(#"8b765f", 8) == False
+/// test_bit(#"8b765f", 20) == True
+/// test_bit(#"8b765f", 21) == True
+/// test_bit(#"8b765f", 22) == True
+/// test_bit(#"8b765f", 23) == True
+/// ```
+pub fn test_bit(self: ByteArray, ix: Int) -> Bool {
+  builtin.less_than_equals_bytearray(
+    #[128],
+    builtin.cons_bytearray(
+      builtin.index_bytearray(self, ix / 8) * math.pow2(ix % 8),
+      "",
+    ),
+  )
+}
+
+test test_bit_0() {
+  test_bit(#"8b765f", 0)
+}
+
+test test_bit_1() {
+  !test_bit(#"8b765f", 1)
+}
+
+test test_bit_2() {
+  !test_bit(#"8b765f", 2)
+}
+
+test test_bit_3() {
+  !test_bit(#"8b765f", 3)
+}
+
+test test_bit_7() {
+  test_bit(#"8b765f", 7)
+}
+
+test test_bit_8() {
+  !test_bit(#"8b765f", 8)
+}
+
+test test_bit_20_21_22_23() {
+  and {
+    test_bit(#"8b765f", 20),
+    test_bit(#"8b765f", 21),
+    test_bit(#"8b765f", 22),
+    test_bit(#"8b765f", 23),
+  }
 }

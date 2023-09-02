@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.6.0 - unreleased
+
+### Added
+
+- [`math.pow2`](https://aiken-lang.github.io/stdlib/aiken/math.html#pow2): For faster exponentions for powers of two.
+- [`bytearray.test_bit`](https://aiken-lang.github.io/stdlib/aiken/bytearray.html#test_bit): For testing if a bit is set in a bytearray (MSB).
+
 ## v1.5.0 - 2023-08-16
 
 ### Removed
