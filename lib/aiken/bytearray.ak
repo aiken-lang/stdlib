@@ -460,9 +460,9 @@ test to_hex_2() {
 /// For example, consider the following bytearray: `#"8b765f"`. It can also be written as the
 /// following bits sequence:
 ///
-/// | `8`    | `b`    | `7`    | `6`    | `5`    | `f`    |
-/// | ---    | ---    | ---    | ---    | ---    | ---    |
-/// | `1000` | `1011` | `0111` | `0110` | `0101` | `1111` |
+/// `8`    | `b`    | `7`    | `6`    | `5`    | `f`
+/// ---    | ---    | ---    | ---    | ---    | ---
+/// `1000` | `1011` | `0111` | `0110` | `0101` | `1111`
 ///
 /// And thus, we have:
 ///
