@@ -557,14 +557,14 @@ test has_3() {
   has([], 14) == False
 }
 
-// list.index_of([1, 5, 2], 2) == Some(2)
-// list.index_of([1, 7, 3], 4) == None
-// list.index_of([1, 0, 9, 6], 6) == 3
-// list.index_of([], 6) == None
-// ```
 /// Gets the index of an element of a list, if any. Otherwise, returns None.
 ///
 /// ```aiken
+/// list.index_of([1, 5, 2], 2) == Some(2)
+/// list.index_of([1, 7, 3], 4) == None
+/// list.index_of([1, 0, 9, 6], 6) == 3
+/// list.index_of([], 6) == None
+/// ```
 pub fn index_of(self: List<a>, elem: a) -> Option<Int> {
   when self is {
     [] -> None
