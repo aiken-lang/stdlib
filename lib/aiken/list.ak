@@ -557,6 +557,45 @@ test has_3() {
   has([], 14) == False
 }
 
+// list.index_of([1, 5, 2], 2) == Some(2)
+// list.index_of([1, 7, 3], 4) == None
+// list.index_of([1, 0, 9, 6], 6) == 3
+// list.index_of([], 6) == None
+// ```
+/// Gets the index of an element of a list, if any. Otherwise, returns None.
+///
+/// ```aiken
+pub fn index_of(self: List<a>, elem: a) -> Option<Int> {
+  when self is {
+    [] -> None
+    [x, ..xs] ->
+      if x == elem {
+        Some(0)
+      } else {
+        when index_of(xs, elem) is {
+          None -> None
+          Some(n) -> Some(n + 1)
+        }
+      }
+  }
+}
+
+test index_of_1() {
+  index_of([1, 5, 2], 2) == Some(2)
+}
+
+test index_of_2() {
+  index_of([1, 7, 3], 4) == None
+}
+
+test index_of_3() {
+  index_of([1, 0, 9, 6], 6) == Some(3)
+}
+
+test index_of_4() {
+  index_of([], 6) == None
+}
+
 /// Get the first element of a list
 ///
 /// ```aiken
