@@ -566,16 +566,17 @@ test has_3() {
 /// list.index_of([], 6) == None
 /// ```
 pub fn index_of(self: List<a>, elem: a) -> Option<Int> {
+  do_index_of(self, elem, 0)
+}
+
+fn do_index_of(self: List<a>, elem: a, i: Int) -> Option<Int> {
   when self is {
     [] -> None
     [x, ..xs] ->
       if x == elem {
-        Some(0)
+        Some(i)
       } else {
-        when index_of(xs, elem) is {
-          None -> None
-          Some(n) -> Some(n + 1)
-        }
+        do_index_of(xs, elem, i + 1)
       }
   }
 }
