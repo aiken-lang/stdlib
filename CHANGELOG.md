@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.7.0 - 2023-09-14
+
+### Added
+
+- [`list.index_of`](https://aiken-lang.github.io/stdlib/aiken/list.html#index_of): For getting a values index in a list.
+
 ## v1.6.0 - 2023-09-08
 
 ### Added
