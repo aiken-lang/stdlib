@@ -8,7 +8,7 @@
 
 ### Changed
 
-- all hash functions [`hash.blake2b_256`, `hash.sha2_256`, `hash.sha3_256`] are now generic over all serialisable types. ByteArrays do not get serialised, while others are serialised into ByteArrays.
+- all hash functions [`hash.blake2b_256`, `hash.sha2_256`, `hash.sha3_256`] are now generic over all serialisable types. ByteArrays do not get serialised, while others are serialised into ByteArrays. *note* you may prefer to use builtins directly until aiken has specialisation optimizations added in for this case.
 
 ## v1.6.0 - 2023-09-08
 
