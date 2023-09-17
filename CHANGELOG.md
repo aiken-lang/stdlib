@@ -6,6 +6,10 @@
 
 - [`list.index_of`](https://aiken-lang.github.io/stdlib/aiken/list.html#index_of): For getting a values index in a list.
 
+### Changed
+
+- all hash functions [`hash.blake2b_256`, `hash.sha2_256`, `hash.sha3_256`] are now generic over all serialisable types. ByteArrays do not get serialised, while others are serialised into ByteArrays.
+
 ## v1.6.0 - 2023-09-08
 
 ### Added
