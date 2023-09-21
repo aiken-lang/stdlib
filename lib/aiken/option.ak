@@ -57,22 +57,19 @@ test or_else_2() {
 /// option.or_try(None, fn(_) { Some("aiken") }) == Some("aiken")
 /// option.or_try(Some(42), fn(_) { Some(14) }) == Some(42)
 /// ```
-pub fn or_try(
-  self: Option<a>,
-  compute_default: fn(Void) -> Option<a>,
-) -> Option<a> {
+pub fn or_try(self: Option<a>, compute_default: fn() -> Option<a>) -> Option<a> {
   when self is {
-    None -> compute_default(Void)
+    None -> compute_default()
     _ -> self
   }
 }
 
 test or_try_1() {
-  or_try(None, fn(_) { Some("aiken") }) == Some("aiken")
+  or_try(None, fn() { Some("aiken") }) == Some("aiken")
 }
 
 test or_try_2() {
-  or_try(Some(42), fn(_) { fail }) == Some(42)
+  or_try(Some(42), fn() { fail }) == Some(42)
 }
 
 /// Apply a function to the inner value of an [`Option`](#option)
