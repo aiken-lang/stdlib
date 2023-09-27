@@ -52,7 +52,7 @@ test from_bytearray_3() {
 /// string.from_int(42) == @"42"
 /// ```
 pub fn from_int(n: Int) -> String {
-  cbor.diagnostic(n)
+  cbor.from_int(n, #"") |> decode_utf8
 }
 
 test from_int_1() {

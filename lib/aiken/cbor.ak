@@ -236,7 +236,7 @@ fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
   }
 }
 
-fn from_int(i: Int, digits: ByteArray) -> ByteArray {
+pub fn from_int(i: Int, digits: ByteArray) -> ByteArray {
   if i == 0 {
     append_bytearray(#"30", digits)
   } else if i < 0 {
