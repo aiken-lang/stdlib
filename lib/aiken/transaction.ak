@@ -150,7 +150,7 @@ pub fn find_datum(
   datums
     |> dict.get(datum_hash)
     |> option.or_try(
-         fn(_) {
+         fn() {
            outputs
              |> list.filter_map(
                   fn(output) {
