@@ -304,7 +304,7 @@ test floor_1() {
 ///
 /// ```aiken
 /// expect Some(x) = rational.new(2, 3)
-/// rational.ceil(x) == 0
+/// rational.ceil(x) == 1
 ///
 /// expect Some(y) = rational.new(44, 14)
 /// rational.ceil(y) == 4
