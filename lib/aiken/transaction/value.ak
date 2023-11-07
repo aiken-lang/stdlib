@@ -39,6 +39,11 @@ pub fn zero() -> Value {
   Value { inner: dict.new() }
 }
 
+/// Check is a `Value` is zero. That is, it has no assets and holds no Ada/Lovelace.
+pub fn is_zero(self: Value) -> Bool {
+  self == zero()
+}
+
 /// Construct a `Value` from an asset identifier (i.e. `PolicyId` + `AssetName`)
 /// and a given quantity.
 pub fn from_asset(
