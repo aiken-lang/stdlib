@@ -378,9 +378,9 @@ pub fn to_dict(self: Value) -> Dict<PolicyId, Dict<AssetName, Int>> {
   self.inner
 }
 
-/// A multi-asset value that can be found when minting transaction. Note that
-/// because of historical reasons, this is slightly different from `Value` found
-/// in transaction outputs.
+/// A multi-asset value that can be found when minting transaction. It always holds
+/// a null quantity of _Ada_. Note that because of historical reasons, this is slightly
+/// different from `Value` found in transaction outputs.
 ///
 /// Note that you're never expected to construct a `MintedValue` yourself. If you need to
 /// manipulate multi-asset values, use [Value](#Value)
@@ -393,11 +393,6 @@ pub opaque type MintedValue {
 /// Convert a [`MintedValue`](#MintedValue) into a [`Value`](#Value).
 pub fn from_minted_value(self: MintedValue) -> Value {
   self.inner |> dict.delete(ada_policy_id) |> Value
-}
-
-/// Convert a [`Value`](#Value) into a [`MintedValue`](#MintedValue).
-pub fn to_minted_value(self: Value) -> MintedValue {
-  self.inner |> MintedValue
 }
 
 test from_minted_value_1() {
@@ -455,6 +450,31 @@ test from_minted_value_5() {
     ]
 
   flatten(from_minted_value(from_list(assets))) == assets
+}
+
+/// Convert a [`Value`](#Value) into a [`MintedValue`](#MintedValue).
+pub fn to_minted_value(self: Value) -> MintedValue {
+  self.inner
+    |> dict.insert(
+         ada_policy_id,
+         dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
+         bytearray.compare,
+       )
+    |> MintedValue
+}
+
+test to_minted_value_1() {
+  let minted_value = to_minted_value(zero())
+  ( minted_value.inner |> dict.to_list |> list.length ) == 1
+}
+
+test to_minted_value_2() {
+  let minted_value = to_minted_value(from_lovelace(42))
+  (
+    minted_value.inner
+      |> dict.get(ada_policy_id)
+      |> option.and_then(dict.get(_, ada_asset_name))
+  ) == Some(0)
 }
 
 /// Convert a list of tokens into a `MintedValue`.
