@@ -1,10 +1,15 @@
 # Changelog
 
-## v1.7.0 - 2023-09-14
+## v1.7.0 - 2023-11-07
 
 ### Added
 
 - [`list.index_of`](https://aiken-lang.github.io/stdlib/aiken/list.html#index_of): For getting a values index in a list.
+- [`transaction.placeholder`](https://aiken-lang.github.io/stdlib/aiken/transaction.html#placeholder): For constructing test transactions.
+
+### Removed
+
+N/A
 
 ## v1.6.0 - 2023-09-08
 

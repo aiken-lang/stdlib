@@ -67,6 +67,39 @@ pub type Transaction {
   id: TransactionId,
 }
 
+/// A placeholder / empty `Transaction` to serve as a base in a transaction
+/// builder. This is particularly useful for constructing test transactions.
+///
+/// Every field is empty or null, and we have in particular:
+///
+/// ```aiken
+/// use aiken/transaction
+///
+/// transaction.placeholder().id == TransactionId {
+///   hash: #"0000000000000000000000000000000000000000000000000000000000000000",
+/// }
+///
+/// transaction.placeholder().validity_range == interval.everything()
+/// ```
+pub fn placeholder() -> Transaction {
+  Transaction {
+    inputs: [],
+    reference_inputs: [],
+    outputs: [],
+    fee: value.zero(),
+    mint: value.zero() |> value.to_minted_value(),
+    certificates: [],
+    withdrawals: dict.new(),
+    validity_range: interval.everything(),
+    extra_signatories: [],
+    redeemers: dict.new(),
+    datums: dict.new(),
+    id: TransactionId {
+      hash: #"0000000000000000000000000000000000000000000000000000000000000000",
+    },
+  }
+}
+
 /// An interval of POSIX time, measured in number milliseconds since 1970-01-01T00:00:00Z.
 pub type ValidityRange =
   Interval<PosixTime>
