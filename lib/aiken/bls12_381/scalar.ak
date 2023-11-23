@@ -1,13 +1,30 @@
-/// The prime of the scalar field of the BLS12-381 curve.
+//// This module implements arithmetic operations in the scalar field associated with the BLS12-381 elliptic curve.
+//// The scalar field, defined over a prime number `q`, is derived from the order of the subgroup G1.
+////
+//// More explicitly, we have the identity:
+//// ```text
+//// builtin.bls12_381_g1_scalar_mul(q, bls12_381_g1_generator) == 1
+//// ```
+////
+//// where,
+////
+//// ```text
+//// q = 52435875175126190479447740508185965837690552500527637822603658699938581184513
+//// ```
+////
+//// This module provides functionality for basic arithmetic operations (addition, subtraction, multiplication, division) within this scalar field.
+//// Additionally, it includes advanced operations such as exponentiation and calculation of multiplicative inverses, tailored for cryptographic applications.
+
+/// The prime number defining the scalar field of the BLS12-381 curve.
 pub const bls12_381_scalar_field_prime =
   52435875175126190479447740508185965837690552500527637822603658699938581184513
 
-/// Opaque type used to ensure that a given integer is a valid element of the base field.
+/// Opaque type representing an element of the finite field `Scalar`.
 pub opaque type Scalar {
   integer: Int,
 }
 
-/// Creates a new Fp element from an integer.
+/// Constructs a new `Scalar` element from an integer, ensuring it's within the valid range of the field.
 pub fn new(n: Int) -> Option<Scalar> {
   if n >= 0 && n < bls12_381_scalar_field_prime {
     Some(Scalar(n))
@@ -16,7 +33,7 @@ pub fn new(n: Int) -> Option<Scalar> {
   }
 }
 
-test newScalar_1() {
+test new_1() {
   and {
     new(-1) == None,
     new(bls12_381_scalar_field_prime) == None,
@@ -24,16 +41,16 @@ test newScalar_1() {
   }
 }
 
-/// Get the wrapped integer from an Fp element.
-pub fn unScalar(self: Scalar) -> Int {
+/// Converts a `Scalar` element back to its integer representation.
+pub fn to_int(self: Scalar) -> Int {
   self.integer
 }
 
-test unScalar_1() {
-  unScalar(Scalar(834884848)) == 834884848
+test to_int_1() {
+  to_int(Scalar(834884848)) == 834884848
 }
 
-/// Add two Scalar elements.
+/// Adds two `Scalar` elements, ensuring the result stays within the finite field range.
 pub fn add(left: Scalar, right: Scalar) -> Scalar {
   Scalar(( left.integer + right.integer ) % bls12_381_scalar_field_prime)
 }
@@ -51,6 +68,7 @@ test add_1() {
   }
 }
 
+/// Subtracts one `Scalar` element from another, with the result wrapped within the finite field range.
 pub fn sub(left: Scalar, right: Scalar) -> Scalar {
   Scalar(( left.integer - right.integer ) % bls12_381_scalar_field_prime)
 }
@@ -62,7 +80,7 @@ test sub_1() {
   }
 }
 
-/// A null `Scalar`.
+/// Represents the additive identity (zero) in the `Scalar` field.
 pub fn zero() -> Scalar {
   Scalar(0)
 }
@@ -71,6 +89,7 @@ test zero_1() {
   (zero() == Scalar(0))?
 }
 
+/// Represents the multiplicative identity (one) in the `Scalar` field.
 pub fn one() -> Scalar {
   Scalar(1)
 }
@@ -79,7 +98,7 @@ test one_1() {
   one() == Scalar(1)
 }
 
-/// Negate a Scalar element.
+/// Calculates the additive inverse of a `Scalar` element.
 pub fn neg(self: Scalar) -> Scalar {
   sub(zero(), self)
 }
@@ -94,7 +113,7 @@ test neg_1() {
   }
 }
 
-/// Multiply two Scalar elements.
+/// Multiplies two `Scalar` elements, with the result constrained within the finite field.
 pub fn mul(left: Scalar, right: Scalar) -> Scalar {
   Scalar(left.integer * right.integer % bls12_381_scalar_field_prime)
 }
@@ -109,6 +128,7 @@ test mul_1() {
   }
 }
 
+/// Exponentiates an `Scalar` element by a non-negative integer exponent, using repeated squaring.
 pub fn scale(self: Scalar, e: Int) -> Scalar {
   if e < 0 {
     zero()
@@ -142,6 +162,8 @@ fn helper_pow_of_two(self: Scalar, k: Int) -> Scalar {
   }
 }
 
+/// A faster version of `scale` for the case where the exponent is a power of two.
+/// That is `e = 2^k` for some non-negative integer `k`.
 pub fn pow_of_two(self: Scalar, k: Int) -> Scalar {
   if k < 0 {
     zero()
@@ -161,6 +183,7 @@ test pow_of_two_1() {
   }
 }
 
+/// Divides one `Scalar` element by another, returning None if the divisor is zero.
 pub fn div(left: Scalar, right: Scalar) -> Option<Scalar> {
   if right == zero() {
     None
@@ -181,6 +204,7 @@ test div_1() {
   }
 }
 
+/// Calculates the multiplicative inverse of an `Scalar` element, returning None if the element is zero.
 pub fn recip(self: Scalar) -> Option<Scalar> {
   div(one(), self)
 }
