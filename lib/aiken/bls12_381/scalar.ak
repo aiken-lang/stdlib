@@ -16,7 +16,7 @@ pub fn newScalar(n: Int) -> Option<Scalar> {
   }
 }
 
-test newScalar_test() {
+test newScalar_1() {
   and {
     newScalar(-1) == None,
     newScalar(bls12_381_scalar_field_prime) == None,
@@ -29,7 +29,7 @@ pub fn unScalar(self: Scalar) -> Int {
   self.integer
 }
 
-test unScalar_test() {
+test unScalar_1() {
   unScalar(Scalar(834884848)) == 834884848
 }
 
@@ -37,7 +37,7 @@ pub fn eq(left: Scalar, right: Scalar) -> Bool {
   left.integer == right.integer
 }
 
-test eq_test() {
+test eq_1() {
   and {
     eq(Scalar(834884848), Scalar(834884848))?,
     not(eq(Scalar(834884848), Scalar(834884847)))?,
@@ -49,7 +49,7 @@ pub fn add(left: Scalar, right: Scalar) -> Scalar {
   Scalar(( left.integer + right.integer ) % bls12_381_scalar_field_prime)
 }
 
-test add_test() {
+test add_1() {
   and {
     (add(Scalar(834884848), Scalar(834884848)) == Scalar(1669769696))?,
     (add(Scalar(bls12_381_scalar_field_prime - 1), Scalar(1)) == Scalar(0))?,
@@ -66,7 +66,7 @@ pub fn sub(left: Scalar, right: Scalar) -> Scalar {
   Scalar(( left.integer - right.integer ) % bls12_381_scalar_field_prime)
 }
 
-test sub_test() {
+test sub_1() {
   and {
     (sub(Scalar(834884848), Scalar(834884848)) == zero())?,
     (sub(zero(), Scalar(5)) == Scalar(bls12_381_scalar_field_prime - 5))?,
@@ -78,7 +78,7 @@ pub fn zero() -> Scalar {
   Scalar(0)
 }
 
-test zero_test() {
+test zero_1() {
   (zero() == Scalar(0))?
 }
 
@@ -86,7 +86,7 @@ pub fn one() -> Scalar {
   Scalar(1)
 }
 
-test one_test() {
+test one_1() {
   one() == Scalar(1)
 }
 
@@ -95,7 +95,7 @@ pub fn neg(self: Scalar) -> Scalar {
   sub(zero(), self)
 }
 
-test neg_test() {
+test neg_1() {
   and {
     neg(Scalar(834884848)) == Scalar(
       52435875175126190479447740508185965837690552500527637822603658699937746299665,
@@ -110,7 +110,7 @@ pub fn mul(left: Scalar, right: Scalar) -> Scalar {
   Scalar(left.integer * right.integer % bls12_381_scalar_field_prime)
 }
 
-test mul_test() {
+test mul_1() {
   and {
     mul(Scalar(834884848), Scalar(834884848)) == Scalar(697032709419983104),
     mul(zero(), Scalar(834884848)) == zero(),
@@ -132,7 +132,7 @@ pub fn scale(self: Scalar, e: Int) -> Scalar {
   }
 }
 
-test scale_test() {
+test scale_1() {
   and {
     scale(Scalar(834884848), -1) == zero(),
     scale(Scalar(834884848), 0) == one(),
@@ -161,7 +161,7 @@ pub fn pow_of_two(self: Scalar, k: Int) -> Scalar {
   }
 }
 
-test pow_of_two_test() {
+test pow_of_two_1() {
   and {
     pow_of_two(Scalar(834884848), -1) == zero(),
     pow_of_two(Scalar(834884848), 0) == scale(Scalar(834884848), 1),
@@ -180,7 +180,7 @@ pub fn div(left: Scalar, right: Scalar) -> Option<Scalar> {
   }
 }
 
-test div_test() {
+test div_1() {
   and {
     div(Scalar(834884848), Scalar(834884848)) == Some(Scalar(1)),
     div(Scalar(834884848), zero()) == None,
@@ -196,7 +196,7 @@ pub fn recip(self: Scalar) -> Option<Scalar> {
   div(one(), self)
 }
 
-test recip_test() {
+test recip_1() {
   and {
     recip(Scalar(834884848)) == Some(
       Scalar(
