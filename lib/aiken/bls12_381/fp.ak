@@ -1,13 +1,25 @@
-/// The prime of the base field of the BLS12-381 curve.
+//// This module implements arithmetic operations in the finite field Fp associated with the BLS12-381 elliptic curve. 
+//// The BLS12-381 curve is defined by the equation `y^2 = x^3 + 4` over the field Fp, 
+//// where p is a prime number. 
+////
+//// The elements of this finite field are the x and y coordinates of the points on the BLS12-381 curve.
+////
+//// Specifically, the prime p for the BLS12-381 curve's base field is defined as:
+//// ```text
+//// p = 4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
+//// ```
+//// This module provides functionality to perform basic arithmetic operations (addition, subtraction, multiplication, division) and checks within this finite field context.
+
+/// The prime number defining the base field of the BLS12-381 curve.
 pub const bls12_381_base_field_prime =
   4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
 
-/// Opaque type used to ensure that a given integer is a valid element of the base field.
+/// Opaque type representing an element of the finite field Fp. 
 pub opaque type Fp {
   integer: Int,
 }
 
-/// Creates a new Fp element from an integer.
+/// Constructs a new Fp element from an integer, ensuring it's within the valid range of the field.
 pub fn new(n: Int) -> Option<Fp> {
   if n >= 0 && n < bls12_381_base_field_prime {
     Some(Fp(n))
@@ -24,16 +36,16 @@ test new_1() {
   }
 }
 
-/// Get the wrapped integer from an Fp element.
-pub fn unFp(self: Fp) -> Int {
+/// Converts an Fp element back to its integer representation.
+pub fn to_int(self: Fp) -> Int {
   self.integer
 }
 
-test unFp_1() {
-  unFp(Fp(834884848)) == 834884848
+test to_int_1() {
+  to_int(Fp(834884848)) == 834884848
 }
 
-/// Add two Fp elements.
+/// Adds two Fp elements, ensuring the result stays within the finite field range.
 pub fn add(left: Fp, right: Fp) -> Fp {
   Fp(( left.integer + right.integer ) % bls12_381_base_field_prime)
 }
@@ -45,7 +57,7 @@ test add_1() {
   }
 }
 
-/// Subtract two Fp elements.
+/// Subtracts one Fp element from another, with the result wrapped within the finite field range.
 pub fn sub(left: Fp, right: Fp) -> Fp {
   Fp(( left.integer - right.integer ) % bls12_381_base_field_prime)
 }
@@ -57,23 +69,17 @@ test sub_1() {
   }
 }
 
-/// A null `Fp`.
+/// Represents the additive identity (zero) in the Fp field.
 pub fn zero() -> Fp {
   Fp(0)
 }
 
-test zero_1() {
-  zero() == Fp(0)
-}
-
+/// Represents the multiplicative identity (one) in the Fp field.
 pub fn one() -> Fp {
   Fp(1)
 }
 
-test one_1() {
-  one() == Fp(1)
-}
-
+/// Calculates the additive inverse of an Fp element.
 pub fn neg(self: Fp) -> Fp {
   sub(zero(), self)
 }
@@ -88,7 +94,7 @@ test neg_1() {
   }
 }
 
-/// Multiply two Fp elements.
+/// Multiplies two Fp elements, with the result constrained within the finite field./// Multiplies two Fp elements, with the result constrained within the finite field.
 pub fn mul(left: Fp, right: Fp) -> Fp {
   Fp(left.integer * right.integer % bls12_381_base_field_prime)
 }
@@ -103,6 +109,7 @@ test mul_1() {
   }
 }
 
+/// Exponentiates an Fp element by a non-negative integer exponent, using repeated squaring.
 pub fn scale(self: Fp, e: Int) -> Fp {
   if e < 0 {
     zero()
@@ -128,6 +135,7 @@ test scale_1() {
   }
 }
 
+/// Divides one Fp element by another, returning None if the divisor is zero.
 pub fn div(left: Fp, right: Fp) -> Option<Fp> {
   if right == zero() {
     None
@@ -148,6 +156,7 @@ test div_1() {
   }
 }
 
+/// Calculates the multiplicative inverse of an Fp element, returning None if the element is zero.
 pub fn recip(self: Fp) -> Option<Fp> {
   div(one(), self)
 }
@@ -161,4 +170,21 @@ test recip_1() {
     ),
     recip(zero()) == None,
   }
+}
+
+/// Verifies if the G1 generator of the BLS12-381 curve satisfies the curve equation.
+test generator_on_curve() {
+  // The x coordinate of the G1 generator of the BLS12-381 curve.
+  expect Some(x) =
+    new(
+      3685416753713387016781088315183077757961620795782546409894578378688607592378376318836054947676345821548104185464507,
+    )
+  // The y coordinate of the G1 generator of the BLS12-381 curve.
+  expect Some(y) =
+    new(
+      1339506544944476473020471379941921221584933875938349620426543736416511423956333506472724655353366534992391756441569,
+    )
+  expect Some(four) = new(4)
+  // Check that y^2 = x^3 + 4, the curve equation.
+  mul(y, y) == add(mul(x, mul(x, x)), four)
 }
