@@ -16,7 +16,7 @@ pub fn newFp(n: Int) -> Option<Fp> {
   }
 }
 
-test newFp_test() {
+test newFp_1() {
   and {
     newFp(-1) == None,
     newFp(bls12_381_base_field_prime) == None,
@@ -29,7 +29,7 @@ pub fn unFp(self: Fp) -> Int {
   self.integer
 }
 
-test unFp_test() {
+test unFp_1() {
   unFp(Fp(834884848)) == 834884848
 }
 
@@ -37,7 +37,7 @@ pub fn eq(left: Fp, right: Fp) -> Bool {
   left.integer == right.integer
 }
 
-test eq_test() {
+test eq_1() {
   and {
     eq(Fp(834884848), Fp(834884848))?,
     not(eq(Fp(834884848), Fp(834884849)))?,
@@ -49,7 +49,7 @@ pub fn add(left: Fp, right: Fp) -> Fp {
   Fp(( left.integer + right.integer ) % bls12_381_base_field_prime)
 }
 
-test add_test() {
+test add_1() {
   and {
     add(Fp(834884848), Fp(834884848)) == Fp(1669769696),
     add(Fp(bls12_381_base_field_prime - 1), Fp(1)) == Fp(0),
@@ -61,7 +61,7 @@ pub fn sub(left: Fp, right: Fp) -> Fp {
   Fp(( left.integer - right.integer ) % bls12_381_base_field_prime)
 }
 
-test sub_test() {
+test sub_1() {
   and {
     sub(Fp(834884848), Fp(834884848)) == zero(),
     sub(zero(), Fp(1)) == Fp(bls12_381_base_field_prime - 1),
@@ -73,7 +73,7 @@ pub fn zero() -> Fp {
   Fp(0)
 }
 
-test zero_test() {
+test zero_1() {
   zero() == Fp(0)
 }
 
@@ -81,7 +81,7 @@ pub fn one() -> Fp {
   Fp(1)
 }
 
-test one_test() {
+test one_1() {
   one() == Fp(1)
 }
 
@@ -89,7 +89,7 @@ pub fn neg(self: Fp) -> Fp {
   sub(zero(), self)
 }
 
-test neg_test() {
+test neg_1() {
   and {
     neg(Fp(834884848)) == Fp(
       4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037893437674939,
@@ -104,7 +104,7 @@ pub fn mul(left: Fp, right: Fp) -> Fp {
   Fp(left.integer * right.integer % bls12_381_base_field_prime)
 }
 
-test mul_test() {
+test mul_1() {
   and {
     mul(Fp(834884848), Fp(834884848)) == Fp(697032709419983104),
     mul(Fp(834884848), zero()) == zero(),
@@ -126,7 +126,7 @@ pub fn scale(self: Fp, e: Int) -> Fp {
   }
 }
 
-test scale_test() {
+test scale_1() {
   and {
     scale(Fp(834884848), -1) == zero(),
     scale(Fp(834884848), 0) == Fp(1),
@@ -147,7 +147,7 @@ pub fn div(left: Fp, right: Fp) -> Option<Fp> {
   }
 }
 
-test div_test() {
+test div_1() {
   and {
     div(Fp(834884848), Fp(834884848)) == Some(Fp(1)),
     div(Fp(834884848), zero()) == None,
@@ -163,7 +163,7 @@ pub fn recip(self: Fp) -> Option<Fp> {
   div(one(), self)
 }
 
-test recip_test() {
+test recip_1() {
   and {
     recip(Fp(834884848)) == Some(
       Fp(
