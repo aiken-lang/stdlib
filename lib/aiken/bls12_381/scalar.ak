@@ -8,7 +8,7 @@ pub opaque type Scalar {
 }
 
 /// Creates a new Fp element from an integer.
-pub fn newScalar(n: Int) -> Option<Scalar> {
+pub fn new(n: Int) -> Option<Scalar> {
   if n >= 0 && n < bls12_381_scalar_field_prime {
     Some(Scalar(n))
   } else {
@@ -18,9 +18,9 @@ pub fn newScalar(n: Int) -> Option<Scalar> {
 
 test newScalar_1() {
   and {
-    newScalar(-1) == None,
-    newScalar(bls12_381_scalar_field_prime) == None,
-    newScalar(834884848) == Some(Scalar(834884848)),
+    new(-1) == None,
+    new(bls12_381_scalar_field_prime) == None,
+    new(834884848) == Some(Scalar(834884848)),
   }
 }
 
