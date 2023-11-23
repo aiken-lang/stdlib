@@ -8,18 +8,19 @@
 //// ```text
 //// p = 4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
 //// ```
+////
 //// This module provides functionality to perform basic arithmetic operations (addition, subtraction, multiplication, division) and checks within this finite field context.
 
 /// The prime number defining the base field of the BLS12-381 curve.
 pub const bls12_381_base_field_prime =
   4002409555221667393417789825735904156556882819939007885332058136124031650490837864442687629129015664037894272559787
 
-/// Opaque type representing an element of the finite field Fp. 
+/// Opaque type representing an element of the finite field `Fp`. 
 pub opaque type Fp {
   integer: Int,
 }
 
-/// Constructs a new Fp element from an integer, ensuring it's within the valid range of the field.
+/// Constructs a new `Fp` element from an integer, ensuring it's within the valid range of the field.
 pub fn new(n: Int) -> Option<Fp> {
   if n >= 0 && n < bls12_381_base_field_prime {
     Some(Fp(n))
@@ -36,7 +37,7 @@ test new_1() {
   }
 }
 
-/// Converts an Fp element back to its integer representation.
+/// Converts an `Fp` element back to its integer representation.
 pub fn to_int(self: Fp) -> Int {
   self.integer
 }
@@ -45,7 +46,7 @@ test to_int_1() {
   to_int(Fp(834884848)) == 834884848
 }
 
-/// Adds two Fp elements, ensuring the result stays within the finite field range.
+/// Adds two `Fp` elements, ensuring the result stays within the finite field range.
 pub fn add(left: Fp, right: Fp) -> Fp {
   Fp(( left.integer + right.integer ) % bls12_381_base_field_prime)
 }
@@ -57,7 +58,7 @@ test add_1() {
   }
 }
 
-/// Subtracts one Fp element from another, with the result wrapped within the finite field range.
+/// Subtracts one `Fp` element from another, with the result wrapped within the finite field range.
 pub fn sub(left: Fp, right: Fp) -> Fp {
   Fp(( left.integer - right.integer ) % bls12_381_base_field_prime)
 }
@@ -69,17 +70,17 @@ test sub_1() {
   }
 }
 
-/// Represents the additive identity (zero) in the Fp field.
+/// Represents the additive identity (zero) in the `Fp` field.
 pub fn zero() -> Fp {
   Fp(0)
 }
 
-/// Represents the multiplicative identity (one) in the Fp field.
+/// Represents the multiplicative identity (one) in the `Fp` field.
 pub fn one() -> Fp {
   Fp(1)
 }
 
-/// Calculates the additive inverse of an Fp element.
+/// Calculates the additive inverse of a `Fp` element.
 pub fn neg(self: Fp) -> Fp {
   sub(zero(), self)
 }
@@ -94,7 +95,7 @@ test neg_1() {
   }
 }
 
-/// Multiplies two Fp elements, with the result constrained within the finite field./// Multiplies two Fp elements, with the result constrained within the finite field.
+/// Multiplies two `Fp` elements, with the result constrained within the finite field.
 pub fn mul(left: Fp, right: Fp) -> Fp {
   Fp(left.integer * right.integer % bls12_381_base_field_prime)
 }
@@ -109,7 +110,7 @@ test mul_1() {
   }
 }
 
-/// Exponentiates an Fp element by a non-negative integer exponent, using repeated squaring.
+/// Exponentiates an `Fp` element by a non-negative integer exponent, using repeated squaring.
 pub fn scale(self: Fp, e: Int) -> Fp {
   if e < 0 {
     zero()
@@ -135,7 +136,7 @@ test scale_1() {
   }
 }
 
-/// Divides one Fp element by another, returning None if the divisor is zero.
+/// Divides one `Fp` element by another, returning None if the divisor is zero.
 pub fn div(left: Fp, right: Fp) -> Option<Fp> {
   if right == zero() {
     None
@@ -156,7 +157,7 @@ test div_1() {
   }
 }
 
-/// Calculates the multiplicative inverse of an Fp element, returning None if the element is zero.
+/// Calculates the multiplicative inverse of an `Fp` element, returning None if the element is zero.
 pub fn recip(self: Fp) -> Option<Fp> {
   div(one(), self)
 }
