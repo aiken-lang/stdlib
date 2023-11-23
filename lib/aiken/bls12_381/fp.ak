@@ -8,7 +8,7 @@ pub opaque type Fp {
 }
 
 /// Creates a new Fp element from an integer.
-pub fn newFp(n: Int) -> Option<Fp> {
+pub fn new(n: Int) -> Option<Fp> {
   if n >= 0 && n < bls12_381_base_field_prime {
     Some(Fp(n))
   } else {
@@ -16,11 +16,11 @@ pub fn newFp(n: Int) -> Option<Fp> {
   }
 }
 
-test newFp_1() {
+test new_1() {
   and {
-    newFp(-1) == None,
-    newFp(bls12_381_base_field_prime) == None,
-    newFp(834884848) == Some(Fp(834884848)),
+    new(-1) == None,
+    new(bls12_381_base_field_prime) == None,
+    new(834884848) == Some(Fp(834884848)),
   }
 }
 
