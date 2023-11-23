@@ -33,17 +33,6 @@ test unScalar_1() {
   unScalar(Scalar(834884848)) == 834884848
 }
 
-pub fn eq(left: Scalar, right: Scalar) -> Bool {
-  left.integer == right.integer
-}
-
-test eq_1() {
-  and {
-    eq(Scalar(834884848), Scalar(834884848))?,
-    not(eq(Scalar(834884848), Scalar(834884847)))?,
-  }
-}
-
 /// Add two Scalar elements.
 pub fn add(left: Scalar, right: Scalar) -> Scalar {
   Scalar(( left.integer + right.integer ) % bls12_381_scalar_field_prime)

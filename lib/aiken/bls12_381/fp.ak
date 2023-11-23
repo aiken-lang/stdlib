@@ -33,17 +33,6 @@ test unFp_1() {
   unFp(Fp(834884848)) == 834884848
 }
 
-pub fn eq(left: Fp, right: Fp) -> Bool {
-  left.integer == right.integer
-}
-
-test eq_1() {
-  and {
-    eq(Fp(834884848), Fp(834884848))?,
-    not(eq(Fp(834884848), Fp(834884849)))?,
-  }
-}
-
 /// Add two Fp elements.
 pub fn add(left: Fp, right: Fp) -> Fp {
   Fp(( left.integer + right.integer ) % bls12_381_base_field_prime)
