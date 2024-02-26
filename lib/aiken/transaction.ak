@@ -3,14 +3,81 @@ use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Blake2b_256, Hash, blake2b_256}
 use aiken/interval.{Interval}
 use aiken/list
+use aiken/math/rational.{Rational}
 use aiken/option
 use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Script, ScriptCredential, StakeCredential, VerificationKey,
-  VerificationKeyCredential,
+  Address, Credential, Script, ScriptCredential, StakeCredential,
+  VerificationKey, VerificationKeyCredential,
 }
 use aiken/transaction/value.{MintedValue, PolicyId, Value}
+
+pub type GovernanceActionId {
+  gaid_tx_id: TransactionId,
+  gaid_tx_idx: Int,
+}
+
+pub type ChangedParameters =
+  Data
+
+pub type ProtocolVersion {
+  major: Int,
+  minor: Int,
+}
+
+pub type ColdCommitteeCredential {
+  member: Credential,
+}
+
+pub type Constitution {
+  constitution_script: Option<Hash<Blake2b_224, Script>>,
+}
+
+// CredentialDelegation { delegator: StakeCredential, delegatee: PoolId }
+
+pub type GovernanceAction {
+  ParameterChange(
+    Option<GovernanceActionId>,
+    ChangedParameters,
+    Option<Hash<Blake2b_224, Script>>,
+  )
+  HardForkInitiation(Option<GovernanceActionId>, ProtocolVersion)
+  TreasuryWithdrawals(
+    Dict<Credential, Lovelace>,
+    Option<Hash<Blake2b_224, Script>>,
+  )
+  NoConfidence(Option<GovernanceActionId>)
+  UpdateCommittee(
+    Option<GovernanceActionId>,
+    List<ColdCommitteeCredential>,
+    Dict<ColdCommitteeCredential, Int>,
+    Rational,
+  )
+  NewConstitution(Option<GovernanceActionId>, Constitution)
+  InfoAction
+}
+
+pub type ProposalProcedure {
+  deposit: Lovelace,
+  return_addr: Credential,
+  governance_action: GovernanceAction,
+}
+
+pub type Voter {
+  CommitteeVoter(Certificate)
+  DRepVoter(Certificate)
+  StakePoolVoter(Hash<Blake2b_224, VerificationKey>)
+}
+
+pub type Vote {
+  VoteNo
+  VoteYes
+  Abstain
+}
+
+pub type Lovelace =
+  Int
 
 /// A context given to a script by the Cardano ledger when being executed.
 ///
@@ -43,7 +110,11 @@ pub type ScriptPurpose {
   /// stake credentials.
   ///
   /// It embeds the certificate that's being validated.
-  Publish(Certificate)
+  Publish(Int, Certificate)
+  ///
+  Voting(Voter)
+  ///
+  Proposing(Int, ProposalProcedure)
 }
 
 /// A Cardano `Transaction`, as seen by Plutus scripts.
@@ -56,15 +127,19 @@ pub type Transaction {
   inputs: List<Input>,
   reference_inputs: List<Input>,
   outputs: List<Output>,
-  fee: Value,
-  mint: MintedValue,
+  fee: Lovelace,
+  mint: Value,
   certificates: List<Certificate>,
-  withdrawals: Pairs<StakeCredential, Int>,
+  withdrawals: Pairs<StakeCredential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<Hash<Blake2b_224, VerificationKey>>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<Hash<Blake2b_256, Data>, Data>,
   id: TransactionId,
+  votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
+  proposal_procedures: List<ProposalProcedure>,
+  current_treasury_amount: Option<Lovelace>,
+  treasury_donation: Option<Lovelace>,
 }
 
 /// A placeholder / empty `Transaction` to serve as a base in a transaction
@@ -86,17 +161,19 @@ pub fn placeholder() -> Transaction {
     inputs: [],
     reference_inputs: [],
     outputs: [],
-    fee: value.zero(),
-    mint: value.zero() |> value.to_minted_value(),
+    fee: 0,
+    mint: value.zero(),
     certificates: [],
     withdrawals: [],
     validity_range: interval.everything(),
     extra_signatories: [],
     redeemers: [],
     datums: dict.new(),
-    id: TransactionId {
-      hash: #"0000000000000000000000000000000000000000000000000000000000000000",
-    },
+    id: #"0000000000000000000000000000000000000000000000000000000000000000",
+    votes: dict.new(),
+    proposal_procedures: [],
+    current_treasury_amount: None,
+    treasury_donation: None,
   }
 }
 
@@ -107,9 +184,8 @@ pub type ValidityRange =
 /// A unique transaction identifier, as the hash of a transaction body. Note that the transaction id
 /// isn't a direct hash of the `Transaction` as visible on-chain. Rather, they correspond to hash
 /// digests of transaction body as they are serialized on the network.
-pub type TransactionId {
-  hash: Hash<Blake2b_256, Transaction>,
-}
+pub type TransactionId =
+  Hash<Blake2b_256, Transaction>
 
 /// An `Input` made of an output reference and, the resolved value associated with that output.
 pub type Input {
@@ -191,7 +267,7 @@ pub fn find_datum(
                     InlineDatum(data) ->
                       if
                       blake2b_256(builtin.serialise_data(data)) == datum_hash{
-                      
+
                         Some(data)
                       } else {
                         None
