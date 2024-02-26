@@ -11,7 +11,7 @@ use aiken/transaction/credential.{
   Address, Credential, Script, ScriptCredential, StakeCredential,
   VerificationKey, VerificationKeyCredential,
 }
-use aiken/transaction/value.{MintedValue, PolicyId, Value}
+use aiken/transaction/value.{PolicyId, Value}
 
 pub type GovernanceActionId {
   gaid_tx_id: TransactionId,
@@ -62,6 +62,10 @@ pub type ProposalProcedure {
   deposit: Lovelace,
   return_addr: Credential,
   governance_action: GovernanceAction,
+}
+
+pub type HotCommitteeCredential {
+  member: Credential,
 }
 
 pub type Voter {
