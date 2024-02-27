@@ -1,150 +1,19 @@
 use aiken/builtin
 use aiken/dict.{Dict}
-use aiken/hash.{Blake2b_224, Blake2b_256, Hash, blake2b_256}
+use aiken/hash.{Blake2b_256, Hash, blake2b_256}
 use aiken/interval.{Interval}
 use aiken/list
-use aiken/math/rational.{Rational}
 use aiken/option
 use aiken/time.{PosixTime}
+use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Credential, Script, ScriptCredential, StakeCredential,
-  VerificationKey, VerificationKeyCredential,
+  Address, Credential, PubKeyHash, ScriptCredential, ScriptHash, StakeCredential,
+  VerificationKeyCredential,
 }
-use aiken/transaction/value.{PolicyId, Value}
-
-pub type DRepCredential {
-  member: Credential,
+use aiken/transaction/governance.{
+  GovernanceActionId, ProposalProcedure, Vote, Voter,
 }
-
-pub type DRep {
-  DRep(DRepCredential)
-  DRepAlwaysAbstain
-  DRepAlwaysNoConfidence
-}
-
-pub type Delegatee {
-  DelegStake(PubKeyHash)
-  DelegVote(DRep)
-  DelegStakeVote(PubKeyHash, DRep)
-}
-
-pub type Certificate {
-  // Register staking credential with an optional deposit amount
-  RegisterStaking(Credential, Option<Lovelace>)
-  // Un-Register staking credential with an optional refund amount
-  UnRegisterStaking(Credential, Option<Lovelace>)
-  // Delegate staking credential to a Delegatee
-  TxCertDelegStaking(Credential, Delegatee)
-  // Register and delegate staking credential to a Delegatee in one certificate. Noter that
-  // deposit is mandatory.
-  TxCertRegDeleg(Credential, Delegatee, Lovelace)
-  // Register a DRep with a deposit value. The optional anchor is omitted.
-  TxCertRegDRep(DRepCredential, Lovelace)
-  // Update a DRep. The optional anchor is omitted.
-  TxCertUpdateDRep(DRepCredential)
-  // UnRegister a DRep with mandatory refund value
-  TxCertUnRegDRep(DRepCredential, Lovelace)
-  // A digest of the PoolParams
-  TxCertPoolRegister(
-    // poolId
-    PubKeyHash,
-    // pool VFR
-    PubKeyHash,
-  )
-  // The retirement certificate and the Epoch in which the retirement will take place
-  TxCertPoolRetire(PubKeyHash, Int)
-  // Authorize a Hot credential for a specific Committee member's cold credential
-  TxCertAuthHotCommittee(ColdCommitteeCredential, HotCommitteeCredential)
-  TxCertResignColdCommittee(ColdCommitteeCredential)
-}
-
-pub type GovernanceActionId {
-  gaid_tx_id: TransactionId,
-  gaid_tx_idx: Int,
-}
-
-pub type ChangedParameters {
-  new_parameters: Data,
-}
-
-pub type ProtocolVersion {
-  major: Int,
-  minor: Int,
-}
-
-pub type ColdCommitteeCredential {
-  member: Credential,
-}
-
-pub type Constitution {
-  constitution_script: Option<ScriptHash>,
-}
-
-pub type GovernanceAction {
-  //
-  ParameterChange(
-    Option<GovernanceActionId>,
-    ChangedParameters,
-    // Hash of the constitution script
-    Option<ScriptHash>,
-  )
-  // proposal to update protocol version
-  HardForkInitiation(Option<GovernanceActionId>, ProtocolVersion)
-  //
-  TreasuryWithdrawals(
-    Dict<Credential, Lovelace>,
-    // Hash of the constitution script
-    Option<ScriptHash>,
-  )
-  //
-  NoConfidence(Option<GovernanceActionId>)
-  //
-  UpdateCommittee(
-    Option<GovernanceActionId>,
-    // Committee members to be removed
-    List<ColdCommitteeCredential>,
-    // Committee members to be added
-    Dict<ColdCommitteeCredential, Int>,
-    // New quorum
-    Rational,
-  )
-  //
-  NewConstitution(Option<GovernanceActionId>, Constitution)
-  //
-  InfoAction
-}
-
-pub type ProposalProcedure {
-  deposit: Lovelace,
-  return_addr: Credential,
-  governance_action: GovernanceAction,
-}
-
-pub type HotCommitteeCredential {
-  member: Credential,
-}
-
-pub type Voter {
-  CommitteeVoter(HotCommitteeCredential)
-  DRepVoter(DRepCredential)
-  StakePoolVoter(PubKeyHash)
-}
-
-pub type Vote {
-  VoteNo
-  VoteYes
-  Abstain
-}
-
-/// Lovelace is now a type wrapper for Int.
-pub type Lovelace =
-  Int
-
-pub type PubKeyHash =
-  Hash<Blake2b_224, VerificationKey>
-
-pub type ScriptHash =
-  Hash<Blake2b_224, Script>
+use aiken/transaction/value.{Lovelace, PolicyId, Value}
 
 /// A context given to a script by the Cardano ledger when being executed.
 ///

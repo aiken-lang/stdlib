@@ -4,6 +4,10 @@ use aiken/list
 use aiken/option
 use aiken/transaction/credential.{Script}
 
+/// Lovelace is now a type wrapper for Int.
+pub type Lovelace =
+  Int
+
 /// A type-alias for a `PolicyId`. A `PolicyId` is always 28-byte long
 pub type PolicyId =
   Hash<Blake2b_224, Script>

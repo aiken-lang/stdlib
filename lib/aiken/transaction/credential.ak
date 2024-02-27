@@ -110,3 +110,21 @@ pub type PaymentCredential =
 /// A unique stake pool identifier, as a hash of its owner verification key.
 pub type PoolId =
   Hash<Blake2b_224, VerificationKey>
+
+pub type PubKeyHash =
+  Hash<Blake2b_224, VerificationKey>
+
+pub type ScriptHash =
+  Hash<Blake2b_224, Script>
+
+pub type DRepCredential {
+  member: Credential,
+}
+
+pub type ColdCommitteeCredential {
+  member: Credential,
+}
+
+pub type HotCommitteeCredential {
+  member: Credential,
+}
