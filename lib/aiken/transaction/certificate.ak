@@ -1,6 +1,10 @@
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/transaction/credential.{PoolId, StakeCredential, VerificationKey}
 
+/// Lovelace is now a type wrapper for Int.
+pub type Lovelace =
+  Int
+
 /// An on-chain certificate attesting of some operation. Publishing
 /// certificates / triggers different kind of rules; most of the time,
 /// they require signatures from / specific keys.

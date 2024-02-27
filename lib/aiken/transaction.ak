@@ -6,20 +6,66 @@ use aiken/list
 use aiken/math/rational.{Rational}
 use aiken/option
 use aiken/time.{PosixTime}
-use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
   Address, Credential, Script, ScriptCredential, StakeCredential,
   VerificationKey, VerificationKeyCredential,
 }
 use aiken/transaction/value.{PolicyId, Value}
 
+pub type DRepCredential {
+  member: Credential,
+}
+
+pub type DRep {
+  DRep(DRepCredential)
+  DRepAlwaysAbstain
+  DRepAlwaysNoConfidence
+}
+
+pub type Delegatee {
+  DelegStake(PubKeyHash)
+  DelegVote(DRep)
+  DelegStakeVote(PubKeyHash, DRep)
+}
+
+pub type Certificate {
+  // Register staking credential with an optional deposit amount
+  RegisterStaking(Credential, Option<Lovelace>)
+  // Un-Register staking credential with an optional refund amount
+  UnRegisterStaking(Credential, Option<Lovelace>)
+  // Delegate staking credential to a Delegatee
+  TxCertDelegStaking(Credential, Delegatee)
+  // Register and delegate staking credential to a Delegatee in one certificate. Noter that
+  // deposit is mandatory.
+  TxCertRegDeleg(Credential, Delegatee, Lovelace)
+  // Register a DRep with a deposit value. The optional anchor is omitted.
+  TxCertRegDRep(DRepCredential, Lovelace)
+  // Update a DRep. The optional anchor is omitted.
+  TxCertUpdateDRep(DRepCredential)
+  // UnRegister a DRep with mandatory refund value
+  TxCertUnRegDRep(DRepCredential, Lovelace)
+  // A digest of the PoolParams
+  TxCertPoolRegister(
+    // poolId
+    PubKeyHash,
+    // pool VFR
+    PubKeyHash,
+  )
+  // The retirement certificate and the Epoch in which the retirement will take place
+  TxCertPoolRetire(PubKeyHash, Int)
+  // Authorize a Hot credential for a specific Committee member's cold credential
+  TxCertAuthHotCommittee(ColdCommitteeCredential, HotCommitteeCredential)
+  TxCertResignColdCommittee(ColdCommitteeCredential)
+}
+
 pub type GovernanceActionId {
   gaid_tx_id: TransactionId,
   gaid_tx_idx: Int,
 }
 
-pub type ChangedParameters =
-  Data
+pub type ChangedParameters {
+  new_parameters: Data,
+}
 
 pub type ProtocolVersion {
   major: Int,
@@ -31,30 +77,40 @@ pub type ColdCommitteeCredential {
 }
 
 pub type Constitution {
-  constitution_script: Option<Hash<Blake2b_224, Script>>,
+  constitution_script: Option<ScriptHash>,
 }
 
-// CredentialDelegation { delegator: StakeCredential, delegatee: PoolId }
-
 pub type GovernanceAction {
+  //
   ParameterChange(
     Option<GovernanceActionId>,
     ChangedParameters,
-    Option<Hash<Blake2b_224, Script>>,
+    // Hash of the constitution script
+    Option<ScriptHash>,
   )
+  // proposal to update protocol version
   HardForkInitiation(Option<GovernanceActionId>, ProtocolVersion)
+  //
   TreasuryWithdrawals(
     Dict<Credential, Lovelace>,
-    Option<Hash<Blake2b_224, Script>>,
+    // Hash of the constitution script
+    Option<ScriptHash>,
   )
+  //
   NoConfidence(Option<GovernanceActionId>)
+  //
   UpdateCommittee(
     Option<GovernanceActionId>,
+    // Committee members to be removed
     List<ColdCommitteeCredential>,
+    // Committee members to be added
     Dict<ColdCommitteeCredential, Int>,
+    // New quorum
     Rational,
   )
+  //
   NewConstitution(Option<GovernanceActionId>, Constitution)
+  //
   InfoAction
 }
 
@@ -69,9 +125,9 @@ pub type HotCommitteeCredential {
 }
 
 pub type Voter {
-  CommitteeVoter(Certificate)
-  DRepVoter(Certificate)
-  StakePoolVoter(Hash<Blake2b_224, VerificationKey>)
+  CommitteeVoter(HotCommitteeCredential)
+  DRepVoter(DRepCredential)
+  StakePoolVoter(PubKeyHash)
 }
 
 pub type Vote {
@@ -80,8 +136,15 @@ pub type Vote {
   Abstain
 }
 
+/// Lovelace is now a type wrapper for Int.
 pub type Lovelace =
   Int
+
+pub type PubKeyHash =
+  Hash<Blake2b_224, VerificationKey>
+
+pub type ScriptHash =
+  Hash<Blake2b_224, Script>
 
 /// A context given to a script by the Cardano ledger when being executed.
 ///
@@ -113,11 +176,16 @@ pub type ScriptPurpose {
   /// Plutus script. This purpose is also triggered when de-registering such
   /// stake credentials.
   ///
-  /// It embeds the certificate that's being validated.
+  /// The Int is a 0-based index of the given `TxCert` in `certificates`.
   Publish(Int, Certificate)
+  /// Voting for a type of voter using a governance action id to vote
+  /// yes / no / abstain inside a transaction.
   ///
+  /// The voter is who is doing the governance action.
   Voting(Voter)
+  /// Used to propose a governance action.
   ///
+  /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
   Proposing(Int, ProposalProcedure)
 }
 
@@ -132,14 +200,18 @@ pub type Transaction {
   reference_inputs: List<Input>,
   outputs: List<Output>,
   fee: Lovelace,
+  // ^ the fee is now lovelace
   mint: Value,
+  // ^ minted value is now back to a value
   certificates: List<Certificate>,
-  withdrawals: Pairs<StakeCredential, Lovelace>,
+  withdrawals: Pairs<Credential, Lovelace>,
   validity_range: ValidityRange,
-  extra_signatories: List<Hash<Blake2b_224, VerificationKey>>,
+  extra_signatories: List<PubKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<Hash<Blake2b_256, Data>, Data>,
   id: TransactionId,
+  // ^ new tx id
+  // all new fields below for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
@@ -210,7 +282,7 @@ pub type Output {
   address: Address,
   value: Value,
   datum: Datum,
-  reference_script: Option<Hash<Blake2b_224, Script>>,
+  reference_script: Option<ScriptHash>,
 }
 
 /// An output `Datum`.
@@ -289,7 +361,7 @@ pub fn find_datum(
 /// contracts running over multiple transactions.
 pub fn find_script_outputs(
   outputs: List<Output>,
-  script_hash: Hash<Blake2b_224, Script>,
+  script_hash: ScriptHash,
 ) -> List<Output> {
   outputs
     |> list.filter(
