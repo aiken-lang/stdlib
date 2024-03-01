@@ -1,5 +1,5 @@
 use aiken/builtin
-use aiken/hash.{Blake2b_224, Hash}
+use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
 
 /// A general structure for representing an on-chain `Credential`.
 ///
@@ -116,6 +116,9 @@ pub type PubKeyHash =
 
 pub type ScriptHash =
   Hash<Blake2b_224, Script>
+
+pub type DatumHashDigest =
+  Hash<Blake2b_256, Data>
 
 pub type DRepCredential {
   member: Credential,

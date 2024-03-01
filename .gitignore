@@ -1,3 +1,4 @@
 build/
 docs/
 .DS_Store
+.github/workflows/

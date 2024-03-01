@@ -7,7 +7,7 @@ use aiken/option
 use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Credential, PubKeyHash, ScriptCredential, ScriptHash,
+  Address, Credential, DatumHashDigest, PubKeyHash, ScriptCredential, ScriptHash,
   VerificationKeyCredential,
 }
 use aiken/transaction/governance.{
@@ -77,9 +77,8 @@ pub type Transaction {
   validity_range: ValidityRange,
   extra_signatories: List<PubKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
-  datums: Dict<Hash<Blake2b_256, Data>, Data>,
+  datums: Dict<DatumHashDigest, Data>,
   id: TransactionId,
-  // ^ new tx id
   // all new fields below for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
   proposal_procedures: List<ProposalProcedure>,
@@ -114,7 +113,9 @@ pub fn placeholder() -> Transaction {
     extra_signatories: [],
     redeemers: [],
     datums: dict.new(),
-    id: #"0000000000000000000000000000000000000000000000000000000000000000",
+    id: TransactionId {
+      hash: #"0000000000000000000000000000000000000000000000000000000000000000",
+    },
     votes: dict.new(),
     proposal_procedures: [],
     current_treasury_amount: None,
@@ -129,8 +130,9 @@ pub type ValidityRange =
 /// A unique transaction identifier, as the hash of a transaction body. Note that the transaction id
 /// isn't a direct hash of the `Transaction` as visible on-chain. Rather, they correspond to hash
 /// digests of transaction body as they are serialized on the network.
-pub type TransactionId =
-  Hash<Blake2b_256, Transaction>
+pub type TransactionId {
+  hash: Hash<Blake2b_256, Transaction>,
+}
 
 /// An `Input` made of an output reference and, the resolved value associated with that output.
 pub type Input {
@@ -158,7 +160,7 @@ pub type Output {
 pub type Datum {
   NoDatum
   /// A datum referenced by its hash digest.
-  DatumHash(Hash<Blake2b_256, Data>)
+  DatumHash(DatumHashDigest)
   /// A datum completely inlined in the output.
   InlineDatum(Data)
 }
@@ -198,8 +200,8 @@ pub fn find_input(
 /// witnesses.
 pub fn find_datum(
   outputs: List<Output>,
-  datums: Dict<Hash<Blake2b_256, Data>, Data>,
-  datum_hash: Hash<Blake2b_256, Data>,
+  datums: Dict<DatumHashDigest, Data>,
+  datum_hash: DatumHashDigest,
 ) -> Option<Data> {
   datums
     |> dict.get(datum_hash)
