@@ -78,7 +78,7 @@ pub type GovernanceAction {
 
 pub type ProposalProcedure {
   deposit: Lovelace,
-  return_addr: Credential,
+  return_address: Credential,
   governance_action: GovernanceAction,
 }
 
