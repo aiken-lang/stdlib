@@ -19,8 +19,8 @@ pub type Delegatee {
 }
 
 pub type Vote {
-  VoteNo
-  VoteYes
+  No
+  Yes
   Abstain
 }
 
