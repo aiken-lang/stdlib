@@ -1,6 +1,6 @@
 use aiken/transaction/credential.{
   ColdCommitteeCredential, Credential, DRepCredential, HotCommitteeCredential,
-  PoolId, PublicKeyHash,
+  PoolId, VerificationKeyHash,
 }
 use aiken/transaction/governance.{Delegatee}
 use aiken/transaction/value.{Lovelace}
@@ -29,10 +29,10 @@ pub type Certificate {
     // poolId
     PoolId,
     // pool VFR
-    PublicKeyHash,
+    VerificationKeyHash,
   )
   // The retirement certificate and the Epoch in which the retirement will take place
-  PoolRetire(PublicKeyHash, Int)
+  PoolRetire(VerificationKeyHash, Int)
   // Authorize a Hot credential for a specific Committee member's cold credential
   AuthorizeHotCommittee(ColdCommitteeCredential, HotCommitteeCredential)
   ResignColdCommittee(ColdCommitteeCredential)

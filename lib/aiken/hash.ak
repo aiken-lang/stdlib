@@ -22,7 +22,7 @@
 ////
 //// ```aiken
 //// pub type Credential {
-////   VerificationKeyCredential(Hash<Blake2b_224, PublicKey>)
+////   VerificationKeyCredential(Hash<Blake2b_224, VerificationKey>)
 ////   ScriptCredential(Hash<Blake2b_224, Script>)
 //// }
 //// ```

@@ -6,7 +6,7 @@ use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
 /// Credentials are always one of two kinds: a direct public/private key
 /// pair, or a script (native or Plutus).
 pub type Credential {
-  VerificationKeyCredential(Hash<Blake2b_224, PublicKey>)
+  VerificationKeyCredential(Hash<Blake2b_224, VerificationKey>)
   ScriptCredential(Hash<Blake2b_224, Script>)
 }
 
@@ -21,8 +21,8 @@ pub type Address {
   stake_credential: Option<StakeCredential>,
 }
 
-/// Smart-constructor for an [Address](#Address) from a [verification key](#PublicKey) hash. The resulting address has no delegation rights whatsoever.
-pub fn from_verification_key(vk: Hash<Blake2b_224, PublicKey>) -> Address {
+/// Smart-constructor for an [Address](#Address) from a [verification key](#VerificationKey) hash. The resulting address has no delegation rights whatsoever.
+pub fn from_verification_key(vk: Hash<Blake2b_224, VerificationKey>) -> Address {
   Address {
     payment_credential: VerificationKeyCredential(vk),
     stake_credential: None,
@@ -37,10 +37,10 @@ pub fn from_script(script: Hash<Blake2b_224, Script>) -> Address {
   }
 }
 
-/// Set (or reset) the delegation part of an [Address](#Address) using a [verification key](#PublicKey) hash. This is useful when combined with [`from_verification_key`](#from_verification_key) and/or [`from_script`](#from_script).
+/// Set (or reset) the delegation part of an [Address](#Address) using a [verification key](#VerificationKey) hash. This is useful when combined with [`from_verification_key`](#from_verification_key) and/or [`from_script`](#from_script).
 pub fn with_delegation_key(
   self: Address,
-  vk: Hash<Blake2b_224, PublicKey>,
+  vk: Hash<Blake2b_224, VerificationKey>,
 ) -> Address {
   Address {
     payment_credential: self.payment_credential,
@@ -69,7 +69,7 @@ pub type Referenced<a> {
   Pointer { slot_number: Int, transaction_index: Int, certificate_index: Int }
 }
 
-pub type PublicKey =
+pub type VerificationKey =
   ByteArray
 
 pub type Script =
@@ -80,7 +80,11 @@ pub type Signature =
 
 /// Verify an Ed25519 signature using the given verification key.
 /// Returns `True` when the signature is valid.
-pub fn verify_signature(key: PublicKey, msg: ByteArray, sig: Signature) -> Bool {
+pub fn verify_signature(
+  key: VerificationKey,
+  msg: ByteArray,
+  sig: Signature,
+) -> Bool {
   builtin.verify_ed25519_signature(key, msg, sig)
 }
 
@@ -104,10 +108,10 @@ pub type PaymentCredential =
   Credential
 
 pub type PoolId =
-  Hash<Blake2b_224, PublicKey>
+  Hash<Blake2b_224, VerificationKey>
 
-pub type PublicKeyHash =
-  Hash<Blake2b_224, PublicKey>
+pub type VerificationKeyHash =
+  Hash<Blake2b_224, VerificationKey>
 
 pub type ScriptHash =
   Hash<Blake2b_224, Script>

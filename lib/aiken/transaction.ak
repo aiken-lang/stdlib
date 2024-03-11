@@ -7,8 +7,8 @@ use aiken/option
 use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Credential, DatumHashDigest, PublicKeyHash, ScriptCredential,
-  ScriptHash, VerificationKeyCredential,
+  Address, Credential, DatumHashDigest, ScriptCredential, ScriptHash,
+  VerificationKeyCredential, VerificationKeyHash,
 }
 use aiken/transaction/governance.{
   GovernanceActionId, ProposalProcedure, Vote, Voter,
@@ -83,7 +83,7 @@ pub type Transaction {
   certificates: List<Certificate>,
   withdrawals: Pairs<Credential, Lovelace>,
   validity_range: ValidityRange,
-  extra_signatories: List<PublicKeyHash>,
+  extra_signatories: List<VerificationKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<DatumHashDigest, Data>,
   id: TransactionId,
