@@ -39,7 +39,7 @@ pub type ProtocolVersion {
 }
 
 pub type Constitution {
-  constitution_script: Option<ScriptHash>,
+  guardrails_script: Option<ScriptHash>,
 }
 
 pub type GovernanceAction {
