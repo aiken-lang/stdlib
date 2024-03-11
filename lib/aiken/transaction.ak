@@ -7,8 +7,8 @@ use aiken/option
 use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Credential, DatumHashDigest, ScriptCredential, ScriptHash,
-  StakeCredential, VerificationKeyCredential, VerificationKeyHash,
+  Address, DatumHashDigest, ScriptCredential, ScriptHash, StakeCredential,
+  VerificationKeyCredential, VerificationKeyHash,
 }
 use aiken/transaction/governance.{
   GovernanceActionId, ProposalProcedure, Vote, Voter,
@@ -40,7 +40,7 @@ pub type ScriptPurpose {
   /// For scripts that validate reward withdrawals from a reward account.
   ///
   /// The argument identifies the target reward account.
-  WithdrawFrom(Credential)
+  WithdrawFrom(StakeCredential)
   /// Needed when delegating to a pool using stake credentials defined as a
   /// Plutus script. This purpose is also triggered when de-registering such
   /// stake credentials.
