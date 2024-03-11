@@ -7,9 +7,9 @@ use aiken/transaction/credential.{
 use aiken/transaction/value.{Lovelace}
 
 pub type DRep {
-  DRep(DRepCredential)
-  DRepAlwaysAbstain
-  DRepAlwaysNoConfidence
+  FromCredential(DRepCredential)
+  AlwaysAbstain
+  AlwaysNoConfidence
 }
 
 pub type Delegatee {
