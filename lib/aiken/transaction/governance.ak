@@ -46,7 +46,7 @@ pub type GovernanceAction {
   //
   ParameterChange(
     Option<GovernanceActionId>,
-    ChangedParameters,
+    ChangedProtocolParameters,
     // Hash of the constitution script
     Option<ScriptHash>,
   )
