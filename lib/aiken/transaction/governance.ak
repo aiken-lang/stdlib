@@ -13,9 +13,9 @@ pub type DRep {
 }
 
 pub type Delegatee {
-  DelegStake(PubKeyHash)
-  DelegVote(DRep)
-  DelegStakeVote(PubKeyHash, DRep)
+  DelegateStake(PubKeyHash)
+  DelegateVote(DRep)
+  DelegateBoth(PubKeyHash, DRep)
 }
 
 pub type Vote {
