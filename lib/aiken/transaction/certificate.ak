@@ -1,6 +1,6 @@
 use aiken/transaction/credential.{
-  ColdCommitteeCredential, Credential, DRepCredential, HotCommitteeCredential,
-  PoolId, VerificationKeyHash,
+  ColdCommitteeCredential, DRepCredential, HotCommitteeCredential, PoolId,
+  StakeCredential, VerificationKeyHash,
 }
 use aiken/transaction/governance.{Delegatee}
 use aiken/transaction/value.{Lovelace}
@@ -10,30 +10,43 @@ use aiken/transaction/value.{Lovelace}
 /// they require signatures from / specific keys.
 pub type Certificate {
   // Register staking credential with an optional deposit amount
-  RegisterStaking(Credential, Option<Lovelace>)
+  RegisterStaking {
+    delegator: StakeCredential,
+    deposit_amount: Option<Lovelace>,
+  }
   // Un-Register staking credential with an optional refund amount
-  UnRegisterStaking(Credential, Option<Lovelace>)
+  UnregisterStaking {
+    delegator: StakeCredential,
+    refund_amount: Option<Lovelace>,
+  }
   // Delegate staking credential to a Delegatee
-  DelegateStaking(Credential, Delegatee)
+  DelegateStaking { delegator: StakeCredential, delegatee: Delegatee }
   // Register and delegate staking credential to a Delegatee in one certificate. Noter that
   // deposit is mandatory.
-  RegisterAndDelegate(Credential, Delegatee, Lovelace)
+  RegisterAndDelegate {
+    delegator: StakeCredential,
+    delegatee: Delegatee,
+    deposit_amount: Lovelace,
+  }
   // Register a DRep with a deposit value. The optional anchor is omitted.
-  RegisterDRep(DRepCredential, Lovelace)
+  RegisterDRep { representative: DRepCredential, deposit_amount: Lovelace }
   // Update a DRep. The optional anchor is omitted.
-  UpdateDRep(DRepCredential)
+  UpdateDRep { representative: DRepCredential }
   // UnRegister a DRep with mandatory refund value
-  UnregisterDRep(DRepCredential, Lovelace)
+  UnregisterDRep { representative: DRepCredential, refund_amount: Lovelace }
   // A digest of the PoolParams
-  PoolRegister(
+  PoolRegister {
     // poolId
-    PoolId,
+    pool_id: PoolId,
     // pool VFR
-    VerificationKeyHash,
-  )
+    pool_vrf: VerificationKeyHash,
+  }
   // The retirement certificate and the Epoch in which the retirement will take place
-  PoolRetire(VerificationKeyHash, Int)
+  PoolRetire { pool_id: PoolId, epoch: Int }
   // Authorize a Hot credential for a specific Committee member's cold credential
-  AuthorizeHotCommittee(ColdCommitteeCredential, HotCommitteeCredential)
-  ResignColdCommittee(ColdCommitteeCredential)
+  AuthorizeHotCommittee {
+    cold_memeber: ColdCommitteeCredential,
+    hot_member: HotCommitteeCredential,
+  }
+  ResignColdCommittee { cold_member: ColdCommitteeCredential }
 }

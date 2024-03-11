@@ -8,7 +8,7 @@ use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
   Address, Credential, DatumHashDigest, ScriptCredential, ScriptHash,
-  VerificationKeyCredential, VerificationKeyHash,
+  StakeCredential, VerificationKeyCredential, VerificationKeyHash,
 }
 use aiken/transaction/governance.{
   GovernanceActionId, ProposalProcedure, Vote, Voter,
@@ -81,7 +81,7 @@ pub type Transaction {
   mint: Value,
   // ^ minted value is now back to a value
   certificates: List<Certificate>,
-  withdrawals: Pairs<Credential, Lovelace>,
+  withdrawals: Pairs<StakeCredential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
