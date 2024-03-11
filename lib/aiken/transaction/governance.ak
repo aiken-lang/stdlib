@@ -25,8 +25,8 @@ pub type Vote {
 }
 
 pub type GovernanceActionId {
-  gaid_tx_id: ByteArray,
-  gaid_tx_idx: Int,
+  transaction_id: ByteArray,
+  index: Int,
 }
 
 pub type ChangedParameters {
