@@ -2,7 +2,7 @@ use aiken/dict.{Dict}
 use aiken/math/rational.{Rational}
 use aiken/transaction/credential.{
   ColdCommitteeCredential, Credential, DRepCredential, HotCommitteeCredential,
-  PubKeyHash, ScriptHash,
+  PublicKeyHash, ScriptHash,
 }
 use aiken/transaction/value.{Lovelace}
 
@@ -13,9 +13,9 @@ pub type DRep {
 }
 
 pub type Delegatee {
-  DelegateStake(PubKeyHash)
+  DelegateStake(PublicKeyHash)
   DelegateVote(DRep)
-  DelegateBoth(PubKeyHash, DRep)
+  DelegateBoth(PublicKeyHash, DRep)
 }
 
 pub type Vote {
@@ -29,7 +29,7 @@ pub type GovernanceActionId {
   index: Int,
 }
 
-pub type ChangedParameters {
+pub type ChangedProtocolParameters {
   new_parameters: Data,
 }
 
@@ -85,5 +85,5 @@ pub type ProposalProcedure {
 pub type Voter {
   CommitteeVoter(HotCommitteeCredential)
   DRepVoter(DRepCredential)
-  StakePoolVoter(PubKeyHash)
+  StakePoolVoter(PublicKeyHash)
 }

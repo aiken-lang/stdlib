@@ -1,6 +1,6 @@
 use aiken/transaction/credential.{
   ColdCommitteeCredential, Credential, DRepCredential, HotCommitteeCredential,
-  PubKeyHash,
+  PoolId, PublicKeyHash,
 }
 use aiken/transaction/governance.{Delegatee}
 use aiken/transaction/value.{Lovelace}
@@ -23,16 +23,16 @@ pub type Certificate {
   // Update a DRep. The optional anchor is omitted.
   UpdateDRep(DRepCredential)
   // UnRegister a DRep with mandatory refund value
-  UnRegisterDRep(DRepCredential, Lovelace)
+  UnregisterDRep(DRepCredential, Lovelace)
   // A digest of the PoolParams
   PoolRegister(
     // poolId
-    PubKeyHash,
+    PoolId,
     // pool VFR
-    PubKeyHash,
+    PublicKeyHash,
   )
   // The retirement certificate and the Epoch in which the retirement will take place
-  PoolRetire(PubKeyHash, Int)
+  PoolRetire(PublicKeyHash, Int)
   // Authorize a Hot credential for a specific Committee member's cold credential
   AuthorizeHotCommittee(ColdCommitteeCredential, HotCommitteeCredential)
   ResignColdCommittee(ColdCommitteeCredential)

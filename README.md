@@ -28,10 +28,10 @@ and aliases that make using Aiken a bliss.
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
 use aiken/transaction.{ScriptContext}
-use aiken/transaction/credential.{VerificationKey}
+use aiken/transaction/credential.{PublicKey}
 
 pub type Datum {
-  owner: Hash<Blake2b_224, VerificationKey>,
+  owner: Hash<Blake2b_224, PublicKey>,
 }
 
 pub type Redeemer {

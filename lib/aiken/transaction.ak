@@ -7,8 +7,8 @@ use aiken/option
 use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Credential, DatumHashDigest, PubKeyHash, ScriptCredential, ScriptHash,
-  VerificationKeyCredential,
+  Address, Credential, DatumHashDigest, PublicKeyHash, ScriptCredential,
+  ScriptHash, VerificationKeyCredential,
 }
 use aiken/transaction/governance.{
   GovernanceActionId, ProposalProcedure, Vote, Voter,
@@ -46,8 +46,16 @@ pub type ScriptPurpose {
   /// stake credentials.
   ///
   /// The Int is a 0-based index of the given `TxCert` in `certificates`.
+<<<<<<< HEAD
   Publish(Int, Certificate)
   /// Voting for a type of voter using a governance action id to vote
+||||||| parent of ee511e7 (Name changes and adding back in the yml workspace file)
+  Publish(Int, Certificate)
+  /// Voting for a type of voter using a governance action id to vote
+=======
+  Publish { certificate_index: Int, certificate: Certificate }
+  /// Voting for a type of voter using a governance action id to vote
+>>>>>>> ee511e7 (Name changes and adding back in the yml workspace file)
   /// yes / no / abstain inside a transaction.
   ///
   /// The voter is who is doing the governance action.
@@ -55,7 +63,7 @@ pub type ScriptPurpose {
   /// Used to propose a governance action.
   ///
   /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
-  Proposing(Int, ProposalProcedure)
+  Proposing { proposal_index: Int, proposal: ProposalProcedure }
 }
 
 /// A Cardano `Transaction`, as seen by Plutus scripts.
@@ -75,7 +83,7 @@ pub type Transaction {
   certificates: List<Certificate>,
   withdrawals: Pairs<Credential, Lovelace>,
   validity_range: ValidityRange,
-  extra_signatories: List<PubKeyHash>,
+  extra_signatories: List<PublicKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<DatumHashDigest, Data>,
   id: TransactionId,
