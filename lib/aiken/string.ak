@@ -26,9 +26,15 @@ test concat_3() {
 
 /// Convert a `ByteArray` into a `String`
 ///
+/// <br/>⚠️<pre>WARNING</pre> | This functions fails if the underlying `ByteArray` isn't UTF-8-encoded. <br/>In particular, you cannot convert arbitrary hash digests using this function. <br/>For converting arbitrary `ByteArray`s, use [bytearray.to_hex](../bytearray.html#to_hex).
+/// ---                  | ---
+///
 /// ```aiken
 /// string.from_bytearray("foo") == @"foo"
+///
 /// string.from_bytearray(#"666f6f") == @"foo"
+///
+/// string.from_bytearray(some_hash) -> fail
 /// ```
 pub fn from_bytearray(bytes: ByteArray) -> String {
   decode_utf8(bytes)
