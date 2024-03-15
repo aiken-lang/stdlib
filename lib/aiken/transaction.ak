@@ -183,26 +183,26 @@ pub fn find_datum(
   datums
     |> dict.get(datum_hash)
     |> option.or_try(
-         fn() {
-           outputs
-             |> list.filter_map(
-                  fn(output) {
-                    when output.datum is {
-                      InlineDatum(data) ->
-                        if
-                        blake2b_256(builtin.serialise_data(data)) == datum_hash{
-                        
-                          Some(data)
-                        } else {
-                          None
-                        }
-                      _ -> None
-                    }
-                  },
-                )
-             |> list.head
-         },
-       )
+        fn() {
+          outputs
+            |> list.filter_map(
+                fn(output) {
+                  when output.datum is {
+                    InlineDatum(data) ->
+                      if
+                      blake2b_256(builtin.serialise_data(data)) == datum_hash{
+                      
+                        Some(data)
+                      } else {
+                        None
+                      }
+                    _ -> None
+                  }
+                },
+              )
+            |> list.head
+        },
+      )
 }
 
 /// Find all outputs that are paying into the given script hash, if any. This is useful for
@@ -213,12 +213,12 @@ pub fn find_script_outputs(
 ) -> List<Output> {
   outputs
     |> list.filter(
-         fn(output) {
-           when output.address.payment_credential is {
-             ScriptCredential(addr_script_hash) ->
-               script_hash == addr_script_hash
-             VerificationKeyCredential(_) -> False
-           }
-         },
-       )
+        fn(output) {
+          when output.address.payment_credential is {
+            ScriptCredential(addr_script_hash) ->
+              script_hash == addr_script_hash
+            VerificationKeyCredential(_) -> False
+          }
+        },
+      )
 }

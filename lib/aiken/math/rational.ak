@@ -644,7 +644,7 @@ test compare_with_eq() {
   expect Some(x) = new(2, 3)
   expect Some(y) = new(3, 4)
 
-  !eq(x, y)? && !eq(y, x)? && eq(x, x)?
+  !eq(x, y)? && ( !eq(y, x)? && eq(x, x)? )
 }
 
 test compare_with_neq() {
@@ -654,7 +654,7 @@ test compare_with_neq() {
   expect Some(x) = new(2, 3)
   expect Some(y) = new(3, 4)
 
-  neq(x, y)? && neq(y, x)? && !neq(x, x)?
+  neq(x, y)? && ( neq(y, x)? && !neq(x, x)? )
 }
 
 test compare_with_gte() {
@@ -664,7 +664,7 @@ test compare_with_gte() {
   expect Some(x) = new(2, 3)
   expect Some(y) = new(3, 4)
 
-  !gte(x, y)? && gte(y, x)? && gte(x, x)?
+  !gte(x, y)? && ( gte(y, x)? && gte(x, x)? )
 }
 
 test compare_with_gt() {
@@ -674,7 +674,7 @@ test compare_with_gt() {
   expect Some(x) = new(2, 3)
   expect Some(y) = new(3, 4)
 
-  !gt(x, y)? && gt(y, x)? && !gt(x, x)?
+  !gt(x, y)? && ( gt(y, x)? && !gt(x, x)? )
 }
 
 test compare_with_lte() {
@@ -684,7 +684,7 @@ test compare_with_lte() {
   expect Some(x) = new(2, 3)
   expect Some(y) = new(3, 4)
 
-  lte(x, y)? && !lte(y, x)? && lte(x, x)?
+  lte(x, y)? && ( !lte(y, x)? && lte(x, x)? )
 }
 
 test compare_with_lt() {
@@ -694,7 +694,7 @@ test compare_with_lt() {
   expect Some(x) = new(2, 3)
   expect Some(y) = new(3, 4)
 
-  lt(x, y)? && !lt(y, x)? && !lt(x, x)?
+  lt(x, y)? && ( !lt(y, x)? && !lt(x, x)? )
 }
 
 /// Calculate the arithmetic mean between two `Rational` values.
