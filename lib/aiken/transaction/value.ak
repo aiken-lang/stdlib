@@ -383,9 +383,9 @@ test flatten_with_2() {
 /// This is a foldr inside a foldr on the nested dictionaries
 pub fn reduce(
   self: Value,
-  start: result,
-  with: fn(PolicyId, AssetName, Int, result) -> result,
-) -> result {
+  start: acc,
+  with: fn(PolicyId, AssetName, Int, acc) -> acc,
+) -> acc {
   dict.foldr(
     self.inner,
     start,
