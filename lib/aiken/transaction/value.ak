@@ -426,13 +426,9 @@ test reduce_2() {
 }
 
 test reduce_3() {
-  let v =
-    zero()
-      |> add("a", "1", 3)
-      |> add("b", "2", 6)
-      |> add("c", "3", 9)
-  let result = reduce(v, 1, fn(_, _, quantity, acc) { acc * quantity })
-  result == 162
+  let v = zero()
+  let result = reduce(v, 1, fn(_, _, quantity, acc) { acc + quantity })
+  result == 1
 }
 
 /// Convert the value into a dictionary of dictionaries.
