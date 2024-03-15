@@ -518,10 +518,10 @@ test from_minted_value_5() {
 pub fn to_minted_value(self: Value) -> MintedValue {
   self.inner
     |> dict.insert(
-        ada_policy_id,
-        dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
-        bytearray.compare,
-      )
+         ada_policy_id,
+         dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
+         bytearray.compare,
+       )
     |> MintedValue
 }
 

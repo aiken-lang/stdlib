@@ -201,9 +201,9 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
 
       bytes
         |> encode_base16(
-            length_of_bytearray(bytes) - 1,
-            append_bytearray(#"27", builder),
-          )
+             length_of_bytearray(bytes) - 1,
+             append_bytearray(#"27", builder),
+           )
         |> append_bytearray(#"6827", _)
     },
   )
