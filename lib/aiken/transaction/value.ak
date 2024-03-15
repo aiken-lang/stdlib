@@ -396,7 +396,7 @@ pub fn reduce(
     self.inner,
     start,
     fn(policy_id, asset_list, result) {
-      dict.foldr(asset_list, value, with(policy_id, _, _, _))
+      dict.foldr(asset_list, result, with(policy_id, _, _, _))
     },
   )
 }
