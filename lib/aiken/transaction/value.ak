@@ -378,6 +378,57 @@ test flatten_with_2() {
   ) == [("a", "2"), ("b", "")]
 }
 
+/// Reduce a value into a single result
+///
+/// This is a foldr inside a foldr on the nested dictionaries
+pub fn reduce(
+  self: Value,
+  start: result,
+  with: fn(PolicyId, AssetName, Int, result) -> result,
+) -> result {
+  dict.foldr(
+    self.inner,
+    start,
+    fn(policy_id, asset_list, value) {
+      dict.foldr(asset_list, value, with(policy_id, _, _, _))
+    },
+  )
+}
+
+test reduce_1() {
+  let v =
+    zero()
+      |> add("a", "1", 10)
+      |> add("b", "2", 20)
+  let result = reduce(v, 0, fn(_, _, quantity, acc) { acc + quantity })
+  result == 30
+}
+
+test reduce_2() {
+  let v =
+    zero()
+      |> add("a", "1", 5)
+      |> add("a", "2", 15)
+      |> add("b", "", 10)
+  let result =
+    reduce(
+      v,
+      [],
+      fn(policy_id, asset_name, _, acc) { [(policy_id, asset_name), ..acc] },
+    )
+  result == [("a", "1"), ("a", "2"), ("b", "")]
+}
+
+test reduce_3() {
+  let v =
+    zero()
+      |> add("a", "1", 3)
+      |> add("b", "2", 6)
+      |> add("c", "3", 9)
+  let result = reduce(v, 1, fn(_, _, quantity, acc) { acc * quantity })
+  result == 162
+}
+
 /// Convert the value into a dictionary of dictionaries.
 pub fn to_dict(self: Value) -> Dict<PolicyId, Dict<AssetName, Int>> {
   self.inner
