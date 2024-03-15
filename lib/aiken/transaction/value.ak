@@ -382,7 +382,7 @@ test flatten_with_2() {
 ///
 /// ```
 /// value.zero()
-///  |> add("a", "1", 10)
+///  |> value.add("a", "1", 10)
 ///  |> add("b", "2", 20)
 ///  |> value.reduce(v, 0, fn(_, _, quantity, acc) { acc + quantity })
 /// // 30
