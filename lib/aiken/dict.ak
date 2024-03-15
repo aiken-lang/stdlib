@@ -57,18 +57,21 @@ fn fixture_1() {
 ///
 /// result == [(2, 200)]
 /// ```
-pub fn delete(self: Dict<key, value>, k: key) -> Dict<key, value> {
-  when self.inner is {
+pub fn delete(self: Dict<key, value>, key: key) -> Dict<key, value> {
+  Dict { inner: do_delete(self.inner, key) }
+}
+
+fn do_delete(self: List<(key, value)>, key k: key) -> List<(key, value)> {
+  when self is {
     [] ->
       []
-    [v, ..rest] ->
-      if k == v.1st {
+    [(k2, v2), ..rest] ->
+      if k == k2 {
         rest
       } else {
-        [v, ..delete(Dict(rest), k).inner]
+        [(k2, v2), ..do_delete(rest, k)]
       }
   }
-    |> Dict()
 }
 
 test delete_1() {
@@ -180,13 +183,17 @@ test filter_3() {
 /// result == Some(foo)
 /// ```
 pub fn find(self: Dict<key, value>, value v: value) -> Option<key> {
-  when self.inner is {
+  do_find(self.inner, v)
+}
+
+fn do_find(self: List<(key, value)>, value v: value) -> Option<key> {
+  when self is {
     [] -> None
     [(k2, v2), ..rest] ->
       if v == v2 {
         Some(k2)
       } else {
-        find(Dict(rest), v)
+        do_find(rest, v)
       }
   }
 }
@@ -241,9 +248,17 @@ pub fn foldr(
   zero: result,
   with: fn(key, value, result) -> result,
 ) -> result {
-  when self.inner is {
+  do_foldr(self.inner, zero, with)
+}
+
+fn do_foldr(
+  self: List<(key, value)>,
+  zero: result,
+  with: fn(key, value, result) -> result,
+) -> result {
+  when self is {
     [] -> zero
-    [(k, v), ..rest] -> with(k, v, foldr(Dict(rest), zero, with))
+    [(k, v), ..rest] -> with(k, v, do_foldr(rest, zero, with))
   }
 }
 
@@ -275,9 +290,17 @@ pub fn foldl(
   zero: result,
   with: fn(key, value, result) -> result,
 ) -> result {
-  when self.inner is {
+  do_foldl(self.inner, zero, with)
+}
+
+fn do_foldl(
+  self: List<(key, value)>,
+  zero: result,
+  with: fn(key, value, result) -> result,
+) -> result {
+  when self is {
     [] -> zero
-    [(k, v), ..rest] -> foldl(Dict(rest), with(k, v, zero), with)
+    [(k, v), ..rest] -> do_foldl(rest, with(k, v, zero), with)
   }
 }
 
@@ -307,12 +330,18 @@ pub fn from_list(
   self: List<(key, value)>,
   compare: fn(key, key) -> Ordering,
 ) -> Dict<key, value> {
-  when self is {
+  Dict { inner: do_from_list(self, compare) }
+}
+
+fn do_from_list(
+  xs: List<(key, value)>,
+  compare: fn(key, key) -> Ordering,
+) -> List<(key, value)> {
+  when xs is {
     [] ->
       []
-    [(k, v), ..rest] -> do_insert(from_list(rest, compare).inner, k, v, compare)
+    [(k, v), ..rest] -> do_insert(do_from_list(rest, compare), k, v, compare)
   }
-    |> Dict()
 }
 
 test from_list_1() {
