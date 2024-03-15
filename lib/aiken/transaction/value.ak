@@ -380,7 +380,13 @@ test flatten_with_2() {
 
 /// Reduce a value into a single result
 ///
-/// This is a foldr inside a foldr on the nested dictionaries
+/// ```
+/// zero()
+///  |> add("a", "1", 10)
+///  |> add("b", "2", 20)
+///  |> value.reduce(v, 0, fn(_, _, quantity, acc) { acc + quantity })
+/// // 30
+/// ```
 pub fn reduce(
   self: Value,
   start: acc,
@@ -512,10 +518,10 @@ test from_minted_value_5() {
 pub fn to_minted_value(self: Value) -> MintedValue {
   self.inner
     |> dict.insert(
-         ada_policy_id,
-         dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
-         bytearray.compare,
-       )
+        ada_policy_id,
+        dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
+        bytearray.compare,
+      )
     |> MintedValue
 }
 
