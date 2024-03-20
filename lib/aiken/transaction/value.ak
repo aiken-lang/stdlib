@@ -1,4 +1,3 @@
-use aiken/bytearray
 use aiken/dict.{Dict}
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
@@ -57,9 +56,9 @@ pub fn from_asset(
   } else {
     let asset =
       dict.new()
-        |> dict.insert(asset_name, quantity, bytearray.compare)
+        |> dict.insert(asset_name, quantity)
     dict.new()
-      |> dict.insert(policy_id, asset, bytearray.compare)
+      |> dict.insert(policy_id, asset)
       |> Value
   }
 }
@@ -129,7 +128,6 @@ pub fn merge(left v0: Value, right v1: Value) -> Value {
                 Some(q)
               }
             },
-            bytearray.compare,
           )
         if dict.is_empty(result) {
           None
@@ -137,7 +135,6 @@ pub fn merge(left v0: Value, right v1: Value) -> Value {
           Some(result)
         }
       },
-      bytearray.compare,
     ),
   )
 }
@@ -221,7 +218,6 @@ pub fn add(
                 Some(q)
               }
             },
-            bytearray.compare,
           )
         if dict.is_empty(inner_result) {
           None
@@ -234,9 +230,8 @@ pub fn add(
       dict.insert_with(
         self.inner,
         policy_id,
-        dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
+        dict.from_ascending_list([(asset_name, quantity)]),
         helper,
-        bytearray.compare,
       ),
     )
   }
@@ -513,11 +508,7 @@ test from_minted_value_5() {
 /// Convert a [`Value`](#Value) into a [`MintedValue`](#MintedValue).
 pub fn to_minted_value(self: Value) -> MintedValue {
   self.inner
-    |> dict.insert(
-         ada_policy_id,
-         dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
-         bytearray.compare,
-       )
+    |> dict.insert(ada_policy_id, dict.insert(dict.new(), ada_asset_name, 0))
     |> MintedValue
 }
 
@@ -560,7 +551,7 @@ fn unchecked_add(
     dict.insert_with(
       self.inner,
       policy_id,
-      dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
+      dict.from_ascending_list([(asset_name, quantity)]),
       fn(_, left, _right) {
         Some(
           dict.insert_with(
@@ -568,11 +559,9 @@ fn unchecked_add(
             asset_name,
             quantity,
             fn(_k, ql, qr) { Some(ql + qr) },
-            bytearray.compare,
           ),
         )
       },
-      bytearray.compare,
     ),
   )
 }
