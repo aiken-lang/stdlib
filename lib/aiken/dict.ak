@@ -433,6 +433,41 @@ fn check_ascending_list(
   }
 }
 
+pub fn from_ascending_list_with(
+  xs: List<(key, value)>,
+  compare: fn(key, key) -> Ordering,
+  value_predicate: fn(value) -> Bool,
+) -> Dict<key, value> {
+  let Void = check_ascending_list_with(xs, compare, value_predicate)
+  Dict { inner: xs }
+}
+
+fn check_ascending_list_with(
+  xs: List<(key, value)>,
+  compare: fn(key, key) -> Ordering,
+  value_predicate: fn(value) -> Bool,
+) {
+  when xs is {
+    [] -> Void
+    [(_, v)] ->
+      if value_predicate(v) {
+        Void
+      } else {
+        fail @"value doesn't satisfy predicate"
+      }
+    [(x0, v0), (x1, _) as e, ..rest] ->
+      when compare(x0, x1) is {
+        Less ->
+          if value_predicate(v0) {
+            check_ascending_list_with([e, ..rest], compare, value_predicate)
+          } else {
+            fail @"value doesn't satisfy predicate"
+          }
+        _ -> fail @"keys in associative list aren't in ascending order"
+      }
+  }
+}
+
 test bench_from_ascending_list() {
   let dict =
     from_ascending_list(

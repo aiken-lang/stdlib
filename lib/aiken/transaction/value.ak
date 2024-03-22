@@ -1,5 +1,5 @@
 use aiken/bytearray
-use aiken/dict.{Dict}
+use aiken/dict.{Dict, from_ascending_list_with}
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
 use aiken/option
@@ -431,6 +431,86 @@ test reduce_3() {
   result == 1
 }
 
+pub fn from_asset_list(xs: List<(PolicyId, List<(AssetName, Int)>)>) -> Value {
+  xs
+    |> list.foldr(
+        dict.new(),
+        fn(inner, acc) {
+          expect (p, [_, ..] as x) = inner
+          x
+            |> from_ascending_list_with(bytearray.compare, fn(v) { v != 0 })
+            |> dict.insert_with(
+                acc,
+                p,
+                _,
+                fn(_, _, _) {
+                  fail @"Duplicate policy in the asset list."
+                },
+                bytearray.compare,
+              )
+        },
+      )
+    |> Value
+}
+
+test from_asset_list_1() {
+  let v = from_asset_list([])
+  v == zero()
+}
+
+test from_asset_list_2() fail {
+  let v = from_asset_list([(#"33", [])])
+  v == zero()
+}
+
+test from_asset_list_3() fail {
+  let v = from_asset_list([(#"33", [(#"", 0)])])
+  v == zero()
+}
+
+test from_asset_list_4() {
+  let v = from_asset_list([(#"33", [(#"", 1)])])
+  flatten(v) == [(#"33", #"", 1)]
+}
+
+test from_asset_list_5() {
+  let v = from_asset_list([(#"33", [(#"", 1), (#"33", 1)])])
+  flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1)]
+}
+
+test from_asset_list_6() fail {
+  let v =
+    from_asset_list(
+      [(#"33", [(#"", 1), (#"33", 1)]), (#"33", [(#"", 1), (#"33", 1)])],
+    )
+  flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1)]
+}
+
+test from_asset_list_7() fail {
+  let v =
+    from_asset_list(
+      [(#"33", [(#"", 1), (#"33", 1)]), (#"34", [(#"", 1), (#"", 1)])],
+    )
+  flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1), (#"34", #"", 1)]
+}
+
+test from_asset_list_8() {
+  let v =
+    from_asset_list(
+      [
+        (#"33", [(#"", 1), (#"33", 1)]),
+        (#"34", [(#"31", 1)]),
+        (#"35", [(#"", 1)]),
+      ],
+    )
+  flatten(v) == [
+    (#"33", #"", 1),
+    (#"33", #"33", 1),
+    (#"34", #"31", 1),
+    (#"35", #"", 1),
+  ]
+}
+
 /// Convert the value into a dictionary of dictionaries.
 pub fn to_dict(self: Value) -> Dict<PolicyId, Dict<AssetName, Int>> {
   self.inner
@@ -454,11 +534,13 @@ pub fn from_minted_value(self: MintedValue) -> Value {
 }
 
 test from_minted_value_1() {
-  flatten(from_minted_value(from_list([]))) == []
+  flatten(from_minted_value(from_internal_list([]))) == []
 }
 
 test from_minted_value_2() {
-  flatten(from_minted_value(from_list([("p0", "a0", 1)]))) == [("p0", "a0", 1)]
+  flatten(from_minted_value(from_internal_list([("p0", "a0", 1)]))) == [
+    ("p0", "a0", 1),
+  ]
 }
 
 test from_minted_value_3() {
@@ -468,7 +550,7 @@ test from_minted_value_3() {
   let result =
     [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
 
-  flatten(from_minted_value(from_list(assets))) == result
+  flatten(from_minted_value(from_internal_list(assets))) == result
 }
 
 test from_minted_value_4() {
@@ -484,7 +566,7 @@ test from_minted_value_4() {
   let result =
     [("p0", "a0", 2), ("p1", "a0", 1), ("p1", "a1", 1)]
 
-  flatten(from_minted_value(from_list(assets))) == result
+  flatten(from_minted_value(from_internal_list(assets))) == result
 }
 
 test from_minted_value_5() {
@@ -507,17 +589,17 @@ test from_minted_value_5() {
       ("p3", "a7", 1),
     ]
 
-  flatten(from_minted_value(from_list(assets))) == assets
+  flatten(from_minted_value(from_internal_list(assets))) == assets
 }
 
 /// Convert a [`Value`](#Value) into a [`MintedValue`](#MintedValue).
 pub fn to_minted_value(self: Value) -> MintedValue {
   self.inner
     |> dict.insert(
-         ada_policy_id,
-         dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
-         bytearray.compare,
-       )
+        ada_policy_id,
+        dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
+        bytearray.compare,
+      )
     |> MintedValue
 }
 
@@ -539,7 +621,7 @@ test to_minted_value_2() {
 ///
 /// NOTE: Not exposed because we do not want people to construct `MintedValue`. Only
 /// get them from the script context.
-fn from_list(xs: List<(PolicyId, AssetName, Int)>) -> MintedValue {
+fn from_internal_list(xs: List<(PolicyId, AssetName, Int)>) -> MintedValue {
   list.foldr(
     xs,
     MintedValue(dict.new()),
