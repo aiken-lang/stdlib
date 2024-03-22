@@ -349,3 +349,24 @@ test sqrt5() {
 test sqrt6() {
   sqrt(-42) == None
 }
+
+/// Checks if an integer has a given integer square root x.
+/// The check has constant time complexity (O(1)).
+///
+/// ```aiken
+/// math.is_sqrt(0, 0)
+/// math.is_sqrt(25, 5)
+/// ! math.is_sqrt(25, -5)
+/// math.is_sqrt(44203, 210)
+/// ```
+pub fn is_sqrt(self: Int, x: Int) -> Bool {
+  x * x <= self && ( x + 1 ) * ( x + 1 ) > self
+}
+
+test is_sqrt1() {
+  is_sqrt(44203, 210)
+}
+
+test is_sqrt2() {
+  is_sqrt(975461057789971041, 987654321)
+}
