@@ -1,5 +1,5 @@
 use aiken/builtin
-use aiken/hash.{Blake2b_224, Hash}
+use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
 
 /// A general structure for representing an on-chain `Credential`.
 ///
@@ -107,6 +107,27 @@ pub type StakeCredential =
 pub type PaymentCredential =
   Credential
 
-/// A unique stake pool identifier, as a hash of its owner verification key.
 pub type PoolId =
   Hash<Blake2b_224, VerificationKey>
+
+pub type VerificationKeyHash =
+  Hash<Blake2b_224, VerificationKey>
+
+pub type ScriptHash =
+  Hash<Blake2b_224, Script>
+
+// DatumHash is taken as a Datum type so this may just need to change.
+pub type DatumHashDigest =
+  Hash<Blake2b_256, Data>
+
+pub type DRepCredential {
+  member: Credential,
+}
+
+pub type ColdCommitteeCredential {
+  member: Credential,
+}
+
+pub type HotCommitteeCredential {
+  member: Credential,
+}

@@ -1,16 +1,19 @@
 use aiken/builtin
 use aiken/dict.{Dict}
-use aiken/hash.{Blake2b_224, Blake2b_256, Hash, blake2b_256}
+use aiken/hash.{Blake2b_256, Hash, blake2b_256}
 use aiken/interval.{Interval}
 use aiken/list
 use aiken/option
 use aiken/time.{PosixTime}
 use aiken/transaction/certificate.{Certificate}
 use aiken/transaction/credential.{
-  Address, Script, ScriptCredential, StakeCredential, VerificationKey,
-  VerificationKeyCredential,
+  Address, DatumHashDigest, ScriptCredential, ScriptHash, StakeCredential,
+  VerificationKeyCredential, VerificationKeyHash,
 }
-use aiken/transaction/value.{MintedValue, PolicyId, Value}
+use aiken/transaction/governance.{
+  GovernanceActionId, ProposalProcedure, Vote, Voter,
+}
+use aiken/transaction/value.{Lovelace, PolicyId, Value}
 
 /// A context given to a script by the Cardano ledger when being executed.
 ///
@@ -42,8 +45,17 @@ pub type ScriptPurpose {
   /// Plutus script. This purpose is also triggered when de-registering such
   /// stake credentials.
   ///
-  /// It embeds the certificate that's being validated.
-  Publish(Certificate)
+  /// The Int is a 0-based index of the given `TxCert` in `certificates`.
+  Publish { certificate_index: Int, certificate: Certificate }
+  /// Voting for a type of voter using a governance action id to vote 
+  /// yes / no / abstain inside a transaction.
+  ///
+  /// The voter is who is doing the governance action.
+  Voting(Voter)
+  /// Used to propose a governance action.
+  ///
+  /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
+  Proposing { proposal_index: Int, proposal: ProposalProcedure }
 }
 
 /// A Cardano `Transaction`, as seen by Plutus scripts.
@@ -56,15 +68,22 @@ pub type Transaction {
   inputs: List<Input>,
   reference_inputs: List<Input>,
   outputs: List<Output>,
-  fee: Value,
-  mint: MintedValue,
+  fee: Lovelace,
+  // ^ the fee is now lovelace
+  mint: Value,
+  // ^ minted value is now back to a value
   certificates: List<Certificate>,
-  withdrawals: Dict<StakeCredential, Int>,
+  withdrawals: Dict<StakeCredential, Lovelace>,
   validity_range: ValidityRange,
-  extra_signatories: List<Hash<Blake2b_224, VerificationKey>>,
+  extra_signatories: List<VerificationKeyHash>,
   redeemers: Dict<ScriptPurpose, Redeemer>,
-  datums: Dict<Hash<Blake2b_256, Data>, Data>,
+  datums: Dict<DatumHashDigest, Data>,
   id: TransactionId,
+  // all new fields below for v3
+  votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
+  proposal_procedures: List<ProposalProcedure>,
+  current_treasury_amount: Option<Lovelace>,
+  treasury_donation: Option<Lovelace>,
 }
 
 /// A placeholder / empty `Transaction` to serve as a base in a transaction
@@ -86,8 +105,8 @@ pub fn placeholder() -> Transaction {
     inputs: [],
     reference_inputs: [],
     outputs: [],
-    fee: value.zero(),
-    mint: value.zero() |> value.to_minted_value(),
+    fee: 0,
+    mint: value.zero(),
     certificates: [],
     withdrawals: dict.new(),
     validity_range: interval.everything(),
@@ -97,6 +116,10 @@ pub fn placeholder() -> Transaction {
     id: TransactionId {
       hash: #"0000000000000000000000000000000000000000000000000000000000000000",
     },
+    votes: dict.new(),
+    proposal_procedures: [],
+    current_treasury_amount: None,
+    treasury_donation: None,
   }
 }
 
@@ -130,14 +153,14 @@ pub type Output {
   address: Address,
   value: Value,
   datum: Datum,
-  reference_script: Option<Hash<Blake2b_224, Script>>,
+  reference_script: Option<ScriptHash>,
 }
 
 /// An output `Datum`.
 pub type Datum {
   NoDatum
   /// A datum referenced by its hash digest.
-  DatumHash(Hash<Blake2b_256, Data>)
+  DatumHash(DatumHashDigest)
   /// A datum completely inlined in the output.
   InlineDatum(Data)
 }
@@ -177,8 +200,8 @@ pub fn find_input(
 /// witnesses.
 pub fn find_datum(
   outputs: List<Output>,
-  datums: Dict<Hash<Blake2b_256, Data>, Data>,
-  datum_hash: Hash<Blake2b_256, Data>,
+  datums: Dict<DatumHashDigest, Data>,
+  datum_hash: DatumHashDigest,
 ) -> Option<Data> {
   datums
     |> dict.get(datum_hash)
@@ -209,7 +232,7 @@ pub fn find_datum(
 /// contracts running over multiple transactions.
 pub fn find_script_outputs(
   outputs: List<Output>,
-  script_hash: Hash<Blake2b_224, Script>,
+  script_hash: ScriptHash,
 ) -> List<Output> {
   outputs
     |> list.filter(
