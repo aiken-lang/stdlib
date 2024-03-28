@@ -26,7 +26,7 @@ test concat_3() {
 
 /// Convert a `ByteArray` into a `String`
 ///
-/// <br/>⚠️<pre>WARNING</pre> | This functions fails if the underlying `ByteArray` isn't UTF-8-encoded. <br/>In particular, you cannot convert arbitrary hash digests using this function. <br/>For converting arbitrary `ByteArray`s, use [bytearray.to_hex](../bytearray.html#to_hex).
+/// <br/>⚠️<pre>WARNING</pre> | This functions fails if the underlying `ByteArray` isn't UTF-8-encoded. <br/>In particular, you cannot convert arbitrary hash digests using this function. <br/>For converting arbitrary `ByteArray`s, use [bytearray.to_hex](/stdlib/aiken/bytearray.html#to_hex).
 /// ---                  | ---
 ///
 /// ```aiken
