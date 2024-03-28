@@ -431,6 +431,16 @@ test reduce_3() {
   result == 1
 }
 
+/// Promote an arbitrary list of assets into a `Value`. This function fails
+/// (i.e. halt the program execution) if:
+///
+/// - there's any duplicate amongst `PolicyId`;
+/// - there's any duplicate amongst `AssetName`;
+/// - the `AssetName` aren't sorted in ascending lexicographic order; or
+/// - any asset quantity is null.
+///
+/// This function is meant to turn arbitrary user-defined `Data` into safe `Value`,
+/// while checking for internal invariants.
 pub fn from_asset_list(xs: List<(PolicyId, List<(AssetName, Int)>)>) -> Value {
   xs
     |> list.foldr(
@@ -465,7 +475,7 @@ test from_asset_list_2() fail {
 
 test from_asset_list_3() fail {
   let v = from_asset_list([(#"33", [(#"", 0)])])
-  v == zero()
+  v != zero()
 }
 
 test from_asset_list_4() {
@@ -483,7 +493,7 @@ test from_asset_list_6() fail {
     from_asset_list(
       [(#"33", [(#"", 1), (#"33", 1)]), (#"33", [(#"", 1), (#"33", 1)])],
     )
-  flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1)]
+  v != zero()
 }
 
 test from_asset_list_7() fail {
@@ -491,7 +501,7 @@ test from_asset_list_7() fail {
     from_asset_list(
       [(#"33", [(#"", 1), (#"33", 1)]), (#"34", [(#"", 1), (#"", 1)])],
     )
-  flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1), (#"34", #"", 1)]
+  v != zero()
 }
 
 test from_asset_list_8() {
@@ -501,6 +511,23 @@ test from_asset_list_8() {
         (#"33", [(#"", 1), (#"33", 1)]),
         (#"34", [(#"31", 1)]),
         (#"35", [(#"", 1)]),
+      ],
+    )
+  flatten(v) == [
+    (#"33", #"", 1),
+    (#"33", #"33", 1),
+    (#"34", #"31", 1),
+    (#"35", #"", 1),
+  ]
+}
+
+test from_asset_list_9() {
+  let v =
+    from_asset_list(
+      [
+        (#"35", [(#"", 1)]),
+        (#"33", [(#"", 1), (#"33", 1)]),
+        (#"34", [(#"31", 1)]),
       ],
     )
   flatten(v) == [
