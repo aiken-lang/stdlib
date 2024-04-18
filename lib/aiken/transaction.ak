@@ -59,10 +59,10 @@ pub type Transaction {
   fee: Value,
   mint: MintedValue,
   certificates: List<Certificate>,
-  withdrawals: Dict<StakeCredential, Int>,
+  withdrawals: Map<StakeCredential, Int>,
   validity_range: ValidityRange,
   extra_signatories: List<Hash<Blake2b_224, VerificationKey>>,
-  redeemers: Dict<ScriptPurpose, Redeemer>,
+  redeemers: Map<ScriptPurpose, Redeemer>,
   datums: Dict<Hash<Blake2b_256, Data>, Data>,
   id: TransactionId,
 }
@@ -89,10 +89,10 @@ pub fn placeholder() -> Transaction {
     fee: value.zero(),
     mint: value.zero() |> value.to_minted_value(),
     certificates: [],
-    withdrawals: dict.new(),
+    withdrawals: [],
     validity_range: interval.everything(),
     extra_signatories: [],
-    redeemers: dict.new(),
+    redeemers: [],
     datums: dict.new(),
     id: TransactionId {
       hash: #"0000000000000000000000000000000000000000000000000000000000000000",
@@ -191,7 +191,7 @@ pub fn find_datum(
                     InlineDatum(data) ->
                       if
                       blake2b_256(builtin.serialise_data(data)) == datum_hash{
-                      
+
                         Some(data)
                       } else {
                         None

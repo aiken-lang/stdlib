@@ -20,12 +20,12 @@ use aiken/builtin
 ///   Dict<PolicyId, Dict<AssetName, Int>>
 /// ```
 pub opaque type Dict<key, value> {
-  inner: List<(ByteArray, value)>,
+  inner: Map<ByteArray, value>,
 }
 
 /// Create a new map
 /// ```aiken
-/// dict.to_list(dict.new()) == []
+/// dict.to_map(dict.new()) == []
 /// ```
 pub fn new() -> Dict<key, value> {
   Dict { inner: [] }
@@ -51,22 +51,22 @@ fn fixture_1() {
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.delete(key: "a")
-///     |> dict.to_list()
+///     |> dict.to_map()
 ///
-/// result == [("b", 200)]
+/// result == [Pair("b", 200)]
 /// ```
 pub fn delete(self: Dict<key, value>, key: ByteArray) -> Dict<key, value> {
   Dict { inner: do_delete(self.inner, key) }
 }
 
 fn do_delete(
-  self: List<(ByteArray, value)>,
+  self: Map<ByteArray, value>,
   key k: ByteArray,
-) -> List<(ByteArray, value)> {
+) -> Map<ByteArray, value> {
   when self is {
     [] ->
       []
-    [(k2, v2), ..rest] ->
+    [Pair(k2, v2), ..rest] ->
       if builtin.less_than_equals_bytearray(k, k2) {
         if k == k2 {
           rest
@@ -74,7 +74,7 @@ fn do_delete(
           self
         }
       } else {
-        [(k2, v2), ..do_delete(rest, k)]
+        [Pair(k2, v2), ..do_delete(rest, k)]
       }
   }
 }
@@ -139,9 +139,9 @@ test delete_6() {
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.insert(key: "c", value: 300)
 ///     |> dict.filter(fn(k, _v) { k != "a" })
-///     |> dict.to_list()
+///     |> dict.to_map()
 ///
-/// result == [("b", 200), ("c", 300)]
+/// result == [Pair("b", 200), Pair("c", 300)]
 /// ```
 pub fn filter(
   self: Dict<key, value>,
@@ -151,15 +151,15 @@ pub fn filter(
 }
 
 fn do_filter(
-  self: List<(ByteArray, value)>,
+  self: Map<ByteArray, value>,
   with: fn(ByteArray, value) -> Bool,
-) -> List<(ByteArray, value)> {
+) -> Map<ByteArray, value> {
   when self is {
     [] ->
       []
-    [(k, v), ..rest] ->
+    [Pair(k, v), ..rest] ->
       if with(k, v) {
-        [(k, v), ..do_filter(rest, with)]
+        [Pair(k, v), ..do_filter(rest, with)]
       } else {
         do_filter(rest, with)
       }
@@ -200,10 +200,10 @@ pub fn find(self: Dict<key, value>, value v: value) -> Option<ByteArray> {
   do_find(self.inner, v)
 }
 
-fn do_find(self: List<(ByteArray, value)>, value v: value) -> Option<ByteArray> {
+fn do_find(self: Map<ByteArray, value>, value v: value) -> Option<ByteArray> {
   when self is {
     [] -> None
-    [(k2, v2), ..rest] ->
+    [Pair(k2, v2), ..rest] ->
       if v == v2 {
         Some(k2)
       } else {
@@ -264,13 +264,13 @@ pub fn foldr(
 }
 
 fn do_foldr(
-  self: List<(ByteArray, value)>,
+  self: Map<ByteArray, value>,
   zero: result,
   with: fn(ByteArray, value, result) -> result,
 ) -> result {
   when self is {
     [] -> zero
-    [(k, v), ..rest] -> with(k, v, do_foldr(rest, zero, with))
+    [Pair(k, v), ..rest] -> with(k, v, do_foldr(rest, zero, with))
   }
 }
 
@@ -304,13 +304,13 @@ pub fn foldl(
 }
 
 fn do_foldl(
-  self: List<(ByteArray, value)>,
+  self: Map<ByteArray, value>,
   zero: result,
   with: fn(ByteArray, value, result) -> result,
 ) -> result {
   when self is {
     [] -> zero
-    [(k, v), ..rest] -> do_foldl(rest, with(k, v, zero), with)
+    [Pair(k, v), ..rest] -> do_foldl(rest, with(k, v, zero), with)
   }
 }
 
@@ -326,159 +326,159 @@ test fold_2() {
 /// multiple times, the first occurrence prevails.
 ///
 /// ```aiken
-/// let list = [("a", 100), ("c", 300), ("b", 200)]
+/// let map = [Pair("a", 100), Pair("c", 300), Pair("b", 200)]
 ///
 /// let result =
-///   dict.from_list(list)
-///     |> dict.to_list()
+///   dict.from_map(map)
+///     |> dict.to_map()
 ///
-/// result == [("a", 100), ("b", 200), ("c", 300)]
+/// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn from_list(self: List<(ByteArray, value)>) -> Dict<key, value> {
-  Dict { inner: do_from_list(self) }
+pub fn from_map(self: Map<ByteArray, value>) -> Dict<key, value> {
+  Dict { inner: do_from_map(self) }
 }
 
-fn do_from_list(xs: List<(ByteArray, value)>) -> List<(ByteArray, value)> {
+fn do_from_map(xs: Map<ByteArray, value>) -> Map<ByteArray, value> {
   when xs is {
     [] ->
       []
-    [(k, v), ..rest] -> do_insert(do_from_list(rest), k, v)
+    [Pair(k, v), ..rest] -> do_insert(do_from_map(rest), k, v)
   }
 }
 
-test from_list_1() {
-  from_list([]) == new()
+test from_map_1() {
+  from_map([]) == new()
 }
 
-test from_list_2() {
-  from_list([(foo, 42), (bar, 14)]) == from_list([(bar, 14), (foo, 42)])
+test from_map_2() {
+  from_map([Pair(foo, 42), Pair(bar, 14)]) == from_map(
+    [Pair(bar, 14), Pair(foo, 42)],
+  )
 }
 
-test from_list_3() {
-  from_list([(foo, 42), (bar, 14)]) == fixture_1()
+test from_map_3() {
+  from_map([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
 }
 
-test from_list_4() {
-  from_list([(foo, 42), (bar, 14), (foo, 1337)]) == fixture_1()
+test from_map_4() {
+  from_map([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
 }
 
-test bench_from_list() {
+test bench_from_map() {
   let dict =
-    from_list(
+    from_map(
       [
-        ("bbba", 8),
-        ("bbab", 12),
-        ("aabb", 13),
-        ("aaab", 9),
-        ("bbbb", 16),
-        ("aaaa", 1),
-        ("aaba", 5),
-        ("abab", 10),
-        ("baba", 7),
-        ("baab", 11),
-        ("abaa", 2),
-        ("baaa", 3),
-        ("bbaa", 4),
-        ("babb", 15),
-        ("abbb", 14),
-        ("abba", 6),
+        Pair("bbba", 8),
+        Pair("bbab", 12),
+        Pair("aabb", 13),
+        Pair("aaab", 9),
+        Pair("bbbb", 16),
+        Pair("aaaa", 1),
+        Pair("aaba", 5),
+        Pair("abab", 10),
+        Pair("baba", 7),
+        Pair("baab", 11),
+        Pair("abaa", 2),
+        Pair("baaa", 3),
+        Pair("bbaa", 4),
+        Pair("babb", 15),
+        Pair("abbb", 14),
+        Pair("abba", 6),
       ],
     )
 
   size(dict) == 16
 }
 
-/// Like ['from_list'](from_list), but from an already sorted list by ascending
+/// Like ['from_map'](from_map), but from an already sorted list by ascending
 /// keys. This function fails (i.e. halt the program execution) if the list isn't
 /// sorted.
 ///
 /// ```aiken
-/// let list = [("a", 100), ("b", 200), ("c", 300)]
+/// let map = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 ///
 /// let result =
-///   dict.from_ascending_list(list)
-///     |> dict.to_list()
+///   dict.from_ascending_map(map)
+///     |> dict.to_map()
 ///
-/// result == [("a", 100), ("b", 200), ("c", 300)]
+/// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
 ///
 /// This is meant to be used to turn a list constructed off-chain into a `Dict`
 /// which has taken care of maintaining interval invariants. This function still
 /// performs a sanity check on all keys to avoid silly mistakes. It is, however,
-/// considerably faster than ['from_list'](from_list)
-pub fn from_ascending_list(xs: List<(ByteArray, value)>) -> Dict<key, value> {
-  let Void = check_ascending_list(xs)
+/// considerably faster than ['from_map'](from_map)
+pub fn from_ascending_map(xs: Map<ByteArray, value>) -> Dict<key, value> {
+  let Void = check_ascending_map(xs)
   Dict { inner: xs }
 }
 
-fn check_ascending_list(xs: List<(ByteArray, value)>) {
+fn check_ascending_map(xs: Map<ByteArray, value>) {
   when xs is {
     [] -> Void
     [_] -> Void
-    [(x0, _), (x1, _) as e, ..rest] ->
+    [Pair(x0, _), Pair(x1, _) as e, ..rest] ->
       if builtin.less_than_bytearray(x0, x1) {
-        check_ascending_list([e, ..rest])
+        check_ascending_map([e, ..rest])
       } else {
         fail @"keys in associative list aren't in ascending order"
       }
   }
 }
 
-pub fn from_ascending_list_with(
-  xs: List<(key, value)>,
-  compare: fn(key, key) -> Ordering,
+pub fn from_ascending_map_with(
+  xs: Map<ByteArray, value>,
   value_predicate: fn(value) -> Bool,
 ) -> Dict<key, value> {
-  let Void = check_ascending_list_with(xs, compare, value_predicate)
+  let Void = check_ascending_map_with(xs, value_predicate)
   Dict { inner: xs }
 }
 
-fn check_ascending_list_with(
-  xs: List<(key, value)>,
-  compare: fn(key, key) -> Ordering,
+fn check_ascending_map_with(
+  xs: Map<ByteArray, value>,
   value_predicate: fn(value) -> Bool,
 ) {
   when xs is {
     [] -> Void
-    [(_, v)] ->
+    [Pair(_, v)] ->
       if value_predicate(v) {
         Void
       } else {
         fail @"value doesn't satisfy predicate"
       }
-    [(x0, v0), (x1, _) as e, ..rest] ->
-      when compare(x0, x1) is {
-        Less ->
-          if value_predicate(v0) {
-            check_ascending_list_with([e, ..rest], compare, value_predicate)
-          } else {
-            fail @"value doesn't satisfy predicate"
-          }
-        _ -> fail @"keys in associative list aren't in ascending order"
+    [Pair(x0, v0), Pair(x1, _) as e, ..rest] ->
+      if builtin.less_than_bytearray(x0, x1) {
+        if value_predicate(v0) {
+          check_ascending_map_with([e, ..rest], value_predicate)
+        } else {
+          fail @"value doesn't satisfy predicate"
+        }
+      } else {
+        fail @"keys in associative list aren't in ascending order"
       }
   }
 }
 
-test bench_from_ascending_list() {
+test bench_from_ascending_map() {
   let dict =
-    from_ascending_list(
+    from_ascending_map(
       [
-        ("aaaa", 1),
-        ("aaab", 9),
-        ("aaba", 5),
-        ("aabb", 13),
-        ("abaa", 2),
-        ("abab", 10),
-        ("abba", 6),
-        ("abbb", 14),
-        ("baaa", 3),
-        ("baab", 11),
-        ("baba", 7),
-        ("babb", 15),
-        ("bbaa", 4),
-        ("bbab", 12),
-        ("bbba", 8),
-        ("bbbb", 16),
+        Pair("aaaa", 1),
+        Pair("aaab", 9),
+        Pair("aaba", 5),
+        Pair("aabb", 13),
+        Pair("abaa", 2),
+        Pair("abab", 10),
+        Pair("abba", 6),
+        Pair("abbb", 14),
+        Pair("baaa", 3),
+        Pair("baab", 11),
+        Pair("baba", 7),
+        Pair("babb", 15),
+        Pair("bbaa", 4),
+        Pair("bbab", 12),
+        Pair("bbba", 8),
+        Pair("bbbb", 16),
       ],
     )
 
@@ -499,10 +499,10 @@ pub fn get(self: Dict<key, value>, key: ByteArray) -> Option<value> {
   do_get(self.inner, key)
 }
 
-fn do_get(self: List<(ByteArray, value)>, key k: ByteArray) -> Option<value> {
+fn do_get(self: Map<ByteArray, value>, key k: ByteArray) -> Option<value> {
   when self is {
     [] -> None
-    [(k2, v), ..rest] ->
+    [Pair(k2, v), ..rest] ->
       if builtin.less_than_equals_bytearray(k, k2) {
         if k == k2 {
           Some(v)
@@ -583,10 +583,10 @@ pub fn has_key(self: Dict<key, value>, key k: ByteArray) -> Bool {
   do_has_key(self.inner, k)
 }
 
-fn do_has_key(self: List<(ByteArray, value)>, key k: ByteArray) -> Bool {
+fn do_has_key(self: Map<ByteArray, value>, key k: ByteArray) -> Bool {
   when self is {
     [] -> False
-    [(k2, _), ..rest] ->
+    [Pair(k2, _), ..rest] ->
       if builtin.less_than_equals_bytearray(k, k2) {
         k == k2
       } else {
@@ -632,9 +632,9 @@ test has_key_4() {
 ///     |> dict.insert(key: "a", value: 1)
 ///     |> dict.insert(key: "b", value: 2)
 ///     |> dict.insert(key: "a", value: 3)
-///     |> dict.to_list()
+///     |> dict.to_map()
 ///
-/// result == [("a", 3), ("b", 2)]
+/// result == [Pair("a", 3), Pair("b", 2)]
 /// ```
 pub fn insert(
   self: Dict<key, value>,
@@ -645,21 +645,21 @@ pub fn insert(
 }
 
 fn do_insert(
-  self: List<(ByteArray, value)>,
+  self: Map<ByteArray, value>,
   key k: ByteArray,
   value v: value,
-) -> List<(ByteArray, value)> {
+) -> Map<ByteArray, value> {
   when self is {
     [] ->
-      [(k, v)]
-    [(k2, v2), ..rest] ->
+      [Pair(k, v)]
+    [Pair(k2, v2), ..rest] ->
       if builtin.less_than_bytearray(k, k2) {
-        [(k, v), ..self]
+        [Pair(k, v), ..self]
       } else {
         if k == k2 {
-          [(k, v), ..rest]
+          [Pair(k, v), ..rest]
         } else {
-          [(k2, v2), ..do_insert(rest, k, v)]
+          [Pair(k2, v2), ..do_insert(rest, k, v)]
         }
       }
   }
@@ -697,9 +697,9 @@ test insert_2() {
 ///     |> dict.insert_with(key: "a", value: 1, with: sum)
 ///     |> dict.insert_with(key: "b", value: 2, with: sum)
 ///     |> dict.insert_with(key: "a", value: 3, with: sum)
-///     |> dict.to_list()
+///     |> dict.to_map()
 ///
-/// result == [("a", 4), ("b", 2)]
+/// result == [Pair("a", 4), Pair("b", 2)]
 /// ```
 pub fn insert_with(
   self: Dict<key, value>,
@@ -720,9 +720,9 @@ test insert_with_1() {
     new()
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
-      |> to_list()
+      |> to_map()
 
-  result == [("bar", 2), ("foo", 1)]
+  result == [Pair("bar", 2), Pair("foo", 1)]
 }
 
 test insert_with_2() {
@@ -734,9 +734,9 @@ test insert_with_2() {
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
       |> insert_with(key: "foo", value: 3, with: sum)
-      |> to_list()
+      |> to_map()
 
-  result == [("bar", 2), ("foo", 4)]
+  result == [Pair("bar", 2), Pair("foo", 4)]
 }
 
 test insert_with_3() {
@@ -755,9 +755,9 @@ test insert_with_3() {
       |> insert_with(key: "bar", value: 2, with: with)
       |> insert_with(key: "foo", value: 3, with: with)
       |> insert_with(key: "bar", value: 4, with: with)
-      |> to_list()
+      |> to_map()
 
-  result == [("foo", 1)]
+  result == [Pair("foo", 1)]
 }
 
 /// Efficiently checks whether a dictionary is empty.
@@ -791,11 +791,11 @@ pub fn keys(self: Dict<key, value>) -> List<ByteArray> {
   do_keys(self.inner)
 }
 
-fn do_keys(self: List<(ByteArray, value)>) -> List<ByteArray> {
+fn do_keys(self: Map<ByteArray, value>) -> List<ByteArray> {
   when self is {
     [] ->
       []
-    [(k, _), ..rest] ->
+    [Pair(k, _), ..rest] ->
       [k, ..do_keys(rest)]
   }
 }
@@ -821,23 +821,23 @@ test keys_2() {
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
 ///     |> dict.map(fn(_k, v) { v * 2 })
-///     |> dict.to_list()
+///     |> dict.to_map()
 ///
-///  result == [("a", 200), ("b", 400), ("c", 600)]
+///  result == [Pair("a", 200), Pair("b", 400), Pair("c", 600)]
 /// ```
 pub fn map(self: Dict<key, a>, with: fn(ByteArray, a) -> b) -> Dict<key, b> {
   Dict { inner: do_map(self.inner, with) }
 }
 
 fn do_map(
-  self: List<(ByteArray, a)>,
+  self: Map<ByteArray, a>,
   with: fn(ByteArray, a) -> b,
-) -> List<(ByteArray, b)> {
+) -> Map<ByteArray, b> {
   when self is {
     [] ->
       []
-    [(k, v), ..rest] ->
-      [(k, with(k, v)), ..do_map(rest, with)]
+    [Pair(k, v), ..rest] ->
+      [Pair(k, with(k, v)), ..do_map(rest, with)]
   }
 }
 
@@ -863,20 +863,20 @@ test map_2() {
 ///     |> dict.insert("a", 100)
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
-///     |> dict.to_list()
+///     |> dict.to_map()
 ///
-/// result == [("a", 100), ("b", 200), ("c", 300)]
+/// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn to_list(self: Dict<key, value>) -> List<(ByteArray, value)> {
+pub fn to_map(self: Dict<key, value>) -> Map<ByteArray, value> {
   self.inner
 }
 
-test to_list_1() {
-  to_list(new()) == []
+test to_map_1() {
+  to_map(new()) == []
 }
 
-test to_list_2() {
-  to_list(fixture_1()) == [(bar, 14), (foo, 42)]
+test to_map_2() {
+  to_map(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
 }
 
 /// Return the number of key-value pairs in the dictionary.
@@ -895,7 +895,7 @@ pub fn size(self: Dict<key, value>) -> Int {
   do_size(self.inner)
 }
 
-fn do_size(self: List<(key, value)>) -> Int {
+fn do_size(self: Map<key, value>) -> Int {
   when self is {
     [] -> 0
     [_, ..rest] -> 1 + do_size(rest)
@@ -925,13 +925,13 @@ test size_3() {
 /// right dictionary, values from the left are preferred (i.e. left-biaised).
 ///
 /// ```aiken
-/// let left_dict = dict.from_list([("a", 100), ("b", 200)])
-/// let right_dict = dict.from_list([("a", 150), ("c", 300)])
+/// let left_dict = dict.from_list([Pair("a", 100), Pair("b", 200)])
+/// let right_dict = dict.from_list([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
-///   dict.union(left_dict, right_dict) |> dict.to_list()
+///   dict.union(left_dict, right_dict) |> dict.to_map()
 ///
-/// result == [("a", 100), ("b", 200), ("c", 300)]
+/// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
 pub fn union(
   left: Dict<key, value>,
@@ -941,12 +941,12 @@ pub fn union(
 }
 
 fn do_union(
-  left: List<(ByteArray, value)>,
-  right: List<(ByteArray, value)>,
-) -> List<(ByteArray, value)> {
+  left: Map<ByteArray, value>,
+  right: Map<ByteArray, value>,
+) -> Map<ByteArray, value> {
   when left is {
     [] -> right
-    [(k, v), ..rest] -> do_union(rest, do_insert(right, k, v))
+    [Pair(k, v), ..rest] -> do_union(rest, do_insert(right, k, v))
   }
 }
 
@@ -966,7 +966,9 @@ test union_3() {
     new()
       |> insert(bar, 42)
       |> insert(baz, 1337)
-  union(left, right) == from_list([(foo, 14), (baz, 1337), (bar, 42)])
+  union(left, right) == from_map(
+    [Pair(foo, 14), Pair(baz, 1337), Pair(bar, 42)],
+  )
 }
 
 test union_4() {
@@ -977,7 +979,7 @@ test union_4() {
     new()
       |> insert(bar, 42)
       |> insert(foo, 1337)
-  union(left, right) == from_list([(foo, 14), (bar, 42)])
+  union(left, right) == from_map([Pair(foo, 14), Pair(bar, 42)])
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
@@ -987,8 +989,8 @@ test union_4() {
 /// When passing `None`, the value is removed and not present in the union.
 ///
 /// ```aiken
-/// let left_dict = dict.from_list([("a", 100), ("b", 200)])
-/// let right_dict = dict.from_list([("a", 150), ("c", 300)])
+/// let left_dict = dict.from_map([Pair("a", 100), Pair("b", 200)])
+/// let right_dict = dict.from_map([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
 ///   dict.union_with(
@@ -996,9 +998,9 @@ test union_4() {
 ///     right_dict,
 ///     fn(_k, v1, v2) { Some(v1 + v2) },
 ///   )
-///     |> dict.to_list()
+///     |> dict.to_map()
 ///
-/// result == [("a", 250), ("b", 200), ("c", 300)]
+/// result == [Pair("a", 250), Pair("b", 200), Pair("c", 300)]
 /// ```
 pub fn union_with(
   left: Dict<key, value>,
@@ -1009,38 +1011,38 @@ pub fn union_with(
 }
 
 fn do_union_with(
-  left: List<(ByteArray, value)>,
-  right: List<(ByteArray, value)>,
+  left: Map<ByteArray, value>,
+  right: Map<ByteArray, value>,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> List<(ByteArray, value)> {
+) -> Map<ByteArray, value> {
   when left is {
     [] -> right
-    [(k, v), ..rest] ->
+    [Pair(k, v), ..rest] ->
       do_union_with(rest, do_insert_with(right, k, v, with), with)
   }
 }
 
 fn do_insert_with(
-  self: List<(ByteArray, value)>,
+  self: Map<ByteArray, value>,
   key k: ByteArray,
   value v: value,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> List<(ByteArray, value)> {
+) -> Map<ByteArray, value> {
   when self is {
     [] ->
-      [(k, v)]
-    [(k2, v2), ..rest] ->
+      [Pair(k, v)]
+    [Pair(k2, v2), ..rest] ->
       if builtin.less_than_bytearray(k, k2) {
-        [(k, v), ..self]
+        [Pair(k, v), ..self]
       } else {
         if k == k2 {
           when with(k, v, v2) is {
             Some(combined) ->
-              [(k, combined), ..rest]
+              [Pair(k, combined), ..rest]
             None -> rest
           }
         } else {
-          [(k2, v2), ..do_insert_with(rest, k, v, with)]
+          [Pair(k2, v2), ..do_insert_with(rest, k, v, with)]
         }
       }
   }
@@ -1058,7 +1060,7 @@ test union_with_1() {
 
   let result = union_with(left, right, with: fn(_, l, r) { Some(l + r) })
 
-  result == from_list([(foo, 1351), (bar, 42)])
+  result == from_map([Pair(foo, 1351), Pair(bar, 42)])
 }
 
 /// Extract all the values present in a given `Dict`.
@@ -1077,11 +1079,11 @@ pub fn values(self: Dict<key, value>) -> List<value> {
   do_values(self.inner)
 }
 
-fn do_values(self: List<(key, value)>) -> List<value> {
+fn do_values(self: Map<key, value>) -> List<value> {
   when self is {
     [] ->
       []
-    [(_, v), ..rest] ->
+    [Pair(_, v), ..rest] ->
       [v, ..do_values(rest)]
   }
 }

@@ -51,7 +51,7 @@ test serialise_5() {
 }
 
 test serialise_6() {
-  serialise([(1, #"ff")]) == #"a10141ff"
+  serialise([(1, #"ff")]) == #"9f9f0141ffffff"
 }
 
 test serialise_7() {
@@ -60,6 +60,10 @@ test serialise_7() {
 
 test serialise_8() {
   serialise(None) == #"d87a80"
+}
+
+test serialise_9() {
+  serialise([Pair(1, #"ff")]) == #"a10141ff"
 }
 
 /// Obtain a String representation of _anything_. This is particularly (and only) useful for tracing
@@ -111,8 +115,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
     self,
     {
       // -------- Constr
-
-      let (constr, fields) = un_constr_data(self)
+      let Pair(constr, fields) = un_constr_data(self)
 
       // NOTE: This is fundamentally the same logic for serializing list. However, the compiler
       // doesn't support mutual recursion just yet, so we can't extract that logic in a separate
@@ -159,7 +162,7 @@ fn do_diagnostic(self: Data, builder: ByteArray) -> ByteArray {
             list.foldr(
               elems,
               (#"207d", builder),
-              fn(e: (Data, Data), st: (ByteArray, ByteArray)) {
+              fn(e: Pair<Data, Data>, st: (ByteArray, ByteArray)) {
                 let value =
                   do_diagnostic(e.2nd, append_bytearray(st.1st, st.2nd))
                 (
@@ -285,7 +288,11 @@ test diagnostic_6() {
 }
 
 test diagnostic_7() {
-  diagnostic([(1, #"ff")]) == @"{_ 1: h'FF' }"
+  diagnostic([(1, #"ff")]) == @"[_ [_ 1, h'FF']]"
+}
+
+test diagnostic_7_alt() {
+  diagnostic([Pair(1, #"ff")]) == @"{_ 1: h'FF' }"
 }
 
 test diagnostic_8() {
@@ -298,6 +305,12 @@ test diagnostic_9() {
 
 test diagnostic_10() {
   let xs: List<(Int, Int)> =
+    []
+  diagnostic(xs) == @"[]"
+}
+
+test diagnostic_10_alt() {
+  let xs: Map<Int, Int> =
     []
   diagnostic(xs) == @"{}"
 }

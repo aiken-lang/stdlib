@@ -1,4 +1,4 @@
-use aiken/dict.{Dict, from_ascending_list_with}
+use aiken/dict.{Dict, from_ascending_map_with}
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
 use aiken/option
@@ -230,7 +230,7 @@ pub fn add(
       dict.insert_with(
         self.inner,
         policy_id,
-        dict.from_ascending_list([(asset_name, quantity)]),
+        dict.from_ascending_map([Pair(asset_name, quantity)]),
         helper,
       ),
     )
@@ -436,14 +436,14 @@ test reduce_3() {
 ///
 /// This function is meant to turn arbitrary user-defined `Data` into safe `Value`,
 /// while checking for internal invariants.
-pub fn from_asset_list(xs: List<(PolicyId, List<(AssetName, Int)>)>) -> Value {
+pub fn from_asset_list(xs: Map<PolicyId, Map<AssetName, Int>>) -> Value {
   xs
     |> list.foldr(
         dict.new(),
         fn(inner, acc) {
-          expect (p, [_, ..] as x) = inner
+          expect Pair(p, [_, ..] as x) = inner
           x
-            |> from_ascending_list_with(bytearray.compare, fn(v) { v != 0 })
+            |> from_ascending_map_with(fn(v) { v != 0 })
             |> dict.insert_with(
                 acc,
                 p,
@@ -451,7 +451,6 @@ pub fn from_asset_list(xs: List<(PolicyId, List<(AssetName, Int)>)>) -> Value {
                 fn(_, _, _) {
                   fail @"Duplicate policy in the asset list."
                 },
-                bytearray.compare,
               )
         },
       )
@@ -464,29 +463,32 @@ test from_asset_list_1() {
 }
 
 test from_asset_list_2() fail {
-  let v = from_asset_list([(#"33", [])])
+  let v = from_asset_list([Pair(#"33", [])])
   v == zero()
 }
 
 test from_asset_list_3() fail {
-  let v = from_asset_list([(#"33", [(#"", 0)])])
+  let v = from_asset_list([Pair(#"33", [Pair(#"", 0)])])
   v != zero()
 }
 
 test from_asset_list_4() {
-  let v = from_asset_list([(#"33", [(#"", 1)])])
+  let v = from_asset_list([Pair(#"33", [Pair(#"", 1)])])
   flatten(v) == [(#"33", #"", 1)]
 }
 
 test from_asset_list_5() {
-  let v = from_asset_list([(#"33", [(#"", 1), (#"33", 1)])])
+  let v = from_asset_list([Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)])])
   flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1)]
 }
 
 test from_asset_list_6() fail {
   let v =
     from_asset_list(
-      [(#"33", [(#"", 1), (#"33", 1)]), (#"33", [(#"", 1), (#"33", 1)])],
+      [
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+      ],
     )
   v != zero()
 }
@@ -494,7 +496,10 @@ test from_asset_list_6() fail {
 test from_asset_list_7() fail {
   let v =
     from_asset_list(
-      [(#"33", [(#"", 1), (#"33", 1)]), (#"34", [(#"", 1), (#"", 1)])],
+      [
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"", 1), Pair(#"", 1)]),
+      ],
     )
   v != zero()
 }
@@ -503,9 +508,9 @@ test from_asset_list_8() {
   let v =
     from_asset_list(
       [
-        (#"33", [(#"", 1), (#"33", 1)]),
-        (#"34", [(#"31", 1)]),
-        (#"35", [(#"", 1)]),
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"31", 1)]),
+        Pair(#"35", [Pair(#"", 1)]),
       ],
     )
   flatten(v) == [
@@ -520,9 +525,9 @@ test from_asset_list_9() {
   let v =
     from_asset_list(
       [
-        (#"35", [(#"", 1)]),
-        (#"33", [(#"", 1), (#"33", 1)]),
-        (#"34", [(#"31", 1)]),
+        Pair(#"35", [Pair(#"", 1)]),
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"31", 1)]),
       ],
     )
   flatten(v) == [
@@ -623,7 +628,7 @@ pub fn to_minted_value(self: Value) -> MintedValue {
 
 test to_minted_value_1() {
   let minted_value = to_minted_value(zero())
-  ( minted_value.inner |> dict.to_list |> list.length ) == 1
+  ( minted_value.inner |> dict.to_map |> list.length ) == 1
 }
 
 test to_minted_value_2() {
@@ -660,7 +665,7 @@ fn unchecked_add(
     dict.insert_with(
       self.inner,
       policy_id,
-      dict.from_ascending_list([(asset_name, quantity)]),
+      dict.from_ascending_map([Pair(asset_name, quantity)]),
       fn(_, left, _right) {
         Some(
           dict.insert_with(
