@@ -23,7 +23,7 @@ pub opaque type Dict<key, value> {
   inner: Map<ByteArray, value>,
 }
 
-/// Create a new map
+/// Create a new empty Dict
 /// ```aiken
 /// dict.to_map(dict.new()) == []
 /// ```
@@ -194,7 +194,7 @@ test filter_3() {
 ///     |> dict.insert(key: "c", value: 42)
 ///     |> dict.find(42)
 ///
-/// result == Some("c")
+/// result == Some("a")
 /// ```
 pub fn find(self: Dict<key, value>, value v: value) -> Option<ByteArray> {
   do_find(self.inner, v)
@@ -686,7 +686,8 @@ test insert_2() {
 }
 
 /// Insert a value in the dictionary at a given key. When the key already exist, the provided
-/// merge function is called.
+/// merge function is called. The value existing in the dictionary is passed as the second argument
+/// to the merge function, and the new value is passed as the third argument.
 ///
 /// ```aiken
 /// let sum =
