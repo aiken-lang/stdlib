@@ -59,10 +59,10 @@ pub type Transaction {
   fee: Value,
   mint: MintedValue,
   certificates: List<Certificate>,
-  withdrawals: Map<StakeCredential, Int>,
+  withdrawals: AList<StakeCredential, Int>,
   validity_range: ValidityRange,
   extra_signatories: List<Hash<Blake2b_224, VerificationKey>>,
-  redeemers: Map<ScriptPurpose, Redeemer>,
+  redeemers: AList<ScriptPurpose, Redeemer>,
   datums: Dict<Hash<Blake2b_256, Data>, Data>,
   id: TransactionId,
 }

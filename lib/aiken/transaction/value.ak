@@ -436,7 +436,7 @@ test reduce_3() {
 ///
 /// This function is meant to turn arbitrary user-defined `Data` into safe `Value`,
 /// while checking for internal invariants.
-pub fn from_asset_list(xs: Map<PolicyId, Map<AssetName, Int>>) -> Value {
+pub fn from_asset_list(xs: AList<PolicyId, AList<AssetName, Int>>) -> Value {
   xs
     |> list.foldr(
         dict.new(),
