@@ -25,7 +25,7 @@ pub opaque type Dict<key, value> {
 
 /// Create a new empty Dict
 /// ```aiken
-/// dict.to_map(dict.new()) == []
+/// dict.to_alist(dict.new()) == []
 /// ```
 pub fn new() -> Dict<key, value> {
   Dict { inner: [] }
@@ -51,7 +51,7 @@ fn fixture_1() {
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.delete(key: "a")
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("b", 200)]
 /// ```
@@ -139,7 +139,7 @@ test delete_6() {
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.insert(key: "c", value: 300)
 ///     |> dict.filter(fn(k, _v) { k != "a" })
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -330,7 +330,7 @@ test fold_2() {
 ///
 /// let result =
 ///   dict.from_map(map)
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -399,7 +399,7 @@ test bench_from_map() {
 ///
 /// let result =
 ///   dict.from_ascending_map(map)
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -632,7 +632,7 @@ test has_key_4() {
 ///     |> dict.insert(key: "a", value: 1)
 ///     |> dict.insert(key: "b", value: 2)
 ///     |> dict.insert(key: "a", value: 3)
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 3), Pair("b", 2)]
 /// ```
@@ -698,7 +698,7 @@ test insert_2() {
 ///     |> dict.insert_with(key: "a", value: 1, with: sum)
 ///     |> dict.insert_with(key: "b", value: 2, with: sum)
 ///     |> dict.insert_with(key: "a", value: 3, with: sum)
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 4), Pair("b", 2)]
 /// ```
@@ -721,7 +721,7 @@ test insert_with_1() {
     new()
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
-      |> to_map()
+      |> to_alist()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
 }
@@ -735,7 +735,7 @@ test insert_with_2() {
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
       |> insert_with(key: "foo", value: 3, with: sum)
-      |> to_map()
+      |> to_alist()
 
   result == [Pair("bar", 2), Pair("foo", 4)]
 }
@@ -756,7 +756,7 @@ test insert_with_3() {
       |> insert_with(key: "bar", value: 2, with: with)
       |> insert_with(key: "foo", value: 3, with: with)
       |> insert_with(key: "bar", value: 4, with: with)
-      |> to_map()
+      |> to_alist()
 
   result == [Pair("foo", 1)]
 }
@@ -822,7 +822,7 @@ test keys_2() {
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
 ///     |> dict.map(fn(_k, v) { v * 2 })
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 ///  result == [Pair("a", 200), Pair("b", 400), Pair("c", 600)]
 /// ```
@@ -864,20 +864,20 @@ test map_2() {
 ///     |> dict.insert("a", 100)
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn to_map(self: Dict<key, value>) -> AList<ByteArray, value> {
+pub fn to_alist(self: Dict<key, value>) -> AList<ByteArray, value> {
   self.inner
 }
 
-test to_map_1() {
-  to_map(new()) == []
+test to_alist_1() {
+  to_alist(new()) == []
 }
 
-test to_map_2() {
-  to_map(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
+test to_alist_2() {
+  to_alist(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
 }
 
 /// Return the number of key-value pairs in the dictionary.
@@ -930,7 +930,7 @@ test size_3() {
 /// let right_dict = dict.from_list([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
-///   dict.union(left_dict, right_dict) |> dict.to_map()
+///   dict.union(left_dict, right_dict) |> dict.to_alist()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -999,7 +999,7 @@ test union_4() {
 ///     right_dict,
 ///     fn(_k, v1, v2) { Some(v1 + v2) },
 ///   )
-///     |> dict.to_map()
+///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 250), Pair("b", 200), Pair("c", 300)]
 /// ```
