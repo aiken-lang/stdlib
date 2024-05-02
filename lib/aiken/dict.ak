@@ -20,7 +20,7 @@ use aiken/builtin
 ///   Dict<PolicyId, Dict<AssetName, Int>>
 /// ```
 pub opaque type Dict<key, value> {
-  inner: Map<ByteArray, value>,
+  inner: AList<ByteArray, value>,
 }
 
 /// Create a new empty Dict
@@ -60,9 +60,9 @@ pub fn delete(self: Dict<key, value>, key: ByteArray) -> Dict<key, value> {
 }
 
 fn do_delete(
-  self: Map<ByteArray, value>,
+  self: AList<ByteArray, value>,
   key k: ByteArray,
-) -> Map<ByteArray, value> {
+) -> AList<ByteArray, value> {
   when self is {
     [] ->
       []
@@ -151,9 +151,9 @@ pub fn filter(
 }
 
 fn do_filter(
-  self: Map<ByteArray, value>,
+  self: AList<ByteArray, value>,
   with: fn(ByteArray, value) -> Bool,
-) -> Map<ByteArray, value> {
+) -> AList<ByteArray, value> {
   when self is {
     [] ->
       []
@@ -200,7 +200,7 @@ pub fn find(self: Dict<key, value>, value v: value) -> Option<ByteArray> {
   do_find(self.inner, v)
 }
 
-fn do_find(self: Map<ByteArray, value>, value v: value) -> Option<ByteArray> {
+fn do_find(self: AList<ByteArray, value>, value v: value) -> Option<ByteArray> {
   when self is {
     [] -> None
     [Pair(k2, v2), ..rest] ->
@@ -264,7 +264,7 @@ pub fn foldr(
 }
 
 fn do_foldr(
-  self: Map<ByteArray, value>,
+  self: AList<ByteArray, value>,
   zero: result,
   with: fn(ByteArray, value, result) -> result,
 ) -> result {
@@ -304,7 +304,7 @@ pub fn foldl(
 }
 
 fn do_foldl(
-  self: Map<ByteArray, value>,
+  self: AList<ByteArray, value>,
   zero: result,
   with: fn(ByteArray, value, result) -> result,
 ) -> result {
@@ -334,11 +334,11 @@ test fold_2() {
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn from_map(self: Map<ByteArray, value>) -> Dict<key, value> {
+pub fn from_map(self: AList<ByteArray, value>) -> Dict<key, value> {
   Dict { inner: do_from_map(self) }
 }
 
-fn do_from_map(xs: Map<ByteArray, value>) -> Map<ByteArray, value> {
+fn do_from_map(xs: AList<ByteArray, value>) -> AList<ByteArray, value> {
   when xs is {
     [] ->
       []
@@ -408,12 +408,12 @@ test bench_from_map() {
 /// which has taken care of maintaining interval invariants. This function still
 /// performs a sanity check on all keys to avoid silly mistakes. It is, however,
 /// considerably faster than ['from_map'](from_map)
-pub fn from_ascending_map(xs: Map<ByteArray, value>) -> Dict<key, value> {
+pub fn from_ascending_map(xs: AList<ByteArray, value>) -> Dict<key, value> {
   let Void = check_ascending_map(xs)
   Dict { inner: xs }
 }
 
-fn check_ascending_map(xs: Map<ByteArray, value>) {
+fn check_ascending_map(xs: AList<ByteArray, value>) {
   when xs is {
     [] -> Void
     [_] -> Void
@@ -427,7 +427,7 @@ fn check_ascending_map(xs: Map<ByteArray, value>) {
 }
 
 pub fn from_ascending_map_with(
-  xs: Map<ByteArray, value>,
+  xs: AList<ByteArray, value>,
   value_predicate: fn(value) -> Bool,
 ) -> Dict<key, value> {
   let Void = check_ascending_map_with(xs, value_predicate)
@@ -435,7 +435,7 @@ pub fn from_ascending_map_with(
 }
 
 fn check_ascending_map_with(
-  xs: Map<ByteArray, value>,
+  xs: AList<ByteArray, value>,
   value_predicate: fn(value) -> Bool,
 ) {
   when xs is {
@@ -499,7 +499,7 @@ pub fn get(self: Dict<key, value>, key: ByteArray) -> Option<value> {
   do_get(self.inner, key)
 }
 
-fn do_get(self: Map<ByteArray, value>, key k: ByteArray) -> Option<value> {
+fn do_get(self: AList<ByteArray, value>, key k: ByteArray) -> Option<value> {
   when self is {
     [] -> None
     [Pair(k2, v), ..rest] ->
@@ -583,7 +583,7 @@ pub fn has_key(self: Dict<key, value>, key k: ByteArray) -> Bool {
   do_has_key(self.inner, k)
 }
 
-fn do_has_key(self: Map<ByteArray, value>, key k: ByteArray) -> Bool {
+fn do_has_key(self: AList<ByteArray, value>, key k: ByteArray) -> Bool {
   when self is {
     [] -> False
     [Pair(k2, _), ..rest] ->
@@ -645,10 +645,10 @@ pub fn insert(
 }
 
 fn do_insert(
-  self: Map<ByteArray, value>,
+  self: AList<ByteArray, value>,
   key k: ByteArray,
   value v: value,
-) -> Map<ByteArray, value> {
+) -> AList<ByteArray, value> {
   when self is {
     [] ->
       [Pair(k, v)]
@@ -792,7 +792,7 @@ pub fn keys(self: Dict<key, value>) -> List<ByteArray> {
   do_keys(self.inner)
 }
 
-fn do_keys(self: Map<ByteArray, value>) -> List<ByteArray> {
+fn do_keys(self: AList<ByteArray, value>) -> List<ByteArray> {
   when self is {
     [] ->
       []
@@ -831,9 +831,9 @@ pub fn map(self: Dict<key, a>, with: fn(ByteArray, a) -> b) -> Dict<key, b> {
 }
 
 fn do_map(
-  self: Map<ByteArray, a>,
+  self: AList<ByteArray, a>,
   with: fn(ByteArray, a) -> b,
-) -> Map<ByteArray, b> {
+) -> AList<ByteArray, b> {
   when self is {
     [] ->
       []
@@ -868,7 +868,7 @@ test map_2() {
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn to_map(self: Dict<key, value>) -> Map<ByteArray, value> {
+pub fn to_map(self: Dict<key, value>) -> AList<ByteArray, value> {
   self.inner
 }
 
@@ -896,7 +896,7 @@ pub fn size(self: Dict<key, value>) -> Int {
   do_size(self.inner)
 }
 
-fn do_size(self: Map<key, value>) -> Int {
+fn do_size(self: AList<key, value>) -> Int {
   when self is {
     [] -> 0
     [_, ..rest] -> 1 + do_size(rest)
@@ -942,9 +942,9 @@ pub fn union(
 }
 
 fn do_union(
-  left: Map<ByteArray, value>,
-  right: Map<ByteArray, value>,
-) -> Map<ByteArray, value> {
+  left: AList<ByteArray, value>,
+  right: AList<ByteArray, value>,
+) -> AList<ByteArray, value> {
   when left is {
     [] -> right
     [Pair(k, v), ..rest] -> do_union(rest, do_insert(right, k, v))
@@ -1012,10 +1012,10 @@ pub fn union_with(
 }
 
 fn do_union_with(
-  left: Map<ByteArray, value>,
-  right: Map<ByteArray, value>,
+  left: AList<ByteArray, value>,
+  right: AList<ByteArray, value>,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> Map<ByteArray, value> {
+) -> AList<ByteArray, value> {
   when left is {
     [] -> right
     [Pair(k, v), ..rest] ->
@@ -1024,11 +1024,11 @@ fn do_union_with(
 }
 
 fn do_insert_with(
-  self: Map<ByteArray, value>,
+  self: AList<ByteArray, value>,
   key k: ByteArray,
   value v: value,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> Map<ByteArray, value> {
+) -> AList<ByteArray, value> {
   when self is {
     [] ->
       [Pair(k, v)]
@@ -1080,7 +1080,7 @@ pub fn values(self: Dict<key, value>) -> List<value> {
   do_values(self.inner)
 }
 
-fn do_values(self: Map<key, value>) -> List<value> {
+fn do_values(self: AList<key, value>) -> List<value> {
   when self is {
     [] ->
       []
