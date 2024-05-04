@@ -1,5 +1,4 @@
-use aiken/bytearray
-use aiken/dict.{Dict, from_ascending_list_with}
+use aiken/dict.{Dict, from_ascending_alist_with}
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
 use aiken/option
@@ -57,9 +56,9 @@ pub fn from_asset(
   } else {
     let asset =
       dict.new()
-        |> dict.insert(asset_name, quantity, bytearray.compare)
+        |> dict.insert(asset_name, quantity)
     dict.new()
-      |> dict.insert(policy_id, asset, bytearray.compare)
+      |> dict.insert(policy_id, asset)
       |> Value
   }
 }
@@ -129,7 +128,6 @@ pub fn merge(left v0: Value, right v1: Value) -> Value {
                 Some(q)
               }
             },
-            bytearray.compare,
           )
         if dict.is_empty(result) {
           None
@@ -137,7 +135,6 @@ pub fn merge(left v0: Value, right v1: Value) -> Value {
           Some(result)
         }
       },
-      bytearray.compare,
     ),
   )
 }
@@ -221,7 +218,6 @@ pub fn add(
                 Some(q)
               }
             },
-            bytearray.compare,
           )
         if dict.is_empty(inner_result) {
           None
@@ -234,9 +230,8 @@ pub fn add(
       dict.insert_with(
         self.inner,
         policy_id,
-        dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
+        dict.from_ascending_alist([Pair(asset_name, quantity)]),
         helper,
-        bytearray.compare,
       ),
     )
   }
@@ -441,14 +436,14 @@ test reduce_3() {
 ///
 /// This function is meant to turn arbitrary user-defined `Data` into safe `Value`,
 /// while checking for internal invariants.
-pub fn from_asset_list(xs: List<(PolicyId, List<(AssetName, Int)>)>) -> Value {
+pub fn from_asset_list(xs: AList<PolicyId, AList<AssetName, Int>>) -> Value {
   xs
     |> list.foldr(
         dict.new(),
         fn(inner, acc) {
-          expect (p, [_, ..] as x) = inner
+          expect Pair(p, [_, ..] as x) = inner
           x
-            |> from_ascending_list_with(bytearray.compare, fn(v) { v != 0 })
+            |> from_ascending_alist_with(fn(v) { v != 0 })
             |> dict.insert_with(
                 acc,
                 p,
@@ -456,7 +451,6 @@ pub fn from_asset_list(xs: List<(PolicyId, List<(AssetName, Int)>)>) -> Value {
                 fn(_, _, _) {
                   fail @"Duplicate policy in the asset list."
                 },
-                bytearray.compare,
               )
         },
       )
@@ -469,29 +463,32 @@ test from_asset_list_1() {
 }
 
 test from_asset_list_2() fail {
-  let v = from_asset_list([(#"33", [])])
+  let v = from_asset_list([Pair(#"33", [])])
   v == zero()
 }
 
 test from_asset_list_3() fail {
-  let v = from_asset_list([(#"33", [(#"", 0)])])
+  let v = from_asset_list([Pair(#"33", [Pair(#"", 0)])])
   v != zero()
 }
 
 test from_asset_list_4() {
-  let v = from_asset_list([(#"33", [(#"", 1)])])
+  let v = from_asset_list([Pair(#"33", [Pair(#"", 1)])])
   flatten(v) == [(#"33", #"", 1)]
 }
 
 test from_asset_list_5() {
-  let v = from_asset_list([(#"33", [(#"", 1), (#"33", 1)])])
+  let v = from_asset_list([Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)])])
   flatten(v) == [(#"33", #"", 1), (#"33", #"33", 1)]
 }
 
 test from_asset_list_6() fail {
   let v =
     from_asset_list(
-      [(#"33", [(#"", 1), (#"33", 1)]), (#"33", [(#"", 1), (#"33", 1)])],
+      [
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+      ],
     )
   v != zero()
 }
@@ -499,7 +496,10 @@ test from_asset_list_6() fail {
 test from_asset_list_7() fail {
   let v =
     from_asset_list(
-      [(#"33", [(#"", 1), (#"33", 1)]), (#"34", [(#"", 1), (#"", 1)])],
+      [
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"", 1), Pair(#"", 1)]),
+      ],
     )
   v != zero()
 }
@@ -508,9 +508,9 @@ test from_asset_list_8() {
   let v =
     from_asset_list(
       [
-        (#"33", [(#"", 1), (#"33", 1)]),
-        (#"34", [(#"31", 1)]),
-        (#"35", [(#"", 1)]),
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"31", 1)]),
+        Pair(#"35", [Pair(#"", 1)]),
       ],
     )
   flatten(v) == [
@@ -525,9 +525,9 @@ test from_asset_list_9() {
   let v =
     from_asset_list(
       [
-        (#"35", [(#"", 1)]),
-        (#"33", [(#"", 1), (#"33", 1)]),
-        (#"34", [(#"31", 1)]),
+        Pair(#"35", [Pair(#"", 1)]),
+        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"34", [Pair(#"31", 1)]),
       ],
     )
   flatten(v) == [
@@ -622,17 +622,13 @@ test from_minted_value_5() {
 /// Convert a [`Value`](#Value) into a [`MintedValue`](#MintedValue).
 pub fn to_minted_value(self: Value) -> MintedValue {
   self.inner
-    |> dict.insert(
-        ada_policy_id,
-        dict.insert(dict.new(), ada_asset_name, 0, bytearray.compare),
-        bytearray.compare,
-      )
+    |> dict.insert(ada_policy_id, dict.insert(dict.new(), ada_asset_name, 0))
     |> MintedValue
 }
 
 test to_minted_value_1() {
   let minted_value = to_minted_value(zero())
-  ( minted_value.inner |> dict.to_list |> list.length ) == 1
+  ( minted_value.inner |> dict.to_alist |> list.length ) == 1
 }
 
 test to_minted_value_2() {
@@ -669,7 +665,7 @@ fn unchecked_add(
     dict.insert_with(
       self.inner,
       policy_id,
-      dict.from_ascending_list([(asset_name, quantity)], bytearray.compare),
+      dict.from_ascending_alist([Pair(asset_name, quantity)]),
       fn(_, left, _right) {
         Some(
           dict.insert_with(
@@ -677,11 +673,9 @@ fn unchecked_add(
             asset_name,
             quantity,
             fn(_k, ql, qr) { Some(ql + qr) },
-            bytearray.compare,
           ),
         )
       },
-      bytearray.compare,
     ),
   )
 }

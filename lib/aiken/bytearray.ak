@@ -278,8 +278,9 @@ test from_string_2() {
 }
 
 /// Add a byte element in front of a `ByteArray`. When the given byte is
-/// greater than 255, it wraps-around. So 256 is mapped to 0, 257 to 1, and so
-/// forth.
+/// greater than 255, it wraps-around. **PlutusV2 behavior** So 256 is mapped to 0, 257 to 1, and so
+/// forth. 
+/// In PlutusV3 this will error instead of wrapping around.
 ///
 /// ```aiken
 /// bytearray.push(#"", 0) == #"00"

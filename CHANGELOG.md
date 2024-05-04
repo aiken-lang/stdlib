@@ -1,5 +1,19 @@
 # Changelog
 
+## UNRELEASED
+
+### Added
+
+N/A
+
+### Changed
+
+- Specialized all `Dict`'s key as `ByteArray`, and thus remove the need for passing an extra comparison function.
+
+### Removed
+
+N/A
+
 ## v1.8.0 - 2024-03-28
 
 ### Added
