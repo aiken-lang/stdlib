@@ -1,4 +1,4 @@
-use aiken/dict.{Dict, from_ascending_map_with}
+use aiken/dict.{Dict, from_ascending_alist_with}
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
 use aiken/option
@@ -230,7 +230,7 @@ pub fn add(
       dict.insert_with(
         self.inner,
         policy_id,
-        dict.from_ascending_map([Pair(asset_name, quantity)]),
+        dict.from_ascending_alist([Pair(asset_name, quantity)]),
         helper,
       ),
     )
@@ -443,7 +443,7 @@ pub fn from_asset_list(xs: AList<PolicyId, AList<AssetName, Int>>) -> Value {
         fn(inner, acc) {
           expect Pair(p, [_, ..] as x) = inner
           x
-            |> from_ascending_map_with(fn(v) { v != 0 })
+            |> from_ascending_alist_with(fn(v) { v != 0 })
             |> dict.insert_with(
                 acc,
                 p,
@@ -628,7 +628,7 @@ pub fn to_minted_value(self: Value) -> MintedValue {
 
 test to_minted_value_1() {
   let minted_value = to_minted_value(zero())
-  ( minted_value.inner |> dict.to_map |> list.length ) == 1
+  ( minted_value.inner |> dict.to_alist |> list.length ) == 1
 }
 
 test to_minted_value_2() {
@@ -665,7 +665,7 @@ fn unchecked_add(
     dict.insert_with(
       self.inner,
       policy_id,
-      dict.from_ascending_map([Pair(asset_name, quantity)]),
+      dict.from_ascending_alist([Pair(asset_name, quantity)]),
       fn(_, left, _right) {
         Some(
           dict.insert_with(

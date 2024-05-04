@@ -326,47 +326,47 @@ test fold_2() {
 /// multiple times, the first occurrence prevails.
 ///
 /// ```aiken
-/// let map = [Pair("a", 100), Pair("c", 300), Pair("b", 200)]
+/// let alist = [Pair("a", 100), Pair("c", 300), Pair("b", 200)]
 ///
 /// let result =
-///   dict.from_map(map)
+///   dict.from_alist(alist)
 ///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn from_map(self: AList<ByteArray, value>) -> Dict<key, value> {
-  Dict { inner: do_from_map(self) }
+pub fn from_alist(self: AList<ByteArray, value>) -> Dict<key, value> {
+  Dict { inner: do_from_alist(self) }
 }
 
-fn do_from_map(xs: AList<ByteArray, value>) -> AList<ByteArray, value> {
+fn do_from_alist(xs: AList<ByteArray, value>) -> AList<ByteArray, value> {
   when xs is {
     [] ->
       []
-    [Pair(k, v), ..rest] -> do_insert(do_from_map(rest), k, v)
+    [Pair(k, v), ..rest] -> do_insert(do_from_alist(rest), k, v)
   }
 }
 
-test from_map_1() {
-  from_map([]) == new()
+test from_alist_1() {
+  from_alist([]) == new()
 }
 
-test from_map_2() {
-  from_map([Pair(foo, 42), Pair(bar, 14)]) == from_map(
+test from_alist_2() {
+  from_alist([Pair(foo, 42), Pair(bar, 14)]) == from_alist(
     [Pair(bar, 14), Pair(foo, 42)],
   )
 }
 
-test from_map_3() {
-  from_map([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
+test from_alist_3() {
+  from_alist([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
 }
 
-test from_map_4() {
-  from_map([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
+test from_alist_4() {
+  from_alist([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
 }
 
-test bench_from_map() {
+test bench_from_alist() {
   let dict =
-    from_map(
+    from_alist(
       [
         Pair("bbba", 8),
         Pair("bbab", 12),
@@ -390,15 +390,15 @@ test bench_from_map() {
   size(dict) == 16
 }
 
-/// Like ['from_map'](from_map), but from an already sorted list by ascending
+/// Like ['from_alist'](from_alist), but from an already sorted list by ascending
 /// keys. This function fails (i.e. halt the program execution) if the list isn't
 /// sorted.
 ///
 /// ```aiken
-/// let map = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
+/// let alist = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 ///
 /// let result =
-///   dict.from_ascending_map(map)
+///   dict.from_ascending_alist(alist)
 ///     |> dict.to_alist()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
@@ -407,34 +407,34 @@ test bench_from_map() {
 /// This is meant to be used to turn a list constructed off-chain into a `Dict`
 /// which has taken care of maintaining interval invariants. This function still
 /// performs a sanity check on all keys to avoid silly mistakes. It is, however,
-/// considerably faster than ['from_map'](from_map)
-pub fn from_ascending_map(xs: AList<ByteArray, value>) -> Dict<key, value> {
-  let Void = check_ascending_map(xs)
+/// considerably faster than ['from_alist'](from_alist)
+pub fn from_ascending_alist(xs: AList<ByteArray, value>) -> Dict<key, value> {
+  let Void = check_ascending_alist(xs)
   Dict { inner: xs }
 }
 
-fn check_ascending_map(xs: AList<ByteArray, value>) {
+fn check_ascending_alist(xs: AList<ByteArray, value>) {
   when xs is {
     [] -> Void
     [_] -> Void
     [Pair(x0, _), Pair(x1, _) as e, ..rest] ->
       if builtin.less_than_bytearray(x0, x1) {
-        check_ascending_map([e, ..rest])
+        check_ascending_alist([e, ..rest])
       } else {
         fail @"keys in associative list aren't in ascending order"
       }
   }
 }
 
-pub fn from_ascending_map_with(
+pub fn from_ascending_alist_with(
   xs: AList<ByteArray, value>,
   value_predicate: fn(value) -> Bool,
 ) -> Dict<key, value> {
-  let Void = check_ascending_map_with(xs, value_predicate)
+  let Void = check_ascending_alist_with(xs, value_predicate)
   Dict { inner: xs }
 }
 
-fn check_ascending_map_with(
+fn check_ascending_alist_with(
   xs: AList<ByteArray, value>,
   value_predicate: fn(value) -> Bool,
 ) {
@@ -449,7 +449,7 @@ fn check_ascending_map_with(
     [Pair(x0, v0), Pair(x1, _) as e, ..rest] ->
       if builtin.less_than_bytearray(x0, x1) {
         if value_predicate(v0) {
-          check_ascending_map_with([e, ..rest], value_predicate)
+          check_ascending_alist_with([e, ..rest], value_predicate)
         } else {
           fail @"value doesn't satisfy predicate"
         }
@@ -459,9 +459,9 @@ fn check_ascending_map_with(
   }
 }
 
-test bench_from_ascending_map() {
+test bench_from_ascending_alist() {
   let dict =
-    from_ascending_map(
+    from_ascending_alist(
       [
         Pair("aaaa", 1),
         Pair("aaab", 9),
@@ -813,7 +813,7 @@ test keys_2() {
   ) == [bar, foo]
 }
 
-/// Apply a function to all key-value pairs in a map.
+/// Apply a function to all key-value pairs in a Dict.
 ///
 /// ```aiken
 /// let result =
@@ -967,7 +967,7 @@ test union_3() {
     new()
       |> insert(bar, 42)
       |> insert(baz, 1337)
-  union(left, right) == from_map(
+  union(left, right) == from_alist(
     [Pair(foo, 14), Pair(baz, 1337), Pair(bar, 42)],
   )
 }
@@ -980,7 +980,7 @@ test union_4() {
     new()
       |> insert(bar, 42)
       |> insert(foo, 1337)
-  union(left, right) == from_map([Pair(foo, 14), Pair(bar, 42)])
+  union(left, right) == from_alist([Pair(foo, 14), Pair(bar, 42)])
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
@@ -990,8 +990,8 @@ test union_4() {
 /// When passing `None`, the value is removed and not present in the union.
 ///
 /// ```aiken
-/// let left_dict = dict.from_map([Pair("a", 100), Pair("b", 200)])
-/// let right_dict = dict.from_map([Pair("a", 150), Pair("c", 300)])
+/// let left_dict = dict.from_alist([Pair("a", 100), Pair("b", 200)])
+/// let right_dict = dict.from_alist([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
 ///   dict.union_with(
@@ -1061,7 +1061,7 @@ test union_with_1() {
 
   let result = union_with(left, right, with: fn(_, l, r) { Some(l + r) })
 
-  result == from_map([Pair(foo, 1351), Pair(bar, 42)])
+  result == from_alist([Pair(foo, 1351), Pair(bar, 42)])
 }
 
 /// Extract all the values present in a given `Dict`.
