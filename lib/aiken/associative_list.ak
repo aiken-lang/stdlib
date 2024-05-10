@@ -1,7 +1,17 @@
-//// A module for working with AList Data.
+//// A module for working with associative lists (a.k.a `AList`).
 ////
-//// These ALists are non-ordered lists of key-value pairs,
-//// which preserve no invariant on the order of the keys or the duplication of keys.
+//// While any function that works on `List` also work on `AList`, this module provides some extra helpers
+//// that are specifically tailored to working with associative lists. Fundamentally, an `AList<k, v>` is
+//// a type-alias to `List<Pair<k, v>>`.
+////
+//// ### Important
+////
+//// Unlike dictionnaries (a.k.a. `Dict`), associative lists make no assumption
+//// about the ordering of elements within the list. As a result, lookup
+//// functions do traverse the entire list when invoked. They are also not _sets_,
+//// and thus allow for duplicate keys. This is reflected in the functions used
+
+//to interact with them.
 
 /// Remove a single key-value pair from the AList. If the key is not found, no changes are made.
 /// Duplicate keys are not removed. Only the **first** key found is removed.

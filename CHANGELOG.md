@@ -1,14 +1,15 @@
 # Changelog
 
-## UNRELEASED
+## v1.9.0 - UNRELEASED
 
 ### Added
 
-N/A
+- A new module [`aiken/associative_list`](https://aiken-lang.github.io/stdlib/aiken/associative_list.html) to work with associative lists (a.k.a. `AList`).
 
 ### Changed
 
-- Specialized all `Dict`'s key as `ByteArray`, and thus remove the need for passing an extra comparison function.
+- **BREAKING-CHANGE**<br/>
+  Specialized all `Dict`'s key to `ByteArray`, and thus remove the need for passing an extra comparison function in many functions. `Dict` are however still specialized with a phantom type for keys.
 
 ### Removed
 

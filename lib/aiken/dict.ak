@@ -1,8 +1,15 @@
 //// A module for working with bytearray dictionaries.
 ////
-//// These dictionaries are fundamentally ordered lists of key-value pairs,
-//// which preserve some invariants. In particular, each key is only present
-//// once in the dictionary.
+//// ### Important
+////
+//// Dictionaries are **ordered sets** of key-value pairs, which thus
+//// preserve some invariants. Specifically, each key is only present once in
+//// the dictionary and all keys are stored in ascending lexicographic order.
+////
+//// These invariants allow for more optimized functions to operate on `Dict`,
+//// but as a trade-offs, prevent `Dict` from being serializable. To recover a `Dict`
+//// from an unknown `Data`, you must first recover an `AList<k, v>` and use
+//// `dict.from_ascending_list`.
 
 use aiken/builtin
 
@@ -25,7 +32,7 @@ pub opaque type Dict<key, value> {
 
 /// Create a new empty Dict
 /// ```aiken
-/// dict.to_alist(dict.new()) == []
+/// dict.to_list(dict.new()) == []
 /// ```
 pub fn new() -> Dict<key, value> {
   Dict { inner: [] }
@@ -51,7 +58,7 @@ fn fixture_1() {
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.delete(key: "a")
-///     |> dict.to_alist()
+///     |> dict.to_list()
 ///
 /// result == [Pair("b", 200)]
 /// ```
@@ -139,7 +146,7 @@ test delete_6() {
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.insert(key: "c", value: 300)
 ///     |> dict.filter(fn(k, _v) { k != "a" })
-///     |> dict.to_alist()
+///     |> dict.to_list()
 ///
 /// result == [Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -329,44 +336,44 @@ test fold_2() {
 /// let alist = [Pair("a", 100), Pair("c", 300), Pair("b", 200)]
 ///
 /// let result =
-///   dict.from_alist(alist)
-///     |> dict.to_alist()
+///   dict.from_list(alist)
+///     |> dict.to_list()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn from_alist(self: AList<ByteArray, value>) -> Dict<key, value> {
-  Dict { inner: do_from_alist(self) }
+pub fn from_list(self: AList<ByteArray, value>) -> Dict<key, value> {
+  Dict { inner: do_from_list(self) }
 }
 
-fn do_from_alist(xs: AList<ByteArray, value>) -> AList<ByteArray, value> {
+fn do_from_list(xs: AList<ByteArray, value>) -> AList<ByteArray, value> {
   when xs is {
     [] ->
       []
-    [Pair(k, v), ..rest] -> do_insert(do_from_alist(rest), k, v)
+    [Pair(k, v), ..rest] -> do_insert(do_from_list(rest), k, v)
   }
 }
 
-test from_alist_1() {
-  from_alist([]) == new()
+test from_list_1() {
+  from_list([]) == new()
 }
 
-test from_alist_2() {
-  from_alist([Pair(foo, 42), Pair(bar, 14)]) == from_alist(
+test from_list_2() {
+  from_list([Pair(foo, 42), Pair(bar, 14)]) == from_list(
     [Pair(bar, 14), Pair(foo, 42)],
   )
 }
 
-test from_alist_3() {
-  from_alist([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
+test from_list_3() {
+  from_list([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
 }
 
-test from_alist_4() {
-  from_alist([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
+test from_list_4() {
+  from_list([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
 }
 
-test bench_from_alist() {
+test bench_from_list() {
   let dict =
-    from_alist(
+    from_list(
       [
         Pair("bbba", 8),
         Pair("bbab", 12),
@@ -390,7 +397,7 @@ test bench_from_alist() {
   size(dict) == 16
 }
 
-/// Like ['from_alist'](from_alist), but from an already sorted list by ascending
+/// Like ['from_list'](from_list), but from an already sorted list by ascending
 /// keys. This function fails (i.e. halt the program execution) if the list isn't
 /// sorted.
 ///
@@ -398,8 +405,8 @@ test bench_from_alist() {
 /// let alist = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 ///
 /// let result =
-///   dict.from_ascending_alist(alist)
-///     |> dict.to_alist()
+///   dict.from_ascending_list(alist)
+///     |> dict.to_list()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -407,49 +414,57 @@ test bench_from_alist() {
 /// This is meant to be used to turn a list constructed off-chain into a `Dict`
 /// which has taken care of maintaining interval invariants. This function still
 /// performs a sanity check on all keys to avoid silly mistakes. It is, however,
-/// considerably faster than ['from_alist'](from_alist)
-pub fn from_ascending_alist(xs: AList<ByteArray, value>) -> Dict<key, value> {
-  let Void = check_ascending_alist(xs)
+/// considerably faster than ['from_list'](from_list)
+pub fn from_ascending_list(xs: AList<ByteArray, value>) -> Dict<key, value> {
+  let Void = check_ascending_list(xs)
   Dict { inner: xs }
 }
 
-fn check_ascending_alist(xs: AList<ByteArray, value>) {
+fn check_ascending_list(xs: AList<ByteArray, value>) {
   when xs is {
     [] -> Void
     [_] -> Void
     [Pair(x0, _), Pair(x1, _) as e, ..rest] ->
       if builtin.less_than_bytearray(x0, x1) {
-        check_ascending_alist([e, ..rest])
+        check_ascending_list([e, ..rest])
       } else {
         fail @"keys in associative list aren't in ascending order"
       }
   }
 }
 
-pub fn from_ascending_alist_with(
+/// Like [`from_ascending_list`](#from_ascending_list) but fails if **any**
+/// value doesn't satisfy the predicate.
+///
+/// ```aiken
+/// let alist = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
+///
+/// dict.from_ascending_list_with(alist, fn(x) { x <= 250 }) // fail
+/// ```
+pub fn from_ascending_list_with(
   xs: AList<ByteArray, value>,
-  value_predicate: fn(value) -> Bool,
+  predicate: fn(value) -> Bool,
 ) -> Dict<key, value> {
-  let Void = check_ascending_alist_with(xs, value_predicate)
+  let Void = check_ascending_list_with(xs, predicate)
   Dict { inner: xs }
 }
 
-fn check_ascending_alist_with(
+fn check_ascending_list_with(
   xs: AList<ByteArray, value>,
-  value_predicate: fn(value) -> Bool,
+  predicate: fn(value) -> Bool,
 ) {
   when xs is {
     [] -> Void
     [Pair(_, v)] ->
-      if value_predicate(v) {
+      if predicate(v) {
         Void
       } else {
         fail @"value doesn't satisfy predicate"
       }
     [Pair(x0, v0), Pair(x1, _) as e, ..rest] ->
       if builtin.less_than_bytearray(x0, x1) {
-        if value_predicate(v0) {
-          check_ascending_alist_with([e, ..rest], value_predicate)
+        if predicate(v0) {
+          check_ascending_list_with([e, ..rest], predicate)
         } else {
           fail @"value doesn't satisfy predicate"
         }
@@ -459,9 +474,9 @@ fn check_ascending_alist_with(
   }
 }
 
-test bench_from_ascending_alist() {
+test bench_from_ascending_list() {
   let dict =
-    from_ascending_alist(
+    from_ascending_list(
       [
         Pair("aaaa", 1),
         Pair("aaab", 9),
@@ -632,7 +647,7 @@ test has_key_4() {
 ///     |> dict.insert(key: "a", value: 1)
 ///     |> dict.insert(key: "b", value: 2)
 ///     |> dict.insert(key: "a", value: 3)
-///     |> dict.to_alist()
+///     |> dict.to_list()
 ///
 /// result == [Pair("a", 3), Pair("b", 2)]
 /// ```
@@ -698,7 +713,7 @@ test insert_2() {
 ///     |> dict.insert_with(key: "a", value: 1, with: sum)
 ///     |> dict.insert_with(key: "b", value: 2, with: sum)
 ///     |> dict.insert_with(key: "a", value: 3, with: sum)
-///     |> dict.to_alist()
+///     |> dict.to_list()
 ///
 /// result == [Pair("a", 4), Pair("b", 2)]
 /// ```
@@ -721,7 +736,7 @@ test insert_with_1() {
     new()
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
-      |> to_alist()
+      |> to_list()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
 }
@@ -735,7 +750,7 @@ test insert_with_2() {
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
       |> insert_with(key: "foo", value: 3, with: sum)
-      |> to_alist()
+      |> to_list()
 
   result == [Pair("bar", 2), Pair("foo", 4)]
 }
@@ -756,7 +771,7 @@ test insert_with_3() {
       |> insert_with(key: "bar", value: 2, with: with)
       |> insert_with(key: "foo", value: 3, with: with)
       |> insert_with(key: "bar", value: 4, with: with)
-      |> to_alist()
+      |> to_list()
 
   result == [Pair("foo", 1)]
 }
@@ -822,7 +837,7 @@ test keys_2() {
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
 ///     |> dict.map(fn(_k, v) { v * 2 })
-///     |> dict.to_alist()
+///     |> dict.to_list()
 ///
 ///  result == [Pair("a", 200), Pair("b", 400), Pair("c", 600)]
 /// ```
@@ -864,20 +879,20 @@ test map_2() {
 ///     |> dict.insert("a", 100)
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
-///     |> dict.to_alist()
+///     |> dict.to_list()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn to_alist(self: Dict<key, value>) -> AList<ByteArray, value> {
+pub fn to_list(self: Dict<key, value>) -> AList<ByteArray, value> {
   self.inner
 }
 
-test to_alist_1() {
-  to_alist(new()) == []
+test to_list_1() {
+  to_list(new()) == []
 }
 
-test to_alist_2() {
-  to_alist(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
+test to_list_2() {
+  to_list(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
 }
 
 /// Return the number of key-value pairs in the dictionary.
@@ -930,7 +945,7 @@ test size_3() {
 /// let right_dict = dict.from_list([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
-///   dict.union(left_dict, right_dict) |> dict.to_alist()
+///   dict.union(left_dict, right_dict) |> dict.to_list()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -967,7 +982,7 @@ test union_3() {
     new()
       |> insert(bar, 42)
       |> insert(baz, 1337)
-  union(left, right) == from_alist(
+  union(left, right) == from_list(
     [Pair(foo, 14), Pair(baz, 1337), Pair(bar, 42)],
   )
 }
@@ -980,7 +995,7 @@ test union_4() {
     new()
       |> insert(bar, 42)
       |> insert(foo, 1337)
-  union(left, right) == from_alist([Pair(foo, 14), Pair(bar, 42)])
+  union(left, right) == from_list([Pair(foo, 14), Pair(bar, 42)])
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
@@ -990,8 +1005,8 @@ test union_4() {
 /// When passing `None`, the value is removed and not present in the union.
 ///
 /// ```aiken
-/// let left_dict = dict.from_alist([Pair("a", 100), Pair("b", 200)])
-/// let right_dict = dict.from_alist([Pair("a", 150), Pair("c", 300)])
+/// let left_dict = dict.from_list([Pair("a", 100), Pair("b", 200)])
+/// let right_dict = dict.from_list([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
 ///   dict.union_with(
@@ -999,7 +1014,7 @@ test union_4() {
 ///     right_dict,
 ///     fn(_k, v1, v2) { Some(v1 + v2) },
 ///   )
-///     |> dict.to_alist()
+///     |> dict.to_list()
 ///
 /// result == [Pair("a", 250), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -1061,7 +1076,7 @@ test union_with_1() {
 
   let result = union_with(left, right, with: fn(_, l, r) { Some(l + r) })
 
-  result == from_alist([Pair(foo, 1351), Pair(bar, 42)])
+  result == from_list([Pair(foo, 1351), Pair(bar, 42)])
 }
 
 /// Extract all the values present in a given `Dict`.
