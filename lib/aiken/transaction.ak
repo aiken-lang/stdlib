@@ -130,7 +130,7 @@ pub type Output {
   address: Address,
   value: Value,
   datum: Datum,
-  reference_script: Option<Hash<Blake2b_224, Script>>,
+  reference_script: Option<Script>,
 }
 
 /// An output `Datum`.
