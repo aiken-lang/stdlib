@@ -555,6 +555,11 @@ pub opaque type MintedValue {
   inner: Dict<PolicyId, Dict<AssetName, Int>>,
 }
 
+/// Convert minted value into a dictionary of dictionaries.
+pub fn minted_to_dict(self: MintedValue) -> Dict<PolicyId, Dict<AssetName, Int>> {
+  self.inner
+}
+
 /// Convert a [`MintedValue`](#MintedValue) into a [`Value`](#Value).
 pub fn from_minted_value(self: MintedValue) -> Value {
   self.inner |> dict.delete(ada_policy_id) |> Value
