@@ -68,7 +68,7 @@ test any_3() {
 /// list.count([1, 2, 3], fn(a) { n > 5 }) == 0
 /// ```
 pub fn count(self: List<a>, predicate: fn(a) -> Bool) -> Int {
-  foldl(
+  foldr(
     self,
     0,
     fn(item, total) {
