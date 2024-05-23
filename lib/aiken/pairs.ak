@@ -1,7 +1,7 @@
-//// A module for working with associative lists (a.k.a `AList`).
+//// A module for working with associative lists (a.k.a `Pairs`).
 ////
-//// While any function that works on `List` also work on `AList`, this module provides some extra helpers
-//// that are specifically tailored to working with associative lists. Fundamentally, an `AList<k, v>` is
+//// While any function that works on `List` also work on `Pairs`, this module provides some extra helpers
+//// that are specifically tailored to working with associative lists. Fundamentally, a `Pairs<k, v>` is
 //// a type-alias to `List<Pair<k, v>>`.
 ////
 //// ### Important
@@ -10,10 +10,9 @@
 //// about the ordering of elements within the list. As a result, lookup
 //// functions do traverse the entire list when invoked. They are also not _sets_,
 //// and thus allow for duplicate keys. This is reflected in the functions used
+//// to interact with them.
 
-//to interact with them.
-
-/// Remove a single key-value pair from the AList. If the key is not found, no changes are made.
+/// Remove a single key-value pair from the `Pairs`. If the key is not found, no changes are made.
 /// Duplicate keys are not removed. Only the **first** key found is removed.
 ///
 /// ```aiken
@@ -22,7 +21,7 @@
 /// alist.remove_first([Pair("a", 1), Pair("b", 2)], "a") == [Pair("b", 2)]
 /// alist.remove_first([Pair("a", 1), Pair("b", 2), Pair("a", 3)], "a") == [Pair("b", 2), Pair("a", 3)]
 /// ```
-pub fn remove_first(self: AList<key, value>, key k: key) -> AList<key, value> {
+pub fn remove_first(self: Pairs<key, value>, key k: key) -> Pairs<key, value> {
   when self is {
     [] ->
       []
@@ -55,7 +54,7 @@ test remove_first_4() {
   remove_first(fixture, "a") == [Pair("b", 2), Pair("a", 3)]
 }
 
-/// Remove a single key-value pair from the AList. If the key is not found, no changes are made.
+/// Remove a single key-value pair from the Pairs. If the key is not found, no changes are made.
 /// Duplicate keys are not removed. Only the **last** key found is removed.
 ///
 /// ```aiken
@@ -64,7 +63,7 @@ test remove_first_4() {
 /// alist.remove_last([Pair("a", 1), Pair("b", 2)], "a") == [Pair("b", 2)]
 /// alist.remove_last([Pair("a", 1), Pair("b", 2), Pair("a", 3)], "a") == [Pair("a", 1), Pair("b", 2)]
 /// ```
-pub fn remove_last(self: AList<key, value>, key k: key) -> AList<key, value> {
+pub fn remove_last(self: Pairs<key, value>, key k: key) -> Pairs<key, value> {
   when self is {
     [] ->
       []
@@ -102,7 +101,7 @@ test remove_last_4() {
   remove_last(fixture, "a") == [Pair("a", 1), Pair("b", 2)]
 }
 
-/// Remove all key-value pairs matching the key from the AList. If the key is not found, no changes are made.
+/// Remove all key-value pairs matching the key from the Pairs. If the key is not found, no changes are made.
 ///
 /// ```aiken
 /// alist.remove_all([], "a") == []
@@ -110,7 +109,7 @@ test remove_last_4() {
 /// alist.remove_all([Pair("a", 1), Pair("b", 2)], "a") == [Pair("b", 2)]
 /// alist.remove_all([Pair("a", 1), Pair("b", 2), Pair("a", 3)], "a") == [Pair("b", 2)]
 /// ```
-pub fn remove_all(self: AList<key, value>, key k: key) -> AList<key, value> {
+pub fn remove_all(self: Pairs<key, value>, key k: key) -> Pairs<key, value> {
   when self is {
     [] ->
       []
@@ -151,7 +150,7 @@ test remove_all_4() {
 /// alist.find_first([Pair("a", 1), Pair("b", 2)], 1) == Some("a")
 /// alist.find_first([Pair("a", 1), Pair("b", 2), Pair("c", 1)], 1) == Some("a")
 /// ```
-pub fn find_first(self: AList<key, value>, v: value) -> Option<key> {
+pub fn find_first(self: Pairs<key, value>, v: value) -> Option<key> {
   when self is {
     [] -> None
     [Pair(k2, v2), ..rest] ->
@@ -187,7 +186,7 @@ test find_first_4() {
 /// alist.find_last([Pair("a", 1), Pair("b", 2)], 1) == Some("a")
 /// alist.find_last([Pair("a", 1), Pair("b", 2), Pair("c", 1)], 1) == Some("c")
 /// ```
-pub fn find_last(self: AList<key, value>, v: value) -> Option<key> {
+pub fn find_last(self: Pairs<key, value>, v: value) -> Option<key> {
   when self is {
     [] -> None
     [Pair(k2, v2), ..rest] ->
@@ -226,7 +225,7 @@ test find_last_4() {
 /// alist.find_all([Pair("a", 1), Pair("b", 2)], 1) == ["a"]
 /// alist.find_all([Pair("a", 1), Pair("b", 2), Pair("c", 1)], 1) == ["a", "c"]
 /// ```
-pub fn find_all(self: AList<key, value>, v: value) -> List<key> {
+pub fn find_all(self: Pairs<key, value>, v: value) -> List<key> {
   when self is {
     [] ->
       []
@@ -255,8 +254,8 @@ test find_all_4() {
   find_all([Pair("a", 14), Pair("b", 42), Pair("c", 14)], 14) == ["a", "c"]
 }
 
-/// Fold over the key-value pairs in a AList. The fold direction follows the
-/// order of elements in the AList and is done from right-to-left.
+/// Fold over the key-value pairs in a Pairs. The fold direction follows the
+/// order of elements in the Pairs and is done from right-to-left.
 ///
 /// ```aiken
 /// let fixture = [
@@ -268,7 +267,7 @@ test find_all_4() {
 /// alist.foldr(fixture, 0, fn(k, v, result) { k * v + result }) == 1400
 /// ```
 pub fn foldr(
-  self: AList<key, value>,
+  self: Pairs<key, value>,
   zero: result,
   with: fn(key, value, result) -> result,
 ) -> result {
@@ -310,7 +309,7 @@ test foldr_3() {
 /// alist.foldl(fixture, 0, fn(k, v, result) { k * v + result }) == 1400
 /// ```
 pub fn foldl(
-  self: AList<key, value>,
+  self: Pairs<key, value>,
   zero: result,
   with: fn(key, value, result) -> result,
 ) -> result {
@@ -341,7 +340,7 @@ test foldl_2() {
 /// alist.get_first([Pair("a", 1), Pair("b", 2)], "a") == Some(1)
 /// alist.get_first([Pair("a", 1), Pair("b", 2), Pair("a", 3)], "a") == Some(1)
 /// ```
-pub fn get_first(self: AList<key, value>, key k: key) -> Option<value> {
+pub fn get_first(self: Pairs<key, value>, key k: key) -> Option<value> {
   when self is {
     [] -> None
     [Pair(k2, v), ..rest] ->
@@ -382,7 +381,7 @@ test get_first_5() {
 /// alist.get_last([Pair("a", 1), Pair("b", 2)], "a") == Some(1)
 /// alist.get_last([Pair("a", 1), Pair("b", 2), Pair("a", 3)], "a") == Some(3)
 /// ```
-pub fn get_last(self: AList<key, value>, key k: key) -> Option<value> {
+pub fn get_last(self: Pairs<key, value>, key k: key) -> Option<value> {
   when self is {
     [] -> None
     [Pair(k2, v), ..rest] ->
@@ -425,7 +424,7 @@ test get_last_5() {
 /// alist.get_all([Pair("a", 1), Pair("b", 2)], "a") == [1]
 /// alist.get_all([Pair("a", 1), Pair("b", 2), Pair("a", 3)], "a") == [1, 3]
 /// ```
-pub fn get_all(self: AList<key, value>, key k: key) -> List<value> {
+pub fn get_all(self: Pairs<key, value>, key k: key) -> List<value> {
   when self is {
     [] ->
       []
@@ -466,7 +465,7 @@ test get_all_5() {
 /// alist.has_key([Pair("a", 1), Pair("b", 2)], "a") == True
 /// alist.has_key([Pair("a", 1), Pair("b", 2), Pair("a", 3)], "a") == True
 /// ```
-pub fn has_key(self: AList<key, value>, k: key) -> Bool {
+pub fn has_key(self: Pairs<key, value>, k: key) -> Bool {
   when self is {
     [] -> False
     // || is lazy so this is fine
@@ -494,7 +493,7 @@ test has_key_5() {
   has_key([Pair("a", 14), Pair("b", 42), Pair("a", 42)], "a")
 }
 
-/// Extract all the keys present in a given `AList`.
+/// Extract all the keys present in a given `Pairs`.
 ///
 /// ```aiken
 /// alist.keys([]) == []
@@ -502,7 +501,7 @@ test has_key_5() {
 /// alist.keys([Pair("a", 1), Pair("b", 2)]) == ["a", "b"]
 /// alist.keys([Pair("a", 1), Pair("b", 2), Pair("a", 3)]) == ["a", "b", "a"]
 /// ```
-pub fn keys(self: AList<key, value>) -> List<key> {
+pub fn keys(self: Pairs<key, value>) -> List<key> {
   when self is {
     [] ->
       []
@@ -531,9 +530,9 @@ test keys_3() {
 /// alist.map(fixture, fn(_k, v) { v * 2 }) == [Pair("a", 200), Pair("b", 400)]
 /// ```
 pub fn map(
-  self: AList<key, value>,
+  self: Pairs<key, value>,
   with: fn(key, value) -> result,
-) -> AList<key, result> {
+) -> Pairs<key, result> {
   when self is {
     [] ->
       []
@@ -556,7 +555,7 @@ test map_2() {
   map(fixture, with: fn(_, v) { v + 1 }) == [Pair("a", 2), Pair("b", 3)]
 }
 
-/// Extract all the values present in a given `AList`.
+/// Extract all the values present in a given `Pairs`.
 ///
 /// ```aiken
 /// alist.values([]) == []
@@ -564,7 +563,7 @@ test map_2() {
 /// alist.values([Pair("a", 1), Pair("b", 2)]) == [1, 2]
 /// alist.values([Pair("a", 1), Pair("b", 2), Pair("a", 3)]) == [1, 2, 3]
 /// ```
-pub fn values(self: AList<key, value>) -> List<value> {
+pub fn values(self: Pairs<key, value>) -> List<value> {
   when self is {
     [] ->
       []

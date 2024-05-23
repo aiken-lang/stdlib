@@ -59,10 +59,10 @@ pub type Transaction {
   fee: Value,
   mint: MintedValue,
   certificates: List<Certificate>,
-  withdrawals: AList<StakeCredential, Int>,
+  withdrawals: Pairs<StakeCredential, Int>,
   validity_range: ValidityRange,
   extra_signatories: List<Hash<Blake2b_224, VerificationKey>>,
-  redeemers: AList<ScriptPurpose, Redeemer>,
+  redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<Hash<Blake2b_256, Data>, Data>,
   id: TransactionId,
 }
@@ -191,7 +191,7 @@ pub fn find_datum(
                     InlineDatum(data) ->
                       if
                       blake2b_256(builtin.serialise_data(data)) == datum_hash{
-                      
+
                         Some(data)
                       } else {
                         None

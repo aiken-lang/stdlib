@@ -8,7 +8,7 @@
 ////
 //// These invariants allow for more optimized functions to operate on `Dict`,
 //// but as a trade-offs, prevent `Dict` from being serializable. To recover a `Dict`
-//// from an unknown `Data`, you must first recover an `AList<k, v>` and use
+//// from an unknown `Data`, you must first recover an `Pairs<k, v>` and use
 //// `dict.from_ascending_list`.
 
 use aiken/builtin
@@ -27,12 +27,12 @@ use aiken/builtin
 ///   Dict<PolicyId, Dict<AssetName, Int>>
 /// ```
 pub opaque type Dict<key, value> {
-  inner: AList<ByteArray, value>,
+  inner: Pairs<ByteArray, value>,
 }
 
 /// Create a new empty Dict
 /// ```aiken
-/// dict.to_list(dict.new()) == []
+/// dict.to_pairs(dict.new()) == []
 /// ```
 pub fn new() -> Dict<key, value> {
   Dict { inner: [] }
@@ -58,7 +58,7 @@ fn fixture_1() {
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.delete(key: "a")
-///     |> dict.to_list()
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("b", 200)]
 /// ```
@@ -67,9 +67,9 @@ pub fn delete(self: Dict<key, value>, key: ByteArray) -> Dict<key, value> {
 }
 
 fn do_delete(
-  self: AList<ByteArray, value>,
+  self: Pairs<ByteArray, value>,
   key k: ByteArray,
-) -> AList<ByteArray, value> {
+) -> Pairs<ByteArray, value> {
   when self is {
     [] ->
       []
@@ -146,7 +146,7 @@ test delete_6() {
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.insert(key: "c", value: 300)
 ///     |> dict.filter(fn(k, _v) { k != "a" })
-///     |> dict.to_list()
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -158,9 +158,9 @@ pub fn filter(
 }
 
 fn do_filter(
-  self: AList<ByteArray, value>,
+  self: Pairs<ByteArray, value>,
   with: fn(ByteArray, value) -> Bool,
-) -> AList<ByteArray, value> {
+) -> Pairs<ByteArray, value> {
   when self is {
     [] ->
       []
@@ -207,7 +207,7 @@ pub fn find(self: Dict<key, value>, value v: value) -> Option<ByteArray> {
   do_find(self.inner, v)
 }
 
-fn do_find(self: AList<ByteArray, value>, value v: value) -> Option<ByteArray> {
+fn do_find(self: Pairs<ByteArray, value>, value v: value) -> Option<ByteArray> {
   when self is {
     [] -> None
     [Pair(k2, v2), ..rest] ->
@@ -271,7 +271,7 @@ pub fn foldr(
 }
 
 fn do_foldr(
-  self: AList<ByteArray, value>,
+  self: Pairs<ByteArray, value>,
   zero: result,
   with: fn(ByteArray, value, result) -> result,
 ) -> result {
@@ -311,7 +311,7 @@ pub fn foldl(
 }
 
 fn do_foldl(
-  self: AList<ByteArray, value>,
+  self: Pairs<ByteArray, value>,
   zero: result,
   with: fn(ByteArray, value, result) -> result,
 ) -> result {
@@ -333,47 +333,47 @@ test fold_2() {
 /// multiple times, the first occurrence prevails.
 ///
 /// ```aiken
-/// let alist = [Pair("a", 100), Pair("c", 300), Pair("b", 200)]
+/// let pairs = [Pair("a", 100), Pair("c", 300), Pair("b", 200)]
 ///
 /// let result =
-///   dict.from_list(alist)
-///     |> dict.to_list()
+///   dict.from_pairs(pairs)
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn from_list(self: AList<ByteArray, value>) -> Dict<key, value> {
-  Dict { inner: do_from_list(self) }
+pub fn from_pairs(self: Pairs<ByteArray, value>) -> Dict<key, value> {
+  Dict { inner: do_from_pairs(self) }
 }
 
-fn do_from_list(xs: AList<ByteArray, value>) -> AList<ByteArray, value> {
+fn do_from_pairs(xs: Pairs<ByteArray, value>) -> Pairs<ByteArray, value> {
   when xs is {
     [] ->
       []
-    [Pair(k, v), ..rest] -> do_insert(do_from_list(rest), k, v)
+    [Pair(k, v), ..rest] -> do_insert(do_from_pairs(rest), k, v)
   }
 }
 
 test from_list_1() {
-  from_list([]) == new()
+  from_pairs([]) == new()
 }
 
 test from_list_2() {
-  from_list([Pair(foo, 42), Pair(bar, 14)]) == from_list(
+  from_pairs([Pair(foo, 42), Pair(bar, 14)]) == from_pairs(
     [Pair(bar, 14), Pair(foo, 42)],
   )
 }
 
 test from_list_3() {
-  from_list([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
+  from_pairs([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
 }
 
 test from_list_4() {
-  from_list([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
+  from_pairs([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
 }
 
-test bench_from_list() {
+test bench_from_pairs() {
   let dict =
-    from_list(
+    from_pairs(
       [
         Pair("bbba", 8),
         Pair("bbab", 12),
@@ -402,11 +402,11 @@ test bench_from_list() {
 /// sorted.
 ///
 /// ```aiken
-/// let alist = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
+/// let pairs = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 ///
 /// let result =
-///   dict.from_ascending_list(alist)
-///     |> dict.to_list()
+///   dict.from_ascending_pairs(pairs)
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -415,12 +415,12 @@ test bench_from_list() {
 /// which has taken care of maintaining interval invariants. This function still
 /// performs a sanity check on all keys to avoid silly mistakes. It is, however,
 /// considerably faster than ['from_list'](from_list)
-pub fn from_ascending_list(xs: AList<ByteArray, value>) -> Dict<key, value> {
+pub fn from_ascending_pairs(xs: Pairs<ByteArray, value>) -> Dict<key, value> {
   let Void = check_ascending_list(xs)
   Dict { inner: xs }
 }
 
-fn check_ascending_list(xs: AList<ByteArray, value>) {
+fn check_ascending_list(xs: Pairs<ByteArray, value>) {
   when xs is {
     [] -> Void
     [_] -> Void
@@ -433,24 +433,24 @@ fn check_ascending_list(xs: AList<ByteArray, value>) {
   }
 }
 
-/// Like [`from_ascending_list`](#from_ascending_list) but fails if **any**
+/// Like [`from_ascending_pairs`](#from_ascending_list) but fails if **any**
 /// value doesn't satisfy the predicate.
 ///
 /// ```aiken
-/// let alist = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
+/// let pairs = [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 ///
-/// dict.from_ascending_list_with(alist, fn(x) { x <= 250 }) // fail
+/// dict.from_ascending_pairs_with(pairs, fn(x) { x <= 250 }) // fail
 /// ```
-pub fn from_ascending_list_with(
-  xs: AList<ByteArray, value>,
+pub fn from_ascending_pairs_with(
+  xs: Pairs<ByteArray, value>,
   predicate: fn(value) -> Bool,
 ) -> Dict<key, value> {
-  let Void = check_ascending_list_with(xs, predicate)
+  let Void = check_ascending_pairs_with(xs, predicate)
   Dict { inner: xs }
 }
 
-fn check_ascending_list_with(
-  xs: AList<ByteArray, value>,
+fn check_ascending_pairs_with(
+  xs: Pairs<ByteArray, value>,
   predicate: fn(value) -> Bool,
 ) {
   when xs is {
@@ -464,19 +464,19 @@ fn check_ascending_list_with(
     [Pair(x0, v0), Pair(x1, _) as e, ..rest] ->
       if builtin.less_than_bytearray(x0, x1) {
         if predicate(v0) {
-          check_ascending_list_with([e, ..rest], predicate)
+          check_ascending_pairs_with([e, ..rest], predicate)
         } else {
           fail @"value doesn't satisfy predicate"
         }
       } else {
-        fail @"keys in associative list aren't in ascending order"
+        fail @"keys in pairs aren't in ascending order"
       }
   }
 }
 
-test bench_from_ascending_list() {
+test bench_from_ascending_pairs() {
   let dict =
-    from_ascending_list(
+    from_ascending_pairs(
       [
         Pair("aaaa", 1),
         Pair("aaab", 9),
@@ -514,7 +514,7 @@ pub fn get(self: Dict<key, value>, key: ByteArray) -> Option<value> {
   do_get(self.inner, key)
 }
 
-fn do_get(self: AList<ByteArray, value>, key k: ByteArray) -> Option<value> {
+fn do_get(self: Pairs<ByteArray, value>, key k: ByteArray) -> Option<value> {
   when self is {
     [] -> None
     [Pair(k2, v), ..rest] ->
@@ -598,7 +598,7 @@ pub fn has_key(self: Dict<key, value>, key k: ByteArray) -> Bool {
   do_has_key(self.inner, k)
 }
 
-fn do_has_key(self: AList<ByteArray, value>, key k: ByteArray) -> Bool {
+fn do_has_key(self: Pairs<ByteArray, value>, key k: ByteArray) -> Bool {
   when self is {
     [] -> False
     [Pair(k2, _), ..rest] ->
@@ -647,7 +647,7 @@ test has_key_4() {
 ///     |> dict.insert(key: "a", value: 1)
 ///     |> dict.insert(key: "b", value: 2)
 ///     |> dict.insert(key: "a", value: 3)
-///     |> dict.to_list()
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 3), Pair("b", 2)]
 /// ```
@@ -660,10 +660,10 @@ pub fn insert(
 }
 
 fn do_insert(
-  self: AList<ByteArray, value>,
+  self: Pairs<ByteArray, value>,
   key k: ByteArray,
   value v: value,
-) -> AList<ByteArray, value> {
+) -> Pairs<ByteArray, value> {
   when self is {
     [] ->
       [Pair(k, v)]
@@ -713,7 +713,7 @@ test insert_2() {
 ///     |> dict.insert_with(key: "a", value: 1, with: sum)
 ///     |> dict.insert_with(key: "b", value: 2, with: sum)
 ///     |> dict.insert_with(key: "a", value: 3, with: sum)
-///     |> dict.to_list()
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 4), Pair("b", 2)]
 /// ```
@@ -736,7 +736,7 @@ test insert_with_1() {
     new()
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
-      |> to_list()
+      |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
 }
@@ -750,7 +750,7 @@ test insert_with_2() {
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
       |> insert_with(key: "foo", value: 3, with: sum)
-      |> to_list()
+      |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 4)]
 }
@@ -771,7 +771,7 @@ test insert_with_3() {
       |> insert_with(key: "bar", value: 2, with: with)
       |> insert_with(key: "foo", value: 3, with: with)
       |> insert_with(key: "bar", value: 4, with: with)
-      |> to_list()
+      |> to_pairs()
 
   result == [Pair("foo", 1)]
 }
@@ -807,7 +807,7 @@ pub fn keys(self: Dict<key, value>) -> List<ByteArray> {
   do_keys(self.inner)
 }
 
-fn do_keys(self: AList<ByteArray, value>) -> List<ByteArray> {
+fn do_keys(self: Pairs<ByteArray, value>) -> List<ByteArray> {
   when self is {
     [] ->
       []
@@ -837,7 +837,7 @@ test keys_2() {
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
 ///     |> dict.map(fn(_k, v) { v * 2 })
-///     |> dict.to_list()
+///     |> dict.to_pairs()
 ///
 ///  result == [Pair("a", 200), Pair("b", 400), Pair("c", 600)]
 /// ```
@@ -846,9 +846,9 @@ pub fn map(self: Dict<key, a>, with: fn(ByteArray, a) -> b) -> Dict<key, b> {
 }
 
 fn do_map(
-  self: AList<ByteArray, a>,
+  self: Pairs<ByteArray, a>,
   with: fn(ByteArray, a) -> b,
-) -> AList<ByteArray, b> {
+) -> Pairs<ByteArray, b> {
   when self is {
     [] ->
       []
@@ -879,20 +879,20 @@ test map_2() {
 ///     |> dict.insert("a", 100)
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
-///     |> dict.to_list()
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
-pub fn to_list(self: Dict<key, value>) -> AList<ByteArray, value> {
+pub fn to_pairs(self: Dict<key, value>) -> Pairs<ByteArray, value> {
   self.inner
 }
 
 test to_list_1() {
-  to_list(new()) == []
+  to_pairs(new()) == []
 }
 
 test to_list_2() {
-  to_list(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
+  to_pairs(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
 }
 
 /// Return the number of key-value pairs in the dictionary.
@@ -911,7 +911,7 @@ pub fn size(self: Dict<key, value>) -> Int {
   do_size(self.inner)
 }
 
-fn do_size(self: AList<key, value>) -> Int {
+fn do_size(self: Pairs<key, value>) -> Int {
   when self is {
     [] -> 0
     [_, ..rest] -> 1 + do_size(rest)
@@ -941,11 +941,11 @@ test size_3() {
 /// right dictionary, values from the left are preferred (i.e. left-biaised).
 ///
 /// ```aiken
-/// let left_dict = dict.from_list([Pair("a", 100), Pair("b", 200)])
-/// let right_dict = dict.from_list([Pair("a", 150), Pair("c", 300)])
+/// let left_dict = dict.from_pairs([Pair("a", 100), Pair("b", 200)])
+/// let right_dict = dict.from_pairs([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
-///   dict.union(left_dict, right_dict) |> dict.to_list()
+///   dict.union(left_dict, right_dict) |> dict.to_pairs()
 ///
 /// result == [Pair("a", 100), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -957,9 +957,9 @@ pub fn union(
 }
 
 fn do_union(
-  left: AList<ByteArray, value>,
-  right: AList<ByteArray, value>,
-) -> AList<ByteArray, value> {
+  left: Pairs<ByteArray, value>,
+  right: Pairs<ByteArray, value>,
+) -> Pairs<ByteArray, value> {
   when left is {
     [] -> right
     [Pair(k, v), ..rest] -> do_union(rest, do_insert(right, k, v))
@@ -982,7 +982,7 @@ test union_3() {
     new()
       |> insert(bar, 42)
       |> insert(baz, 1337)
-  union(left, right) == from_list(
+  union(left, right) == from_pairs(
     [Pair(foo, 14), Pair(baz, 1337), Pair(bar, 42)],
   )
 }
@@ -995,7 +995,7 @@ test union_4() {
     new()
       |> insert(bar, 42)
       |> insert(foo, 1337)
-  union(left, right) == from_list([Pair(foo, 14), Pair(bar, 42)])
+  union(left, right) == from_pairs([Pair(foo, 14), Pair(bar, 42)])
 }
 
 /// Like [`union`](#union) but allows specifying the behavior to adopt when a key is present
@@ -1005,8 +1005,8 @@ test union_4() {
 /// When passing `None`, the value is removed and not present in the union.
 ///
 /// ```aiken
-/// let left_dict = dict.from_list([Pair("a", 100), Pair("b", 200)])
-/// let right_dict = dict.from_list([Pair("a", 150), Pair("c", 300)])
+/// let left_dict = dict.from_pairs([Pair("a", 100), Pair("b", 200)])
+/// let right_dict = dict.from_pairs([Pair("a", 150), Pair("c", 300)])
 ///
 /// let result =
 ///   dict.union_with(
@@ -1014,7 +1014,7 @@ test union_4() {
 ///     right_dict,
 ///     fn(_k, v1, v2) { Some(v1 + v2) },
 ///   )
-///     |> dict.to_list()
+///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 250), Pair("b", 200), Pair("c", 300)]
 /// ```
@@ -1027,10 +1027,10 @@ pub fn union_with(
 }
 
 fn do_union_with(
-  left: AList<ByteArray, value>,
-  right: AList<ByteArray, value>,
+  left: Pairs<ByteArray, value>,
+  right: Pairs<ByteArray, value>,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> AList<ByteArray, value> {
+) -> Pairs<ByteArray, value> {
   when left is {
     [] -> right
     [Pair(k, v), ..rest] ->
@@ -1039,11 +1039,11 @@ fn do_union_with(
 }
 
 fn do_insert_with(
-  self: AList<ByteArray, value>,
+  self: Pairs<ByteArray, value>,
   key k: ByteArray,
   value v: value,
   with: fn(ByteArray, value, value) -> Option<value>,
-) -> AList<ByteArray, value> {
+) -> Pairs<ByteArray, value> {
   when self is {
     [] ->
       [Pair(k, v)]
@@ -1076,7 +1076,7 @@ test union_with_1() {
 
   let result = union_with(left, right, with: fn(_, l, r) { Some(l + r) })
 
-  result == from_list([Pair(foo, 1351), Pair(bar, 42)])
+  result == from_pairs([Pair(foo, 1351), Pair(bar, 42)])
 }
 
 /// Extract all the values present in a given `Dict`.
@@ -1095,7 +1095,7 @@ pub fn values(self: Dict<key, value>) -> List<value> {
   do_values(self.inner)
 }
 
-fn do_values(self: AList<key, value>) -> List<value> {
+fn do_values(self: Pairs<key, value>) -> List<value> {
   when self is {
     [] ->
       []

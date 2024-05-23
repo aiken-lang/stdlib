@@ -310,7 +310,7 @@ test diagnostic_10() {
 }
 
 test diagnostic_10_alt() {
-  let xs: AList<Int, Int> =
+  let xs: Pairs<Int, Int> =
     []
   diagnostic(xs) == @"{}"
 }
