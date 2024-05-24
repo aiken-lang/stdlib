@@ -31,7 +31,7 @@ jobs:
         uses: actions/configure-pages@v2
 
       - name: 🧰 Install Aiken
-        uses: aiken-lang/setup-aiken@v0.1.0
+        uses: aiken-lang/setup-aiken@v1
         with:
           version: v1.0.28-alpha
 
