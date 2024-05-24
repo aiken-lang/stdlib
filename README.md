@@ -8,6 +8,15 @@
   <hr/>
 </div>
 
+## Compatibility
+
+aiken's version | stdlib's version(s)
+---             | ---
+`v1.0.28-alpha` | `1.9.0`
+`v1.0.26-alpha` | `1.8.0`
+
+## Overview
+
 The official standard library for the [Aiken](https://aiken-lang.org) Cardano
 smart-contract language.
 
