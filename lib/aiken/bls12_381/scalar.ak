@@ -100,7 +100,12 @@ test one_1() {
 
 /// Calculates the additive inverse of a `Scalar` element.
 pub fn neg(self: Scalar) -> Scalar {
-  sub(zero(), self)
+  // sub(zero(), self)
+  if self.integer == 0 {
+    self
+  } else {
+    Scalar(bls12_381_scalar_field_prime - self.integer)
+  }
 }
 
 test neg_1() {
