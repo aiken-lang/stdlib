@@ -105,7 +105,7 @@ pub type Transaction {
   mint: Value,
   // ^ minted value is now back to a value
   certificates: List<Certificate>,
-  withdrawals: Dict<StakeCredential, Lovelace>,
+  withdrawals: Pairs<StakeCredential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
@@ -114,6 +114,7 @@ pub type Transaction {
   id: TransactionId,
   // new fields for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
+  // ^ Does this need to be pairs?
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
   treasury_donation: Option<Lovelace>,
@@ -141,7 +142,7 @@ pub fn placeholder() -> Transaction {
     fee: 0,
     mint: value.zero(),
     certificates: [],
-    withdrawals: dict.new(),
+    withdrawals: [],
     validity_range: interval.everything(),
     extra_signatories: [],
     redeemers: [],
