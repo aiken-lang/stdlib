@@ -114,6 +114,7 @@ pub type Transaction {
   id: TransactionId,
   // new fields for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
+  // ^ Does this need to be pairs?
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
   treasury_donation: Option<Lovelace>,
