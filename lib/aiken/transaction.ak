@@ -24,7 +24,39 @@ use aiken/transaction/value.{Lovelace, PolicyId, Value}
 /// being executed.
 pub type ScriptContext {
   transaction: Transaction,
-  purpose: ScriptPurpose,
+  redeemer: Redeemer,
+  info: ScriptInfo,
+}
+
+/// Characterizes the kind of script being executed.
+pub type ScriptInfo {
+  /// For scripts executed as minting/burning policies, to insert
+  /// or remove assets from circulation. It's parameterized by the identifier
+  /// of the associated policy.
+  Minting(PolicyId)
+  /// For scripts that are used as payment credentials for addresses in
+  /// transaction outputs. They govern the rule by which the output they
+  /// reference can be spent.
+  Spending(OutputReference, Option<Data>)
+  /// For scripts that validate reward withdrawals from a reward account.
+  ///
+  /// The argument identifies the target reward account.
+  Withdrawing(StakeCredential)
+  /// Needed when delegating to a pool using stake credentials defined as a
+  /// Plutus script. This purpose is also triggered when de-registering such
+  /// stake credentials.
+  ///
+  /// The Int is a 0-based index of the given `TxCert` in `certificates`.
+  Publishing(Int, Certificate)
+  /// Voting for a type of voter using a governance action id to vote
+  /// yes / no / abstain inside a transaction.
+  ///
+  /// The voter is who is doing the governance action.
+  Voting(Voter)
+  /// Used to propose a governance action.
+  ///
+  /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
+  Proposing(Int, ProposalProcedure)
 }
 
 /// Characterizes the kind of script being executed.
@@ -40,30 +72,22 @@ pub type ScriptPurpose {
   /// For scripts that validate reward withdrawals from a reward account.
   ///
   /// The argument identifies the target reward account.
-  WithdrawFrom(StakeCredential)
+  Withdraw(StakeCredential)
   /// Needed when delegating to a pool using stake credentials defined as a
   /// Plutus script. This purpose is also triggered when de-registering such
   /// stake credentials.
   ///
   /// The Int is a 0-based index of the given `TxCert` in `certificates`.
-<<<<<<< HEAD
-  Publish(Int, Certificate)
-  /// Voting for a type of voter using a governance action id to vote
-||||||| parent of ee511e7 (Name changes and adding back in the yml workspace file)
-  Publish(Int, Certificate)
-  /// Voting for a type of voter using a governance action id to vote
-=======
   Publish { certificate_index: Int, certificate: Certificate }
   /// Voting for a type of voter using a governance action id to vote
->>>>>>> ee511e7 (Name changes and adding back in the yml workspace file)
   /// yes / no / abstain inside a transaction.
   ///
   /// The voter is who is doing the governance action.
-  Voting(Voter)
+  Vote(Voter)
   /// Used to propose a governance action.
   ///
   /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
-  Proposing { proposal_index: Int, proposal: ProposalProcedure }
+  Propose(Int, ProposalProcedure)
 }
 
 /// A Cardano `Transaction`, as seen by Plutus scripts.
