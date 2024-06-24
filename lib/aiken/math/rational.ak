@@ -334,7 +334,7 @@ test ceil_1() {
   }
 }
 
-/// Returns the proper fraction of a given `Rational` `r`. That is, a pair of
+/// Returns the proper fraction of a given `Rational` `r`. That is, a 2-tuple of
 /// an `Int` and `Rational` (n, f) such that:
 ///
 /// - `r = n + f`;

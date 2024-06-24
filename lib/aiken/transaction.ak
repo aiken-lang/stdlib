@@ -19,15 +19,47 @@ use aiken/transaction/value.{Lovelace, PolicyId, Value}
 ///
 /// The context contains information about the entire transaction that contains
 /// the script. The transaction may also contain other scripts; to distinguish
-/// between multiple scripts, the `ScriptContext` also contains a `purpose`
+/// between multiple scripts, the `ScriptInfo` contains a `purpose`
 /// which indicates which script (or, for what purpose) of the transaction is
 /// being executed.
 pub type ScriptContext {
   transaction: Transaction,
-  purpose: ScriptPurpose,
+  redeemer: Redeemer,
+  info: ScriptInfo,
 }
 
-/// Characterizes the kind of script being executed.
+/// Characterizes the script information.
+pub type ScriptInfo {
+  /// For scripts executed as minting/burning policies, to insert
+  /// or remove assets from circulation. It's parameterized by the identifier
+  /// of the associated policy.
+  Minting(PolicyId)
+  /// For scripts that are used as payment credentials for addresses in
+  /// transaction outputs. They govern the rule by which the output they
+  /// reference can be spent.
+  Spending(OutputReference, Option<Data>)
+  /// For scripts that validate reward withdrawals from a reward account.
+  ///
+  /// The argument identifies the target reward account.
+  Withdrawing(StakeCredential)
+  /// Needed when delegating to a pool using stake credentials defined as a
+  /// Plutus script. This purpose is also triggered when de-registering such
+  /// stake credentials.
+  ///
+  /// The Int is a 0-based index of the given `TxCert` in `certificates`.
+  Publishing(Int, Certificate)
+  /// Voting for a type of voter using a governance action id to vote 
+  /// yes / no / abstain inside a transaction.
+  ///
+  /// The voter is who is doing the governance action.
+  Voting(Voter)
+  /// Used to propose a governance action.
+  ///
+  /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
+  Proposing(Int, ProposalProcedure)
+}
+
+/// Characterizes the script purpose.
 pub type ScriptPurpose {
   /// For scripts executed as minting/burning policies, to insert
   /// or remove assets from circulation. It's parameterized by the identifier
@@ -40,22 +72,22 @@ pub type ScriptPurpose {
   /// For scripts that validate reward withdrawals from a reward account.
   ///
   /// The argument identifies the target reward account.
-  WithdrawFrom(StakeCredential)
+  Withdraw(StakeCredential)
   /// Needed when delegating to a pool using stake credentials defined as a
   /// Plutus script. This purpose is also triggered when de-registering such
   /// stake credentials.
   ///
   /// The Int is a 0-based index of the given `TxCert` in `certificates`.
-  Publish { certificate_index: Int, certificate: Certificate }
+  Publish(Int, Certificate)
   /// Voting for a type of voter using a governance action id to vote 
   /// yes / no / abstain inside a transaction.
   ///
   /// The voter is who is doing the governance action.
-  Voting(Voter)
+  Vote(Voter)
   /// Used to propose a governance action.
   ///
   /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
-  Proposing { proposal_index: Int, proposal: ProposalProcedure }
+  Propose(Int, ProposalProcedure)
 }
 
 /// A Cardano `Transaction`, as seen by Plutus scripts.
@@ -76,10 +108,11 @@ pub type Transaction {
   withdrawals: Dict<StakeCredential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
-  redeemers: Dict<ScriptPurpose, Redeemer>,
+  redeemers: Pairs<ScriptPurpose, Redeemer>,
+  // ^ Pairs and ScriptPurpose are used here
   datums: Dict<DatumHashDigest, Data>,
   id: TransactionId,
-  // all new fields below for v3
+  // new fields for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
@@ -111,7 +144,7 @@ pub fn placeholder() -> Transaction {
     withdrawals: dict.new(),
     validity_range: interval.everything(),
     extra_signatories: [],
-    redeemers: dict.new(),
+    redeemers: [],
     datums: dict.new(),
     id: TransactionId {
       hash: #"0000000000000000000000000000000000000000000000000000000000000000",
@@ -206,26 +239,26 @@ pub fn find_datum(
   datums
     |> dict.get(datum_hash)
     |> option.or_try(
-         fn() {
-           outputs
-             |> list.filter_map(
-                  fn(output) {
-                    when output.datum is {
-                      InlineDatum(data) ->
-                        if
-                        blake2b_256(builtin.serialise_data(data)) == datum_hash{
-                        
-                          Some(data)
-                        } else {
-                          None
-                        }
-                      _ -> None
-                    }
-                  },
-                )
-             |> list.head
-         },
-       )
+        fn() {
+          outputs
+            |> list.filter_map(
+                fn(output) {
+                  when output.datum is {
+                    InlineDatum(data) ->
+                      if
+                      blake2b_256(builtin.serialise_data(data)) == datum_hash{
+                      
+                        Some(data)
+                      } else {
+                        None
+                      }
+                    _ -> None
+                  }
+                },
+              )
+            |> list.head
+        },
+      )
 }
 
 /// Find all outputs that are paying into the given script hash, if any. This is useful for
@@ -236,12 +269,12 @@ pub fn find_script_outputs(
 ) -> List<Output> {
   outputs
     |> list.filter(
-         fn(output) {
-           when output.address.payment_credential is {
-             ScriptCredential(addr_script_hash) ->
-               script_hash == addr_script_hash
-             VerificationKeyCredential(_) -> False
-           }
-         },
-       )
+        fn(output) {
+          when output.address.payment_credential is {
+            ScriptCredential(addr_script_hash) ->
+              script_hash == addr_script_hash
+            VerificationKeyCredential(_) -> False
+          }
+        },
+      )
 }

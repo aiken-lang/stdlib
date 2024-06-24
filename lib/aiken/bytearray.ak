@@ -278,8 +278,9 @@ test from_string_2() {
 }
 
 /// Add a byte element in front of a `ByteArray`. When the given byte is
-/// greater than 255, it wraps-around. So 256 is mapped to 0, 257 to 1, and so
-/// forth.
+/// greater than 255, it wraps-around. **PlutusV2 behavior** So 256 is mapped to 0, 257 to 1, and so
+/// forth. 
+/// In PlutusV3 this will error instead of wrapping around.
 ///
 /// ```aiken
 /// bytearray.push(#"", 0) == #"00"
@@ -387,8 +388,14 @@ test take_4() {
 
 /// Convert a `ByteArray` into a `String`.
 ///
+/// <br/>⚠️<pre>WARNING</pre> | This functions fails if the underlying `ByteArray` isn't UTF-8-encoded. <br/>In particular, you cannot convert arbitrary hash digests using this function. <br/>For converting arbitrary `ByteArray`s, use [bytearray.to_hex](#to_hex).
+/// ---                  | ---
+///
+///
 /// ```aiken
 /// bytearray.to_string(#"414243") == "ABC"
+///
+/// bytearray.to_string(some_hash) -> fail
 /// ```
 pub fn to_string(self: ByteArray) -> String {
   builtin.decode_utf8(self)
