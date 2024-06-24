@@ -19,7 +19,7 @@ use aiken/transaction/value.{Lovelace, PolicyId, Value}
 ///
 /// The context contains information about the entire transaction that contains
 /// the script. The transaction may also contain other scripts; to distinguish
-/// between multiple scripts, the `ScriptContext` also contains a `purpose`
+/// between multiple scripts, the `ScriptInfo` contains a `purpose`
 /// which indicates which script (or, for what purpose) of the transaction is
 /// being executed.
 pub type ScriptContext {
@@ -28,7 +28,7 @@ pub type ScriptContext {
   info: ScriptInfo,
 }
 
-/// Characterizes the kind of script being executed.
+/// Characterizes the script information.
 pub type ScriptInfo {
   /// For scripts executed as minting/burning policies, to insert
   /// or remove assets from circulation. It's parameterized by the identifier
@@ -59,7 +59,7 @@ pub type ScriptInfo {
   Proposing(Int, ProposalProcedure)
 }
 
-/// Characterizes the kind of script being executed.
+/// Characterizes the script purpose.
 pub type ScriptPurpose {
   /// For scripts executed as minting/burning policies, to insert
   /// or remove assets from circulation. It's parameterized by the identifier
@@ -109,9 +109,10 @@ pub type Transaction {
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
+  // ^ Pairs and ScriptPurpose are used here
   datums: Dict<DatumHashDigest, Data>,
   id: TransactionId,
-  // all new fields below for v3
+  // new fields for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
