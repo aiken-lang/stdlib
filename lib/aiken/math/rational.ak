@@ -406,10 +406,18 @@ pub fn round(self: Rational) -> Int {
 
   when compare(abs(f), ratio(1, 2)) is {
     Less -> n
-    Equal if is_negative -> n
-    Equal -> n + 1
-    Greater if is_negative -> n - 1
-    Greater -> n + 1
+    Equal ->
+      if is_negative {
+        n
+      } else {
+        n + 1
+      }
+    Greater ->
+      if is_negative {
+        n - 1
+      } else {
+        n + 1
+      }
   }
 }
 
@@ -456,8 +464,12 @@ pub fn round_even(self: Rational) -> Int {
 
   when compare(abs(f), ratio(1, 2)) is {
     Less -> n
-    Equal if is_even -> n
-    Equal -> n + m
+    Equal ->
+      if is_even {
+        n
+      } else {
+        n + m
+      }
     Greater -> n + m
   }
 }
