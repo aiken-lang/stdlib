@@ -279,7 +279,7 @@ test from_string_2() {
 
 /// Add a byte element in front of a `ByteArray`. When the given byte is
 /// greater than 255, it wraps-around. **PlutusV2 behavior** So 256 is mapped to 0, 257 to 1, and so
-/// forth. 
+/// forth.
 /// In PlutusV3 this will error instead of wrapping around.
 ///
 /// ```aiken
@@ -422,44 +422,12 @@ pub fn to_hex(self: ByteArray) -> String {
     |> builtin.decode_utf8
 }
 
-// Construct an hex string in reverse order, from the back. The 'builder' is an
-// accumulator. It works fast because `index_bytearray` follows a constant-time cost
-// model
-fn encode_base16(bytes: ByteArray, ix: Int, builder: ByteArray) -> ByteArray {
-  if ix < 0 {
-    builder
-  } else {
-    let byte = builtin.index_bytearray(bytes, ix)
-    let msb = byte / 16
-    let lsb = byte % 16
-    encode_base16(
-      bytes,
-      ix - 1,
-      builtin.cons_bytearray(
-        msb + if msb < 10 {
-          48
-        } else {
-          87
-        },
-        builtin.cons_bytearray(
-          lsb + if lsb < 10 {
-            48
-          } else {
-            87
-          },
-          builder,
-        ),
-      ),
-    )
-  }
-}
-
 test to_hex_1() {
-  to_hex("Hello world!") == @"48656c6c6f20776f726c6421"
+  to_hex("Hello world!") == @"48656C6C6F20776F726C6421"
 }
 
 test to_hex_2() {
-  to_hex("The quick brown fox jumps over the lazy dog") == @"54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f67"
+  to_hex("The quick brown fox jumps over the lazy dog") == @"54686520717569636B2062726F776E20666F78206A756D7073206F76657220746865206C617A7920646F67"
 }
 
 /// Checks whether a bit (Most-Significant-Bit first) is set in the given 'ByteArray'.
