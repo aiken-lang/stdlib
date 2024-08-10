@@ -6,8 +6,8 @@ use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
 /// Credentials are always one of two kinds: a direct public/private key
 /// pair, or a script (native or Plutus).
 pub type Credential {
-  VerificationKeyCredential(Hash<Blake2b_224, VerificationKey>)
-  ScriptCredential(Hash<Blake2b_224, Script>)
+  VerificationKey(VerificationKeyHash)
+  Script(ScriptHash)
 }
 
 /// A Cardano `Address` typically holding one or two credential references.
@@ -23,18 +23,12 @@ pub type Address {
 
 /// Smart-constructor for an [Address](#Address) from a [verification key](#VerificationKey) hash. The resulting address has no delegation rights whatsoever.
 pub fn from_verification_key(vk: Hash<Blake2b_224, VerificationKey>) -> Address {
-  Address {
-    payment_credential: VerificationKeyCredential(vk),
-    stake_credential: None,
-  }
+  Address { payment_credential: VerificationKey(vk), stake_credential: None }
 }
 
 /// Smart-constructor for an [Address](#Address) from a [script](#Script) hash. The address has no delegation rights whatsoever.
 pub fn from_script(script: Hash<Blake2b_224, Script>) -> Address {
-  Address {
-    payment_credential: ScriptCredential(script),
-    stake_credential: None,
-  }
+  Address { payment_credential: Script(script), stake_credential: None }
 }
 
 /// Set (or reset) the delegation part of an [Address](#Address) using a [verification key](#VerificationKey) hash. This is useful when combined with [`from_verification_key`](#from_verification_key) and/or [`from_script`](#from_script).
@@ -44,7 +38,7 @@ pub fn with_delegation_key(
 ) -> Address {
   Address {
     payment_credential: self.payment_credential,
-    stake_credential: Some(Inline(VerificationKeyCredential(vk))),
+    stake_credential: Some(Inline(VerificationKey(vk))),
   }
 }
 
@@ -55,7 +49,7 @@ pub fn with_delegation_script(
 ) -> Address {
   Address {
     payment_credential: self.payment_credential,
-    stake_credential: Some(Inline(ScriptCredential(script))),
+    stake_credential: Some(Inline(Script(script))),
   }
 }
 
@@ -119,15 +113,3 @@ pub type ScriptHash =
 // DatumHash is taken as a Datum type so this may just need to change.
 pub type DatumHashDigest =
   Hash<Blake2b_256, Data>
-
-pub type DRepCredential {
-  member: Credential,
-}
-
-pub type ColdCommitteeCredential {
-  member: Credential,
-}
-
-pub type HotCommitteeCredential {
-  member: Credential,
-}

@@ -1,8 +1,6 @@
 use cardano/assets.{Lovelace}
-use cardano/credential.{
-  ColdCommitteeCredential, DRepCredential, HotCommitteeCredential, PoolId,
-  StakeCredential, VerificationKeyHash,
-}
+use cardano/credential.{Credential,
+  PoolId, StakeCredential, VerificationKeyHash}
 use cardano/governance.{Delegatee}
 
 /// An on-chain certificate attesting of some operation. Publishing
@@ -29,11 +27,11 @@ pub type Certificate {
     deposit_amount: Lovelace,
   }
   // Register a DRep with a deposit value. The optional anchor is omitted.
-  RegisterDRep { representative: DRepCredential, deposit_amount: Lovelace }
+  RegisterDRep { representative: Credential, deposit_amount: Lovelace }
   // Update a DRep. The optional anchor is omitted.
-  UpdateDRep { representative: DRepCredential }
+  UpdateDRep { representative: Credential }
   // UnRegister a DRep with mandatory refund value
-  UnregisterDRep { representative: DRepCredential, refund_amount: Lovelace }
+  UnregisterDRep { representative: Credential, refund_amount: Lovelace }
   // A digest of the PoolParams
   PoolRegister {
     // poolId
@@ -44,9 +42,6 @@ pub type Certificate {
   // The retirement certificate and the Epoch in which the retirement will take place
   PoolRetire { pool_id: PoolId, epoch: Int }
   // Authorize a Hot credential for a specific Committee member's cold credential
-  AuthorizeHotCommittee {
-    cold_memeber: ColdCommitteeCredential,
-    hot_member: HotCommitteeCredential,
-  }
-  ResignColdCommittee { cold_member: ColdCommitteeCredential }
+  AuthorizeHotCommittee { cold_memeber: Credential, hot_member: Credential }
+  ResignColdCommittee { cold_member: Credential }
 }

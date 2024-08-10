@@ -1,4 +1,5 @@
 use aiken/builtin
+use aiken/collection.{Index}
 use aiken/collection/dict.{Dict}
 use aiken/collection/list
 use aiken/hash.{Blake2b_256, Hash, blake2b_256}
@@ -7,15 +8,10 @@ use aiken/option
 use cardano/assets.{Lovelace, PolicyId, Value}
 use cardano/certificate.{Certificate}
 use cardano/credential.{
-  Address, DatumHashDigest, ScriptCredential, ScriptHash, StakeCredential,
-  VerificationKeyCredential, VerificationKeyHash,
+  Address, DatumHashDigest, Script, ScriptHash, StakeCredential, VerificationKey,
+  VerificationKeyHash,
 }
 use cardano/governance.{GovernanceActionId, ProposalProcedure, Vote, Voter}
-
-/// An positive integer, that materializes the position of an element in a
-/// collection.
-type Index =
-  Int
 
 /// A context given to a script by the Cardano ledger when being executed.
 ///
@@ -103,20 +99,15 @@ pub type Transaction {
   reference_inputs: List<Input>,
   outputs: List<Output>,
   fee: Lovelace,
-  // ^ the fee is now lovelace
   mint: Value,
-  // ^ minted value is now back to a value
   certificates: List<Certificate>,
   withdrawals: Pairs<StakeCredential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
-  // ^ Pairs and ScriptPurpose are used here
   datums: Dict<DatumHashDigest, Data>,
   id: Hash<Blake2b_256, Transaction>,
-  // new fields for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
-  // ^ Does this need to be pairs?
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
   treasury_donation: Option<Lovelace>,
@@ -268,9 +259,8 @@ pub fn find_script_outputs(
     |> list.filter(
         fn(output) {
           when output.address.payment_credential is {
-            ScriptCredential(addr_script_hash) ->
-              script_hash == addr_script_hash
-            VerificationKeyCredential(_) -> False
+            Script(addr_script_hash) -> script_hash == addr_script_hash
+            VerificationKey(_) -> False
           }
         },
       )
