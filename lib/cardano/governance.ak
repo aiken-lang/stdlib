@@ -1,10 +1,10 @@
-use aiken/dict.{Dict}
+use aiken/collection/dict.{Dict}
 use aiken/math/rational.{Rational}
-use aiken/transaction/credential.{
+use cardano/assets.{Lovelace}
+use cardano/credential.{
   ColdCommitteeCredential, Credential, DRepCredential, HotCommitteeCredential,
   ScriptHash, VerificationKeyHash,
 }
-use aiken/transaction/value.{Lovelace}
 
 pub type DRep {
   FromCredential(DRepCredential)

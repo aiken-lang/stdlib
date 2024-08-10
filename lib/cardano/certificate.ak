@@ -1,9 +1,9 @@
-use aiken/transaction/credential.{
+use cardano/assets.{Lovelace}
+use cardano/credential.{
   ColdCommitteeCredential, DRepCredential, HotCommitteeCredential, PoolId,
   StakeCredential, VerificationKeyHash,
 }
-use aiken/transaction/governance.{Delegatee}
-use aiken/transaction/value.{Lovelace}
+use cardano/governance.{Delegatee}
 
 /// An on-chain certificate attesting of some operation. Publishing
 /// certificates / triggers different kind of rules; most of the time,

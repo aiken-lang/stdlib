@@ -10,7 +10,7 @@
 //// Comparing rational values should, therefore, only happen after reduction (see [reduce](#reduce)) or via the [compare](#compare) method.
 
 use aiken/builtin
-use aiken/list
+use aiken/collection/list
 use aiken/math
 use aiken/option
 

@@ -1,8 +1,8 @@
-use aiken/dict.{Dict, from_ascending_pairs_with}
+use aiken/collection/dict.{Dict, from_ascending_pairs_with}
+use aiken/collection/list
 use aiken/hash.{Blake2b_224, Hash}
-use aiken/list
 use aiken/option
-use aiken/transaction/credential.{Script}
+use cardano/credential.{Script}
 
 /// Lovelace is now a type wrapper for Int.
 pub type Lovelace =

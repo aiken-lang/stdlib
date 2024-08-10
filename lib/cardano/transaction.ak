@@ -1,19 +1,21 @@
 use aiken/builtin
-use aiken/dict.{Dict}
+use aiken/collection/dict.{Dict}
+use aiken/collection/list
 use aiken/hash.{Blake2b_256, Hash, blake2b_256}
 use aiken/interval.{Interval}
-use aiken/list
 use aiken/option
-use aiken/time.{PosixTime}
-use aiken/transaction/certificate.{Certificate}
-use aiken/transaction/credential.{
+use cardano/assets.{Lovelace, PolicyId, Value}
+use cardano/certificate.{Certificate}
+use cardano/credential.{
   Address, DatumHashDigest, ScriptCredential, ScriptHash, StakeCredential,
   VerificationKeyCredential, VerificationKeyHash,
 }
-use aiken/transaction/governance.{
-  GovernanceActionId, ProposalProcedure, Vote, Voter,
-}
-use aiken/transaction/value.{Lovelace, PolicyId, Value}
+use cardano/governance.{GovernanceActionId, ProposalProcedure, Vote, Voter}
+
+/// An positive integer, that materializes the position of an element in a
+/// collection.
+type Index =
+  Int
 
 /// A context given to a script by the Cardano ledger when being executed.
 ///
@@ -47,7 +49,7 @@ pub type ScriptInfo {
   /// stake credentials.
   ///
   /// The Int is a 0-based index of the given `TxCert` in `certificates`.
-  Publishing(Int, Certificate)
+  Publishing(Index, Certificate)
   /// Voting for a type of voter using a governance action id to vote
   /// yes / no / abstain inside a transaction.
   ///
@@ -56,7 +58,7 @@ pub type ScriptInfo {
   /// Used to propose a governance action.
   ///
   /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
-  Proposing(Int, ProposalProcedure)
+  Proposing(Index, ProposalProcedure)
 }
 
 /// Characterizes the script purpose.
@@ -111,7 +113,7 @@ pub type Transaction {
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   // ^ Pairs and ScriptPurpose are used here
   datums: Dict<DatumHashDigest, Data>,
-  id: TransactionId,
+  id: Hash<Blake2b_256, Transaction>,
   // new fields for v3
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
   // ^ Does this need to be pairs?
@@ -128,9 +130,8 @@ pub type Transaction {
 /// ```aiken
 /// use aiken/transaction
 ///
-/// transaction.placeholder().id == TransactionId {
-///   hash: #"0000000000000000000000000000000000000000000000000000000000000000",
-/// }
+/// transaction.placeholder().id ==
+///   #"0000000000000000000000000000000000000000000000000000000000000000"
 ///
 /// transaction.placeholder().validity_range == interval.everything()
 /// ```
@@ -140,16 +141,14 @@ pub fn placeholder() -> Transaction {
     reference_inputs: [],
     outputs: [],
     fee: 0,
-    mint: value.zero(),
+    mint: assets.zero(),
     certificates: [],
     withdrawals: [],
     validity_range: interval.everything(),
     extra_signatories: [],
     redeemers: [],
     datums: dict.new(),
-    id: TransactionId {
-      hash: #"0000000000000000000000000000000000000000000000000000000000000000",
-    },
+    id: #"0000000000000000000000000000000000000000000000000000000000000000",
     votes: dict.new(),
     proposal_procedures: [],
     current_treasury_amount: None,
@@ -157,16 +156,13 @@ pub fn placeholder() -> Transaction {
   }
 }
 
+/// A number of milliseconds since 00:00:00 UTC on 1 January 1970.
+pub type PosixTime =
+  Int
+
 /// An interval of POSIX time, measured in number milliseconds since 1970-01-01T00:00:00Z.
 pub type ValidityRange =
   Interval<PosixTime>
-
-/// A unique transaction identifier, as the hash of a transaction body. Note that the transaction id
-/// isn't a direct hash of the `Transaction` as visible on-chain. Rather, they correspond to hash
-/// digests of transaction body as they are serialized on the network.
-pub type TransactionId {
-  hash: Hash<Blake2b_256, Transaction>,
-}
 
 /// An `Input` made of an output reference and, the resolved value associated with that output.
 pub type Input {
@@ -178,7 +174,7 @@ pub type Input {
 /// corresponds to the position in the output list of the transaction (identified by its id)
 /// that produced that output
 pub type OutputReference {
-  transaction_id: TransactionId,
+  transaction_id: Hash<Blake2b_256, Transaction>,
   output_index: Int,
 }
 
