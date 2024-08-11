@@ -2,40 +2,12 @@ use aiken/collection.{Index}
 use aiken/math/rational.{Rational}
 use cardano/assets.{Lovelace}
 use cardano/credential.{Credential, ScriptHash, VerificationKeyHash}
+use cardano/governance/protocol_parameters.{ProtocolParametersUpdate}
 
-pub type DRep {
-  FromCredential(Credential)
-  AlwaysAbstain
-  AlwaysNoConfidence
-}
-
-pub type Delegatee {
-  DelegateStake(VerificationKeyHash)
-  DelegateVote(DRep)
-  DelegateBoth(VerificationKeyHash, DRep)
-}
-
-pub type Vote {
-  No
-  Yes
-  Abstain
-}
-
-pub type GovernanceActionId {
-  transaction_id: ByteArray,
-  proposal_procedure: Index,
-}
-
-pub type ProtocolParametersUpdate =
-  Data
-
-pub type ProtocolVersion {
-  major: Int,
-  minor: Int,
-}
-
-pub type Constitution {
-  guardrails: Option<ScriptHash>,
+pub type ProposalProcedure {
+  deposit: Lovelace,
+  return_address: Credential,
+  governance_action: GovernanceAction,
 }
 
 pub type GovernanceAction {
@@ -51,7 +23,7 @@ pub type GovernanceAction {
     /// It must pass for the new protocol parameters to be deemed valid.
     guardrails: Option<ScriptHash>,
   }
-  Hardfork {
+  HardFork {
     /// The last governance action of type `HardFork`. They must all
     /// form a chain.
     ancestor: Option<GovernanceActionId>,
@@ -101,16 +73,42 @@ pub type GovernanceAction {
   NicePoll
 }
 
+pub type DRep {
+  FromCredential(Credential)
+  AlwaysAbstain
+  AlwaysNoConfidence
+}
+
+pub type Delegatee {
+  DelegateStake(VerificationKeyHash)
+  DelegateVote(DRep)
+  DelegateBoth(VerificationKeyHash, DRep)
+}
+
+pub type Vote {
+  No
+  Yes
+  Abstain
+}
+
+pub type GovernanceActionId {
+  transaction_id: ByteArray,
+  proposal_procedure: Index,
+}
+
+pub type ProtocolVersion {
+  major: Int,
+  minor: Int,
+}
+
+pub type Constitution {
+  guardrails: Option<ScriptHash>,
+}
+
 /// An epoch number after which constitutional committee member
 /// mandate expires.
 pub type Mandate =
   Int
-
-pub type ProposalProcedure {
-  deposit: Lovelace,
-  return_address: Credential,
-  governance_action: GovernanceAction,
-}
 
 pub type Voter {
   CommitteeVoter(Credential)
