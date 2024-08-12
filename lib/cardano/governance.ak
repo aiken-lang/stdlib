@@ -73,18 +73,6 @@ pub type GovernanceAction {
   NicePoll
 }
 
-pub type DRep {
-  FromCredential(Credential)
-  AlwaysAbstain
-  AlwaysNoConfidence
-}
-
-pub type Delegatee {
-  DelegateStake(VerificationKeyHash)
-  DelegateVote(DRep)
-  DelegateBoth(VerificationKeyHash, DRep)
-}
-
 pub type Vote {
   No
   Yes
@@ -111,7 +99,7 @@ pub type Mandate =
   Int
 
 pub type Voter {
-  CommitteeVoter(Credential)
-  DRepVoter(Credential)
-  StakePoolVoter(VerificationKeyHash)
+  ConstitutionalCommitteeMember(Credential)
+  DelegateRepresentative(Credential)
+  StakePool(VerificationKeyHash)
 }

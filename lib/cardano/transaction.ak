@@ -8,7 +8,7 @@ use aiken/option
 use cardano/assets.{Lovelace, PolicyId, Value}
 use cardano/certificate.{Certificate}
 use cardano/credential.{
-  Address, DatumHashDigest, Script, ScriptHash, StakeCredential, VerificationKey,
+  Address, DatumHash, Script, ScriptHash, StakeCredential, VerificationKey,
   VerificationKeyHash,
 }
 use cardano/governance.{GovernanceActionId, ProposalProcedure, Vote, Voter}
@@ -105,7 +105,7 @@ pub type Transaction {
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
-  datums: Dict<DatumHashDigest, Data>,
+  datums: Dict<DatumHash, Data>,
   id: Hash<Blake2b_256, Transaction>,
   votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
   proposal_procedures: List<ProposalProcedure>,
@@ -181,7 +181,7 @@ pub type Output {
 pub type Datum {
   NoDatum
   /// A datum referenced by its hash digest.
-  DatumHash(DatumHashDigest)
+  DatumHash(DatumHash)
   /// A datum completely inlined in the output.
   InlineDatum(Data)
 }
@@ -221,8 +221,8 @@ pub fn find_input(
 /// witnesses.
 pub fn find_datum(
   outputs: List<Output>,
-  datums: Dict<DatumHashDigest, Data>,
-  datum_hash: DatumHashDigest,
+  datums: Dict<DatumHash, Data>,
+  datum_hash: DatumHash,
 ) -> Option<Data> {
   datums
     |> dict.get(datum_hash)

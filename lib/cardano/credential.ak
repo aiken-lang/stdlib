@@ -101,7 +101,7 @@ pub type StakeCredential =
 pub type PaymentCredential =
   Credential
 
-pub type PoolId =
+pub type StakePoolId =
   Hash<Blake2b_224, VerificationKey>
 
 pub type VerificationKeyHash =
@@ -110,6 +110,5 @@ pub type VerificationKeyHash =
 pub type ScriptHash =
   Hash<Blake2b_224, Script>
 
-// DatumHash is taken as a Datum type so this may just need to change.
-pub type DatumHashDigest =
+pub type DatumHash =
   Hash<Blake2b_256, Data>
