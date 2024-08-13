@@ -8,7 +8,7 @@ use aiken/option
 use cardano/assets.{Lovelace, PolicyId, Value}
 use cardano/certificate.{Certificate}
 use cardano/credential.{
-  Address, DatumHash, Script, ScriptHash, StakeCredential, VerificationKey,
+  Address, Credential, DatumHash, Script, ScriptHash, VerificationKey,
   VerificationKeyHash,
 }
 use cardano/governance.{GovernanceActionId, ProposalProcedure, Vote, Voter}
@@ -42,7 +42,7 @@ pub type ScriptInfo {
   /// For scripts that validate reward withdrawals from a reward account.
   ///
   /// The argument identifies the target reward account.
-  Withdrawing(StakeCredential)
+  Withdrawing(Credential)
   /// Needed when delegating to a pool using stake credentials defined as a
   /// Plutus script. This purpose is also triggered when de-registering such
   /// stake credentials.
@@ -73,7 +73,7 @@ pub type ScriptPurpose {
   /// For scripts that validate reward withdrawals from a reward account.
   ///
   /// The argument identifies the target reward account.
-  Withdraw(StakeCredential)
+  Withdraw(Credential)
   /// Needed when delegating to a pool using stake credentials defined as a
   /// Plutus script. This purpose is also triggered when de-registering such
   /// stake credentials.
@@ -104,7 +104,9 @@ pub type Transaction {
   fee: Lovelace,
   mint: Value,
   certificates: List<Certificate>,
-  withdrawals: Pairs<StakeCredential, Lovelace>,
+  /// ⚠️ | Withdrawals are ordered by ascending [Credential](./credential.html#Credential). Yet, note that script credentials are treated as lower values than verification key credentials.
+  /// --- | ---
+  withdrawals: Pairs<Credential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   /// ⚠️ | Redeemers are ordered by ascending [ScriptPurpose](./governance.html#ScriptPurpose).
