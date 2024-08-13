@@ -13,6 +13,9 @@ use cardano/credential.{
 }
 use cardano/governance.{GovernanceActionId, ProposalProcedure, Vote, Voter}
 
+pub type TransactionId =
+  Hash<Blake2b_256, Transaction>
+
 /// A context given to a script by the Cardano ledger when being executed.
 ///
 /// The context contains information about the entire transaction that contains
@@ -104,10 +107,13 @@ pub type Transaction {
   withdrawals: Pairs<StakeCredential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
+  /// ⚠️ | Redeemers are ordered by ascending [ScriptPurpose](./governance.html#ScriptPurpose).
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<DatumHash, Data>,
-  id: Hash<Blake2b_256, Transaction>,
-  votes: Dict<Voter, Dict<GovernanceActionId, Vote>>,
+  id: TransactionId,
+  /// ⚠️ | Votes are ordered by ascending [Voter](./governance.html#Voter) and [GovernanceActionId](./governance.html#GovernanceActionId).<br/>First constructor variants in a type are treated as lower indices; except for [Credential](./credential.html#Credential) where stake credentials are treated as lower values than verification key credentials.
+  /// --- | ---
+  votes: Pairs<Voter, Pairs<GovernanceActionId, Vote>>,
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
   treasury_donation: Option<Lovelace>,
@@ -140,7 +146,7 @@ pub fn placeholder() -> Transaction {
     redeemers: [],
     datums: dict.new(),
     id: #"0000000000000000000000000000000000000000000000000000000000000000",
-    votes: dict.new(),
+    votes: [],
     proposal_procedures: [],
     current_treasury_amount: None,
     treasury_donation: None,

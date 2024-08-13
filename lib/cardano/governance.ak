@@ -1,4 +1,5 @@
 use aiken/collection.{Index}
+use aiken/hash.{Blake2b_256, Hash}
 use aiken/math/rational.{Rational}
 use cardano/assets.{Lovelace}
 use cardano/credential.{Credential, ScriptHash, VerificationKeyHash}
@@ -79,8 +80,11 @@ pub type Vote {
   Abstain
 }
 
+pub type TransactionId =
+  Hash<Blake2b_256, ByteArray>
+
 pub type GovernanceActionId {
-  transaction_id: ByteArray,
+  transaction: TransactionId,
   proposal_procedure: Index,
 }
 
