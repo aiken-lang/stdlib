@@ -1,6 +1,6 @@
 use aiken/builtin
-use aiken/bytearray
-use aiken/int
+use aiken/primitive/bytearray
+use aiken/primitive/int
 
 /// Determine if all elements of the list satisfy the given predicate.
 ///

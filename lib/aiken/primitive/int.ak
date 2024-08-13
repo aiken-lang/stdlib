@@ -1,6 +1,6 @@
-use aiken/bytearray
 use aiken/math
 use aiken/option
+use aiken/primitive/bytearray
 
 /// Compare two integers.
 ///
