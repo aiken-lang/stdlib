@@ -1,3 +1,90 @@
+//// A type to capture optional results; useful for handling errors.
+////
+//// Note that the `Option` type and its constructors are readily available in Aiken. They are part of the [Prelude](https://aiken-lang.github.io/prelude/aiken.html#Option) module imported by default in every module.
+
+// ## Inspecting
+
+/// Asserts whether an option is `None`.
+pub fn is_none(self: Option<a>) -> Bool {
+  when self is {
+    Some(_) -> False
+    _ -> True
+  }
+}
+
+test is_none_1() {
+  is_none(Some(0)) == False
+}
+
+test is_none_2() {
+  is_none(None) == True
+}
+
+/// Asserts whether an option is `Some`, irrespective of the value it contains.
+pub fn is_some(self: Option<a>) -> Bool {
+  when self is {
+    Some(_) -> True
+    _ -> False
+  }
+}
+
+test is_some_1() {
+  is_some(Some(0)) == True
+}
+
+test is_some_2() {
+  is_some(None) == False
+}
+
+// ## Combining
+
+/// Chain together many computations that may fail.
+///
+/// ```aiken
+/// self
+///   |> dict.get(policy_id)
+///   |> option.and_then(dict.get(_, asset_name))
+///   |> option.or_else(0)
+/// ```
+pub fn and_then(
+  self: Option<a>,
+  then: fn(a) -> Option<result>,
+) -> Option<result> {
+  when self is {
+    None -> None
+    Some(a) -> then(a)
+  }
+}
+
+fn try_decrement(n: Int) -> Option<Int> {
+  if n > 0 {
+    Some(n - 1)
+  } else {
+    None
+  }
+}
+
+test and_then_1() {
+  let result =
+    None
+      |> and_then(try_decrement)
+  result == None
+}
+
+test and_then_2() {
+  let result =
+    Some(14)
+      |> and_then(try_decrement)
+  result == Some(13)
+}
+
+test and_then_3() {
+  let result =
+    Some(0)
+      |> and_then(try_decrement)
+  result == None
+}
+
 /// Picks the first element which is not None. If there's no such element, return None.
 ///
 /// ```aiken
@@ -29,47 +116,51 @@ test choice_3() {
   Some(1) == choice([None, Some(1)])
 }
 
-/// Provide a default value, turning an optional value into a normal value.
+/// Converts from `Option<Option<a>>` to `Option<a>`.
 ///
 /// ```aiken
-/// option.or_else(None, "aiken") == "aiken"
-/// option.or_else(Some(42), 14) == 42
+/// option.flatten(Some(Some(42))) == Some(42)
+/// option.flatten(Some(None)) == None
+/// option.flatten(None) == None
 /// ```
-pub fn or_else(self: Option<a>, default: a) -> a {
-  when self is {
-    None -> default
-    Some(a) -> a
+///
+/// Flattening only removes one level of nesting at a time:
+///
+/// ```aiken
+/// flatten(Some(Some(Some(42)))) == Some(Some(42))
+/// Some(Some(Some(42))) |> flatten |> flatten == Some(42)
+/// ```
+pub fn flatten(opt: Option<Option<a>>) -> Option<a> {
+  when opt is {
+    Some(inner) -> inner
+    None -> None
   }
 }
 
-test or_else_1() {
-  or_else(None, "aiken") == "aiken"
+test flatten_1() {
+  let x: Option<Option<Int>> = Some(Some(6))
+  Some(6) == flatten(x)
 }
 
-test or_else_2() {
-  or_else(Some(42), 14) == 42
+test flatten_2() {
+  let x: Option<Option<Int>> = Some(None)
+  None == flatten(x)
 }
 
-/// Like [`or_else`](#or_else) but allows returning an `Option`.
-/// This is effectively mapping the error branch.
-///
-/// ```aiken
-/// option.or_try(None, fn(_) { Some("aiken") }) == Some("aiken")
-/// option.or_try(Some(42), fn(_) { Some(14) }) == Some(42)
-/// ```
-pub fn or_try(self: Option<a>, compute_default: fn() -> Option<a>) -> Option<a> {
-  when self is {
-    None -> compute_default()
-    _ -> self
-  }
+test flatten_3() {
+  let x: Option<Option<Int>> = None
+  None == flatten(x)
 }
 
-test or_try_1() {
-  or_try(None, fn() { Some("aiken") }) == Some("aiken")
-}
+test flatten_4() {
+  let x: Option<Option<Option<Int>>> = Some(Some(Some(6)))
 
-test or_try_2() {
-  or_try(Some(42), fn() { fail }) == Some(42)
+  let result =
+    x
+      |> flatten
+      |> flatten
+
+  Some(6) == result
 }
 
 /// Apply a function to the inner value of an [`Option`](#option)
@@ -174,128 +265,48 @@ test map3_3() {
   map3(Some(14), Some(42), Some(1337), fn(a, b, c) { c - a + b }) == Some(1365)
 }
 
-/// Chain together many computations that may fail.
+/// Like [`or_else`](#or_else) but allows returning an `Option`.
+/// This is effectively mapping the error branch.
 ///
 /// ```aiken
-/// self
-///   |> dict.get(policy_id)
-///   |> option.and_then(dict.get(_, asset_name))
-///   |> option.or_else(0)
+/// option.or_try(None, fn(_) { Some("aiken") }) == Some("aiken")
+/// option.or_try(Some(42), fn(_) { Some(14) }) == Some(42)
+/// option.or_try(None, fn (_) { fail }) => 💥
 /// ```
-pub fn and_then(
-  self: Option<a>,
-  then: fn(a) -> Option<result>,
-) -> Option<result> {
+pub fn or_try(self: Option<a>, compute_default: fn() -> Option<a>) -> Option<a> {
   when self is {
-    None -> None
-    Some(a) -> then(a)
+    None -> compute_default()
+    _ -> self
   }
 }
 
-fn try_decrement(n: Int) -> Option<Int> {
-  if n > 0 {
-    Some(n - 1)
-  } else {
-    None
-  }
+test or_try_1() {
+  or_try(None, fn() { Some("aiken") }) == Some("aiken")
 }
 
-test and_then_1() {
-  let result =
-    None
-      |> and_then(try_decrement)
-  result == None
+test or_try_2() {
+  or_try(Some(42), fn() { fail }) == Some(42)
 }
 
-test and_then_2() {
-  let result =
-    Some(14)
-      |> and_then(try_decrement)
-  result == Some(13)
-}
+// ## Transforming
 
-test and_then_3() {
-  let result =
-    Some(0)
-      |> and_then(try_decrement)
-  result == None
-}
-
-/// Converts from `Option<Option<a>>` to `Option<a>`.
+/// Provide a default value, turning an optional value into a normal value.
 ///
 /// ```aiken
-/// option.flatten(Some(Some(42))) == Some(42)
-/// option.flatten(Some(None)) == None
-/// option.flatten(None) == None
+/// option.or_else(None, "aiken") == "aiken"
+/// option.or_else(Some(42), 14) == 42
 /// ```
-///
-/// Flattening only removes one level of nesting at a time:
-///
-/// ```aiken
-/// flatten(Some(Some(Some(42)))) == Some(Some(42))
-/// Some(Some(Some(42))) |> flatten |> flatten == Some(42)
-/// ```
-pub fn flatten(opt: Option<Option<a>>) -> Option<a> {
-  when opt is {
-    Some(inner) -> inner
-    None -> None
-  }
-}
-
-test flatten_1() {
-  let x: Option<Option<Int>> = Some(Some(6))
-  Some(6) == flatten(x)
-}
-
-test flatten_2() {
-  let x: Option<Option<Int>> = Some(None)
-  None == flatten(x)
-}
-
-test flatten_3() {
-  let x: Option<Option<Int>> = None
-  None == flatten(x)
-}
-
-test flatten_4() {
-  let x: Option<Option<Option<Int>>> = Some(Some(Some(6)))
-
-  let result =
-    x
-      |> flatten
-      |> flatten
-
-  Some(6) == result
-}
-
-/// Asserts whether an option is `Some`, irrespective of the value it contains.
-pub fn is_some(self: Option<a>) -> Bool {
+pub fn or_else(self: Option<a>, default: a) -> a {
   when self is {
-    Some(_) -> True
-    _ -> False
+    None -> default
+    Some(a) -> a
   }
 }
 
-test is_some_1() {
-  is_some(Some(0)) == True
+test or_else_1() {
+  or_else(None, "aiken") == "aiken"
 }
 
-test is_some_2() {
-  is_some(None) == False
-}
-
-/// Asserts whether an option is `None`.
-pub fn is_none(self: Option<a>) -> Bool {
-  when self is {
-    Some(_) -> False
-    _ -> True
-  }
-}
-
-test is_none_1() {
-  is_none(Some(0)) == False
-}
-
-test is_none_2() {
-  is_none(None) == True
+test or_else_2() {
+  or_else(Some(42), 14) == 42
 }

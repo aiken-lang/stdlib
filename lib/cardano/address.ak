@@ -1,14 +1,17 @@
-use aiken/builtin
-use aiken/hash.{Blake2b_224, Hash}
+use aiken/crypto.{
+  Blake2b_224, Hash, Script, ScriptHash, VerificationKey, VerificationKeyHash,
+}
 
 /// A general structure for representing an on-chain `Credential`.
 ///
 /// Credentials are always one of two kinds: a direct public/private key
 /// pair, or a script (native or Plutus).
 pub type Credential {
-  VerificationKeyCredential(Hash<Blake2b_224, VerificationKey>)
-  ScriptCredential(Hash<Blake2b_224, Script>)
+  VerificationKey(VerificationKeyHash)
+  Script(ScriptHash)
 }
+
+// ## Constructing
 
 /// A Cardano `Address` typically holding one or two credential references.
 ///
@@ -21,20 +24,14 @@ pub type Address {
   stake_credential: Option<StakeCredential>,
 }
 
-/// Smart-constructor for an [Address](#Address) from a [verification key](#VerificationKey) hash. The resulting address has no delegation rights whatsoever.
-pub fn from_verification_key(vk: Hash<Blake2b_224, VerificationKey>) -> Address {
-  Address {
-    payment_credential: VerificationKeyCredential(vk),
-    stake_credential: None,
-  }
-}
-
 /// Smart-constructor for an [Address](#Address) from a [script](#Script) hash. The address has no delegation rights whatsoever.
 pub fn from_script(script: Hash<Blake2b_224, Script>) -> Address {
-  Address {
-    payment_credential: ScriptCredential(script),
-    stake_credential: None,
-  }
+  Address { payment_credential: Script(script), stake_credential: None }
+}
+
+/// Smart-constructor for an [Address](#Address) from a [verification key](#VerificationKey) hash. The resulting address has no delegation rights whatsoever.
+pub fn from_verification_key(vk: Hash<Blake2b_224, VerificationKey>) -> Address {
+  Address { payment_credential: VerificationKey(vk), stake_credential: None }
 }
 
 /// Set (or reset) the delegation part of an [Address](#Address) using a [verification key](#VerificationKey) hash. This is useful when combined with [`from_verification_key`](#from_verification_key) and/or [`from_script`](#from_script).
@@ -44,7 +41,7 @@ pub fn with_delegation_key(
 ) -> Address {
   Address {
     payment_credential: self.payment_credential,
-    stake_credential: Some(Inline(VerificationKeyCredential(vk))),
+    stake_credential: Some(Inline(VerificationKey(vk))),
   }
 }
 
@@ -55,7 +52,7 @@ pub fn with_delegation_script(
 ) -> Address {
   Address {
     payment_credential: self.payment_credential,
-    stake_credential: Some(Inline(ScriptCredential(script))),
+    stake_credential: Some(Inline(Script(script))),
   }
 }
 
@@ -67,25 +64,6 @@ pub fn with_delegation_script(
 pub type Referenced<a> {
   Inline(a)
   Pointer { slot_number: Int, transaction_index: Int, certificate_index: Int }
-}
-
-pub type VerificationKey =
-  ByteArray
-
-pub type Script =
-  ByteArray
-
-pub type Signature =
-  ByteArray
-
-/// Verify an Ed25519 signature using the given verification key.
-/// Returns `True` when the signature is valid.
-pub fn verify_signature(
-  key: VerificationKey,
-  msg: ByteArray,
-  sig: Signature,
-) -> Bool {
-  builtin.verify_ed25519_signature(key, msg, sig)
 }
 
 /// A `StakeCredential` represents the delegation and rewards withdrawal conditions
@@ -106,7 +84,3 @@ pub type StakeCredential =
 ///
 pub type PaymentCredential =
   Credential
-
-/// A unique stake pool identifier, as a hash of its owner verification key.
-pub type PoolId =
-  Hash<Blake2b_224, VerificationKey>

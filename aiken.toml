@@ -1,5 +1,5 @@
 name = "aiken-lang/stdlib"
-version = "1.9.0"
+version = "main"
 licences = ["Apache-2.0"]
 description = "The Aiken Standard Library"
 
