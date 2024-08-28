@@ -1,5 +1,69 @@
 # Changelog
 
+## v2.0.0 - UNRELEASED
+
+### Added
+
+- New modules covering Conway-related features (i.e. governance)
+  - [`cardano/governance`](https://aiken-lang.github.io/stdlib/cardano/governance.html)
+  - [`cardano/governance/protocol_parameters`](https://aiken-lang.github.io/stdlib/cardano/governance/protocol_parameters.html)
+
+- New primitives in `aiken/crypto`:
+  - [`blake2b_224`](https://aiken-lang.github.io/stdlib/aiken/crypto.html#blake2b_224)
+  - [`keccak_256`](https://aiken-lang.github.io/stdlib/aiken/crypto.html#keccak_256)
+
+- New primitives in `aiken/math`:
+  - [`log2`](https://aiken-lang.github.io/stdlib/aiken/math.html#log2)
+
+- New primitives in `aiken/primitive/bytearray`:
+  - [`at`](https://aiken-lang.github.io/stdlib/aiken/primitive/bytearray.html#at)
+  - [`from_int_big_endian`](https://aiken-lang.github.io/stdlib/aiken/primitive/bytearray.html#from_int_big_endian)
+  - [`from_int_little_endian`](https://aiken-lang.github.io/stdlib/aiken/primitive/bytearray.html#from_int_little_endian)
+  - [`to_int_big_endian`](https://aiken-lang.github.io/stdlib/aiken/primitive/bytearray.html#to_int_big_endian)
+  - [`to_int_little_endian`](https://aiken-lang.github.io/stdlib/aiken/primitive/bytearray.html#to_int_little_endian)
+
+- New primitives in `aiken/primitive/int`:
+  - [`from_bytearray_big_endian`](https://aiken-lang.github.io/stdlib/aiken/primitive/int.html#from_bytearray_big_endian)
+  - [`from_bytearray_little_endian`](https://aiken-lang.github.io/stdlib/aiken/primitive/int.html#from_bytearray_little_endian)
+
+- New primitives in `aiken/crypto`:
+  - [`verify_ecdsa_signature`](https://aiken-lang.github.io/stdlib/cardano/credential.html#verify_ecdsa_signature)
+  - [`verify_schnorr_signature`](https://aiken-lang.github.io/stdlib/cardano/credential.html#verify_schnorr_signature)
+
+### Changed
+
+- Few modules have been relocated and better organized:
+  - `aiken/hash` -> [`aiken/crypto`](https://aiken-lang.github.io/stdlib/aiken/crypto.html)
+  - **collections**
+    - `aiken/dict` -> [`aiken/collection/dict`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html)
+    - `aiken/list` -> [`aiken/collection/list`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html)
+    - `aiken/pairs` -> [`aiken/collection/pairs`](https://aiken-lang.github.io/stdlib/aiken/collection/pairs.html)
+  - **primitive**
+    - `aiken/bytearray` -> [`aiken/primitive/bytearray`](https://aiken-lang.github.io/stdlib/aiken/primitive/bytearray.html)
+    - `aiken/int` -> [`aiken/primitive/int`](https://aiken-lang.github.io/stdlib/aiken/primitive/int.html)
+    - `aiken/string` -> [`aiken/primitive/string`](https://aiken-lang.github.io/stdlib/aiken/primitive/string.html)
+  - **cardano**
+    - `aiken/transaction` -> [`cardano/transaction`](https://aiken-lang.github.io/stdlib/cardano/transaction.html)
+    - `aiken/transaction/certificate` -> [`cardano/certificate`](https://aiken-lang.github.io/stdlib/cardano/certificate.html)
+    - `aiken/transaction/credential` -> [`cardano/address`](https://aiken-lang.github.io/stdlib/cardano/address.html) & `aiken/crypto`
+    - `aiken/transaction/value` -> [`cardano/assets`](https://aiken-lang.github.io/stdlib/cardano/assets.html)
+
+- The `Transaction` type from [`cardano/transaction`](https://aiken-lang.github.io/stdlib/cardano/transaction.html) (originally `aiken/transaction`) has been greatly reworked to match the new transaction format in Plutus V3.
+
+- The `ScriptContext` type has split from `cardano/transaction` (originally `aiken/transaction`) and moved into its own module [`cardano/script_context`](https://aiken-lang.github.io/stdlib/cardano/script_context.html) and adjusted to its new form as per Plutus V3.
+
+- The constructors of [`Credential`](https://aiken-lang.github.io/stdlib/cardano/address.html#credential) have been renamed from `VerificationKeyCredential` and `ScriptCredential` into `VerificationKey` and `Script` respectively.
+
+- The function `remove_all`, `remove_first` and `remove_last` from [`aiken/collection/pairs`](https://aiken-lang.github.io/stdlib/aiken/collection/pairs.html) (originally `aiken/pairs`) have been renamed to `delete_all`, `delete_first` and `delete_last` respectively.
+
+- The function `verify_signature` from [`aiken/crypto`](https://aiken-lang.github.io/stdlib/aiken/crypto.html) (originally `aiken/credential`) has been renamed to `verify_ed25519_signature`.
+
+### Removed
+
+- The module `aiken/time`. The `PosixTime` alias is no longer used anywhere.
+
+- `MintedValue` (from `aiken/transaction/value` originally) and its associated functions are no longer needed and, therefore, gone.
+
 ## v1.9.0 - 2024-05-24
 
 ### Added

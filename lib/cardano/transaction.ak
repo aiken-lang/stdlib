@@ -2,63 +2,18 @@ use aiken/builtin
 use aiken/collection.{Index}
 use aiken/collection/dict.{Dict}
 use aiken/collection/list
-use aiken/hash.{Blake2b_256, Hash, blake2b_256}
+use aiken/crypto.{
+  Blake2b_256, DataHash, Hash, ScriptHash, VerificationKeyHash, blake2b_256,
+}
 use aiken/interval.{Interval}
 use aiken/option
+use cardano/address.{Address, Credential, Script, VerificationKey}
 use cardano/assets.{Lovelace, PolicyId, Value}
 use cardano/certificate.{Certificate}
-use cardano/credential.{
-  Address, Credential, DatumHash, Script, ScriptHash, VerificationKey,
-  VerificationKeyHash,
-}
 use cardano/governance.{GovernanceActionId, ProposalProcedure, Vote, Voter}
 
 pub type TransactionId =
   Hash<Blake2b_256, Transaction>
-
-/// A context given to a script by the Cardano ledger when being executed.
-///
-/// The context contains information about the entire transaction that contains
-/// the script. The transaction may also contain other scripts; to distinguish
-/// between multiple scripts, the `ScriptInfo` contains a `purpose`
-/// which indicates which script (or, for what purpose) of the transaction is
-/// being executed.
-pub type ScriptContext {
-  transaction: Transaction,
-  redeemer: Redeemer,
-  info: ScriptInfo,
-}
-
-/// Characterizes the script information.
-pub type ScriptInfo {
-  /// For scripts executed as minting/burning policies, to insert
-  /// or remove assets from circulation. It's parameterized by the identifier
-  /// of the associated policy.
-  Minting(PolicyId)
-  /// For scripts that are used as payment credentials for addresses in
-  /// transaction outputs. They govern the rule by which the output they
-  /// reference can be spent.
-  Spending(OutputReference, Option<Data>)
-  /// For scripts that validate reward withdrawals from a reward account.
-  ///
-  /// The argument identifies the target reward account.
-  Withdrawing(Credential)
-  /// Needed when delegating to a pool using stake credentials defined as a
-  /// Plutus script. This purpose is also triggered when de-registering such
-  /// stake credentials.
-  ///
-  /// The Int is a 0-based index of the given `TxCert` in `certificates`.
-  Publishing(Index, Certificate)
-  /// Voting for a type of voter using a governance action id to vote
-  /// yes / no / abstain inside a transaction.
-  ///
-  /// The voter is who is doing the governance action.
-  Voting(Voter)
-  /// Used to propose a governance action.
-  ///
-  /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
-  Proposing(Index, ProposalProcedure)
-}
 
 /// Characterizes the script purpose.
 pub type ScriptPurpose {
@@ -75,11 +30,11 @@ pub type ScriptPurpose {
   /// The argument identifies the target reward account.
   Withdraw(Credential)
   /// Needed when delegating to a pool using stake credentials defined as a
-  /// Plutus script. This purpose is also triggered when de-registering such
+  /// custom script. This purpose is also triggered when de-registering such
   /// stake credentials.
   ///
-  /// The Int is a 0-based index of the given `TxCert` in `certificates`.
-  Publish { certificate_index: Int, certificate: Certificate }
+  /// The Int is a 0-based index of the given `Certificate` in `certificates`.
+  Publishing { at: Index, certificate: Certificate }
   /// Voting for a type of voter using a governance action id to vote
   /// yes / no / abstain inside a transaction.
   ///
@@ -88,14 +43,14 @@ pub type ScriptPurpose {
   /// Used to propose a governance action.
   ///
   /// A 0-based index of the given `ProposalProcedure` in `proposal_procedures`.
-  Propose(Int, ProposalProcedure)
+  Proposing { at: Index, proposal_procedure: ProposalProcedure }
 }
 
-/// A Cardano `Transaction`, as seen by Plutus scripts.
+/// A Cardano `Transaction`, as seen by on-chain scripts.
 ///
 /// Note that this is a representation of a transaction, and not the 1:1
 /// translation of the transaction as seen by the ledger. In particular,
-/// Plutus scripts can't see inputs locked by bootstrap addresses, outputs
+/// on-chain scripts can't see inputs locked by bootstrap addresses, outputs
 /// to bootstrap addresses or just transaction metadata.
 pub type Transaction {
   inputs: List<Input>,
@@ -104,64 +59,27 @@ pub type Transaction {
   fee: Lovelace,
   mint: Value,
   certificates: List<Certificate>,
-  /// ⚠️ | Withdrawals are ordered by ascending [Credential](./credential.html#Credential). Yet, note that script credentials are treated as lower values than verification key credentials.
-  /// --- | ---
+  /// > [!IMPORTANT]
+  /// > Withdrawals are ordered by ascending [Credential](./credential.html#Credential). Yet, note that [`Script`](./credential.html#Credential) credentials are treated as **lower values** than [`VerificationKey`](./credential.html#Credential) credentials.
   withdrawals: Pairs<Credential, Lovelace>,
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
-  /// ⚠️ | Redeemers are ordered by ascending [ScriptPurpose](./governance.html#ScriptPurpose).
+  /// > [!IMPORTANT]
+  /// > Redeemers are ordered by ascending [ScriptPurpose](./transaction.html#ScriptPurpose).
   redeemers: Pairs<ScriptPurpose, Redeemer>,
-  datums: Dict<DatumHash, Data>,
+  datums: Dict<DataHash, Data>,
   id: TransactionId,
-  /// ⚠️ | Votes are ordered by ascending [Voter](./governance.html#Voter) and [GovernanceActionId](./governance.html#GovernanceActionId).<br/>First constructor variants in a type are treated as lower indices; except for [Credential](./credential.html#Credential) where stake credentials are treated as lower values than verification key credentials.
-  /// --- | ---
+  /// > [!IMPORTANT]
+  /// > Votes are ordered by ascending [Voter](./governance.html#Voter) and [GovernanceActionId](./governance.html#GovernanceActionId).<br/>First constructor variants in a type are treated as lower indices; except for [Credential](./credential.html#Credential) where [`Script`](./credential.html#Credential) credentials are treated as **lower values** than [`VerificationKey`](./credential.html#Credential) credentials.
   votes: Pairs<Voter, Pairs<GovernanceActionId, Vote>>,
   proposal_procedures: List<ProposalProcedure>,
   current_treasury_amount: Option<Lovelace>,
   treasury_donation: Option<Lovelace>,
 }
 
-/// A placeholder / empty `Transaction` to serve as a base in a transaction
-/// builder. This is particularly useful for constructing test transactions.
-///
-/// Every field is empty or null, and we have in particular:
-///
-/// ```aiken
-/// use aiken/transaction
-///
-/// transaction.placeholder().id ==
-///   #"0000000000000000000000000000000000000000000000000000000000000000"
-///
-/// transaction.placeholder().validity_range == interval.everything()
-/// ```
-pub fn placeholder() -> Transaction {
-  Transaction {
-    inputs: [],
-    reference_inputs: [],
-    outputs: [],
-    fee: 0,
-    mint: assets.zero(),
-    certificates: [],
-    withdrawals: [],
-    validity_range: interval.everything(),
-    extra_signatories: [],
-    redeemers: [],
-    datums: dict.new(),
-    id: #"0000000000000000000000000000000000000000000000000000000000000000",
-    votes: [],
-    proposal_procedures: [],
-    current_treasury_amount: None,
-    treasury_donation: None,
-  }
-}
-
-/// A number of milliseconds since 00:00:00 UTC on 1 January 1970.
-pub type PosixTime =
-  Int
-
-/// An interval of POSIX time, measured in number milliseconds since 1970-01-01T00:00:00Z.
+/// An interval of POSIX time, measured in **number of milliseconds** since 1970-01-01T00:00:00Z.
 pub type ValidityRange =
-  Interval<PosixTime>
+  Interval<Int>
 
 /// An `Input` made of an output reference and, the resolved value associated with that output.
 pub type Input {
@@ -189,7 +107,7 @@ pub type Output {
 pub type Datum {
   NoDatum
   /// A datum referenced by its hash digest.
-  DatumHash(DatumHash)
+  DatumHash(DataHash)
   /// A datum completely inlined in the output.
   InlineDatum(Data)
 }
@@ -200,18 +118,17 @@ pub type Datum {
 pub type Redeemer =
   Data
 
+// ## Querying
+
 /// Find an input by its [`OutputReference`](#OutputReference). This is typically used in
 /// combination with the `Spend` [`ScriptPurpose`](#ScriptPurpose) to find a script's own
 /// input.
 ///
 /// ```aiken
 /// validator {
-///   fn(datum, redeemer, ctx: ScriptContext) {
-///     expect Spend(my_output_reference) =
-///       ctx.purpose
-///
+///   spend(datum, redeemer, my_output_reference, self) {
 ///     expect Some(input) =
-///       ctx.transaction.inputs
+///       self.inputs
 ///         |> transaction.find_input(my_output_reference)
 ///   }
 /// }
@@ -229,8 +146,8 @@ pub fn find_input(
 /// witnesses.
 pub fn find_datum(
   outputs: List<Output>,
-  datums: Dict<DatumHash, Data>,
-  datum_hash: DatumHash,
+  datums: Dict<DataHash, Data>,
+  datum_hash: DataHash,
 ) -> Option<Data> {
   datums
     |> dict.get(datum_hash)
@@ -272,4 +189,40 @@ pub fn find_script_outputs(
           }
         },
       )
+}
+
+// ## Testing
+
+/// A placeholder / empty `Transaction` to serve as a base in a transaction
+/// builder. This is particularly useful for constructing test transactions.
+///
+/// Every field is empty or null, and we have in particular:
+///
+/// ```aiken
+/// use aiken/interval
+///
+/// transaction.placeholder().id ==
+///   #"0000000000000000000000000000000000000000000000000000000000000000"
+///
+/// transaction.placeholder().validity_range == interval.everything()
+/// ```
+pub fn placeholder() -> Transaction {
+  Transaction {
+    inputs: [],
+    reference_inputs: [],
+    outputs: [],
+    fee: 0,
+    mint: assets.zero(),
+    certificates: [],
+    withdrawals: [],
+    validity_range: interval.everything(),
+    extra_signatories: [],
+    redeemers: [],
+    datums: dict.new(),
+    id: #"0000000000000000000000000000000000000000000000000000000000000000",
+    votes: [],
+    proposal_procedures: [],
+    current_treasury_amount: None,
+    treasury_donation: None,
+  }
 }

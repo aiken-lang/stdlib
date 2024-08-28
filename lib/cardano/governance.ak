@@ -1,8 +1,8 @@
 use aiken/collection.{Index}
-use aiken/hash.{Blake2b_256, Hash}
+use aiken/crypto.{Blake2b_256, Hash, ScriptHash, VerificationKeyHash}
 use aiken/math/rational.{Rational}
+use cardano/address.{Credential}
 use cardano/assets.{Lovelace}
-use cardano/credential.{Credential, ScriptHash, VerificationKeyHash}
 use cardano/governance/protocol_parameters.{ProtocolParametersUpdate}
 
 pub type ProposalProcedure {

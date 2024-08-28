@@ -332,7 +332,6 @@ fn into_spo_voting_thresholds(param: Data) -> StakePoolOperatorVotingThresholds 
 fn into_drep_voting_thresholds(
   param: Data,
 ) -> DelegateRepresentativeVotingThresholds {
-  trace @"drep voting thresholds": param
   expect [
     motion_of_no_confidence,
     constitutional_committee,

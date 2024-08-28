@@ -1,6 +1,9 @@
+use aiken/builtin.{bytearray_to_integer, decode_utf8}
 use aiken/math
 use aiken/option
 use aiken/primitive/bytearray
+
+// ## Combining
 
 /// Compare two integers.
 ///
@@ -19,7 +22,55 @@ pub fn compare(left: Int, right: Int) -> Ordering {
   }
 }
 
-/// Parse an integer from a utf-8 encoded 'ByteArray', when possible.
+// ## Transforming
+
+/// Interpret a Big-Endian (most-significant bytes first) `ByteArray` as an `Int`.
+///
+/// ```aiken
+/// int.from_bytearray_big_endian(#"0f4240") == 1_000_000
+/// int.from_bytearray_big_endian(#"00000f4240") == 1_000_000
+/// int.from_bytearray_big_endian(#"0000000000000000") == 0
+/// ```
+pub fn from_bytearray_big_endian(self: ByteArray) -> Int {
+  bytearray_to_integer(True, self)
+}
+
+test from_bytearray_big_endian_1() {
+  from_bytearray_big_endian(#"0f4240") == 1_000_000
+}
+
+test from_bytearray_big_endian_2() {
+  from_bytearray_big_endian(#"00000f4240") == 1_000_000
+}
+
+test from_bytearray_big_endian_3() {
+  from_bytearray_big_endian(#"0000000000000000") == 0
+}
+
+/// Interpret a Little-Endian (least-significant bytes first) `ByteArray` as an `Int`.
+///
+/// ```aiken
+/// int.from_bytearray_big_endian(#"40420f") == 1_000_000
+/// int.from_bytearray_big_endian(#"40420f0000") == 1_000_000
+/// int.from_bytearray_big_endian(#"0000000000000000") == 0
+/// ```
+pub fn from_bytearray_little_endian(self: ByteArray) -> Int {
+  bytearray_to_integer(False, self)
+}
+
+test from_bytearray_little_endian_1() {
+  from_bytearray_little_endian(#"40420f") == 1_000_000
+}
+
+test from_bytearray_little_endian_2() {
+  from_bytearray_little_endian(#"40420f0000") == 1_000_000
+}
+
+test from_bytearray_little_endian_3() {
+  from_bytearray_little_endian(#"0000000000000000") == 0
+}
+
+/// Parse an integer from a utf-8 encoded `ByteArray`, when possible.
 ///
 /// ```aiken
 /// int.from_utf8("14") == Some(14)
@@ -77,4 +128,29 @@ test from_utf8_5() {
 
 test from_utf8_6() {
   from_utf8("1-2") == None
+}
+
+/// Convert an `Int` to its `String` representation.
+///
+/// ```aiken
+/// int.to_string(42) == @"42"
+/// ```
+pub fn to_string(n: Int) -> String {
+  diagnostic(n, "") |> decode_utf8
+}
+
+test to_string_1() {
+  to_string(0) == @"0"
+}
+
+test to_string_2() {
+  to_string(5) == @"5"
+}
+
+test to_string_3() {
+  to_string(42) == @"42"
+}
+
+test to_string_4() {
+  to_string(200) == @"200"
 }

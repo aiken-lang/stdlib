@@ -13,14 +13,14 @@ use aiken/builtin.{decode_utf8, serialise_data}
 /// useful for debugging.
 ///
 /// ```aiken
-/// serialise(42) == #"182a"
-/// serialise(#"a1b2") == #"42a1b2"
-/// serialise([]) == #"80"
-/// serialise((1, 2)) == #"9f0102ff"
-/// serialise((1, #"ff", 3)) == #"9f0141ff03ff"
-/// serialise([(1, #"ff")]) == #"a10141ff"
-/// serialise(Some(42)) == #"d8799f182aff"
-/// serialise(None) == #"d87a80"
+/// cbor.serialise(42) == #"182a"
+/// cbor.serialise(#"a1b2") == #"42a1b2"
+/// cbor.serialise([]) == #"80"
+/// cbor.serialise((1, 2)) == #"9f0102ff"
+/// cbor.serialise((1, #"ff", 3)) == #"9f0141ff03ff"
+/// cbor.serialise([(1, #"ff")]) == #"a10141ff"
+/// cbor.serialise(Some(42)) == #"d8799f182aff"
+/// cbor.serialise(None) == #"d87a80"
 /// ```
 pub fn serialise(self: Data) -> ByteArray {
   serialise_data(self)
@@ -73,15 +73,15 @@ test serialise_9() {
 /// a good idea in the Cardano world.
 ///
 /// ```aiken
-/// diagnostic(42) == "42"
-/// diagnostic(#"a1b2") == "h'A1B2'"
-/// diagnostic([1, 2, 3]) == "[_ 1, 2, 3]"
-/// diagnostic([]) == "[]"
-/// diagnostic((1, 2)) == "[_ 1, 2]"
-/// diagnostic((1, #"ff", 3)) == "[_ 1, h'FF', 3]"
-/// diagnostic([(1, #"ff")]) == "{_ 1: h'FF' }"
-/// diagnostic(Some(42)) == "121([_ 42])"
-/// diagnostic(None) == "122([])"
+/// cbor.diagnostic(42) == "42"
+/// cbor.diagnostic(#"a1b2") == "h'A1B2'"
+/// cbor.diagnostic([1, 2, 3]) == "[_ 1, 2, 3]"
+/// cbor.diagnostic([]) == "[]"
+/// cbor.diagnostic((1, 2)) == "[_ 1, 2]"
+/// cbor.diagnostic((1, #"ff", 3)) == "[_ 1, h'FF', 3]"
+/// cbor.diagnostic([(1, #"ff")]) == "{_ 1: h'FF' }"
+/// cbor.diagnostic(Some(42)) == "121([_ 42])"
+/// cbor.diagnostic(None) == "122([])"
 /// ```
 pub fn diagnostic(self: Data) -> String {
   aiken.diagnostic(self, #"")

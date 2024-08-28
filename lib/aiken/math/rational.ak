@@ -1,13 +1,14 @@
-//// This module implements operations between rational numbers. Internally, rational aren't
-//// automatically reduced as this is **only done on-demand**.
+//// This module implements operations between rational numbers.
 ////
-//// Thus, for example:
-////
-//// ```aiken
-//// rational.new(2, 3) != rational.new(4, 6)
-//// ```
-////
-//// Comparing rational values should, therefore, only happen after reduction (see [reduce](#reduce)) or via the [compare](#compare) method.
+//// > [!CAUTION] Internally, rational aren't automatically reduced as this is **only done on-demand**.
+//// >
+//// > Thus, for example:
+//// >
+//// > ```aiken
+//// > rational.new(2, 3) != rational.new(4, 6)
+//// > ```
+//// >
+//// > Comparing rational values should, therefore, only happen after reduction (see [reduce](#reduce)) or via the [compare](#compare) method.
 
 use aiken/builtin
 use aiken/collection/list
@@ -18,6 +19,27 @@ use aiken/option
 pub opaque type Rational {
   numerator: Int,
   denominator: Int,
+}
+
+// ## Constructing
+
+/// Create a new `Rational` from an `Int`.
+///
+/// ```aiken
+/// Some(rational.from_int(14)) == rational.new(14, 1)
+/// Some(rational.from_int(-5)) == rational.new(-5, 1)
+/// Some(rational.from_int(0)) == rational.new(0, 1)
+/// ```
+pub fn from_int(numerator: Int) -> Rational {
+  Rational { numerator, denominator: 1 }
+}
+
+test from_int_1() {
+  and {
+    (from_int(14) == ratio(14, 1))?,
+    (from_int(-5) == ratio(-5, 1))?,
+    (from_int(0) == ratio(0, 1))?,
+  }
 }
 
 /// An unsafe constructor for `Rational` values. Assumes that the following invariants are
@@ -61,29 +83,16 @@ test new_1() {
   }
 }
 
-/// Get the numerator of a rational value.
-///
-/// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// rational.numerator(x) == 2
-/// ```
-pub fn numerator(self: Rational) -> Int {
-  self.numerator
+/// A null `Rational`.
+pub fn zero() -> Rational {
+  Rational { numerator: 0, denominator: 1 }
 }
 
-test numerator_1() {
-  expect Some(x) = new(2, 3)
-  expect Some(y) = new(-2, 3)
-  expect Some(z) = new(2, -3)
-  expect Some(w) = new(-2, -3)
-
-  and {
-    (numerator(x) == 2)?,
-    (numerator(y) == -2)?,
-    (numerator(z) == -2)?,
-    (numerator(w) == 2)?,
-  }
+test zero_1() {
+  zero() == ratio(0, 1)
 }
+
+// ## Inspecting
 
 /// Get the denominator of a rational value.
 ///
@@ -108,382 +117,51 @@ test denominator_1() {
   }
 }
 
-/// A null `Rational`.
-pub fn zero() -> Rational {
-  Rational { numerator: 0, denominator: 1 }
-}
-
-test zero_1() {
-  zero() == ratio(0, 1)
-}
-
-/// Multiplication: the product of two rational values.
+/// Get the numerator of a rational value.
 ///
 /// ```aiken
 /// expect Some(x) = rational.new(2, 3)
-/// expect Some(y) = rational.new(3, 4)
-///
-/// Some(rational.mul(x, y)) == rational.new(6, 12)
+/// rational.numerator(x) == 2
 /// ```
-pub fn mul(left: Rational, right: Rational) -> Rational {
-  let Rational { numerator: a_n, denominator: a_d } = left
-  let Rational { numerator: b_n, denominator: b_d } = right
-  Rational { numerator: a_n * b_n, denominator: a_d * b_d }
+pub fn numerator(self: Rational) -> Int {
+  self.numerator
 }
 
-test mul_1() {
-  mul(ratio(2, 3), ratio(3, 4)) == ratio(6, 12)
-}
+test numerator_1() {
+  expect Some(x) = new(2, 3)
+  expect Some(y) = new(-2, 3)
+  expect Some(z) = new(2, -3)
+  expect Some(w) = new(-2, -3)
 
-test mul_2() {
-  mul(ratio(-2, 3), ratio(-3, 4)) == ratio(6, 12)
-}
-
-test mul_3() {
-  let result =
-    ratio(2, 5)
-      |> mul(ratio(1, 8))
-      |> mul(ratio(3, 10))
-      |> mul(ratio(21, 100))
-      |> mul(ratio(3, 5))
-      |> mul(ratio(2, 8))
-      |> mul(ratio(4, 10))
-      |> mul(ratio(22, 100))
-      |> reduce
-
-  result == ratio(2079, 50000000)
-}
-
-/// Division: quotient of two rational values. Returns `None` when the second
-/// value is null.
-///
-/// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// expect Some(y) = rational.new(3, 4)
-///
-/// rational.div(x, y) == rational.new(8, 9)
-/// ```
-pub fn div(left: Rational, right: Rational) -> Option<Rational> {
-  reciprocal(right) |> option.map(mul(left, _))
-}
-
-test div_1() {
-  div(ratio(2, 3), ratio(3, 4)) == new(8, 9)
-}
-
-test div_2() {
-  div(ratio(2, 3), ratio(-3, 4)) == new(-8, 9)
-}
-
-/// Addition: sum of two rational values
-///
-/// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// expect Some(y) = rational.new(3, 4)
-///
-/// Some(rational.add(x, y)) == rational.new(17, 12)
-/// ```
-pub fn add(left: Rational, right: Rational) -> Rational {
-  let Rational { numerator: a_n, denominator: a_d } = left
-  let Rational { numerator: b_n, denominator: b_d } = right
-  Rational { numerator: a_n * b_d + b_n * a_d, denominator: a_d * b_d }
-}
-
-test add_1() {
-  add(ratio(2, 3), ratio(3, 4)) == ratio(17, 12)
-}
-
-test add_2() {
-  add(ratio(-2, 3), ratio(3, 4)) == ratio(1, 12)
-}
-
-/// Subtraction: difference of two rational values
-///
-/// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// expect Some(y) = rational.new(3, 4)
-///
-/// Some(rational.sub(x, y)) == rational.new(-1, 12)
-/// ```
-pub fn sub(left: Rational, right: Rational) -> Rational {
-  let Rational { numerator: a_n, denominator: a_d } = left
-  let Rational { numerator: b_n, denominator: b_d } = right
-  Rational { numerator: a_n * b_d - b_n * a_d, denominator: a_d * b_d }
-}
-
-test sub_1() {
-  sub(ratio(2, 3), ratio(3, 4)) == ratio(-1, 12)
-}
-
-test sub_2() {
-  sub(ratio(2, 3), ratio(-3, 4)) == ratio(17, 12)
-}
-
-test sub_3() {
-  sub(ratio(-2, 3), ratio(3, 4)) == ratio(-17, 12)
-}
-
-/// Create a new `Rational` from an `Int`.
-///
-/// ```aiken
-/// Some(rational.from_int(14)) == rational.new(14, 1)
-/// Some(rational.from_int(-5)) == rational.new(-5, 1)
-/// Some(rational.from_int(0)) == rational.new(0, 1)
-/// ```
-pub fn from_int(numerator: Int) -> Rational {
-  Rational { numerator, denominator: 1 }
-}
-
-test from_int_1() {
   and {
-    (from_int(14) == ratio(14, 1))?,
-    (from_int(-5) == ratio(-5, 1))?,
-    (from_int(0) == ratio(0, 1))?,
+    (numerator(x) == 2)?,
+    (numerator(y) == -2)?,
+    (numerator(z) == -2)?,
+    (numerator(w) == 2)?,
   }
 }
 
-/// Returns the nearest `Int` between zero and a given `Rational`.
+// ## Modifying
+
+/// Absolute value of a `Rational`.
 ///
 /// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// rational.truncate(x) == 0
-///
-/// expect Some(y) = rational.new(44, 14)
-/// rational.truncate(y) == 3
-///
-/// expect Some(z) = rational.new(-14, 3)
-/// rational.truncate(z) == -4
-/// ```
-pub fn truncate(self: Rational) -> Int {
-  let Rational { numerator: a_n, denominator: a_d } = self
-  builtin.quotient_integer(a_n, a_d)
-}
-
-test truncate_1() {
-  and {
-    (truncate(ratio(5, 2)) == 2)?,
-    (truncate(ratio(5, 3)) == 1)?,
-    (truncate(ratio(5, 4)) == 1)?,
-    (truncate(ratio(5, 5)) == 1)?,
-    (truncate(ratio(5, 6)) == 0)?,
-    (truncate(ratio(8, 3)) == 2)?,
-    (truncate(ratio(-14, 3)) == -4)?,
-  }
-}
-
-/// Returns the greatest `Int` no greater than a given `Rational`
-///
-/// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// rational.floor(x) == 0
-///
-/// expect Some(y) = rational.new(44, 14)
-/// rational.floor(y) == 3
-///
-/// expect Some(z) = rational.new(-14, 3)
-/// rational.floor(z) == -5
-/// ```
-pub fn floor(self: Rational) -> Int {
-  let Rational { numerator: a_n, denominator: a_d } = self
-  a_n / a_d
-}
-
-test floor_1() {
-  and {
-    (floor(ratio(5, 2)) == 2)?,
-    (floor(ratio(5, 3)) == 1)?,
-    (floor(ratio(5, 4)) == 1)?,
-    (floor(ratio(5, 5)) == 1)?,
-    (floor(ratio(5, 6)) == 0)?,
-    (floor(ratio(8, 3)) == 2)?,
-    (floor(ratio(-14, 3)) == -5)?,
-  }
-}
-
-/// Returns the smallest `Int` not less than a given `Rational`
-///
-/// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// rational.ceil(x) == 1
-///
-/// expect Some(y) = rational.new(44, 14)
-/// rational.ceil(y) == 4
-///
-/// expect Some(z) = rational.new(-14, 3)
-/// rational.ceil(z) == -4
-/// ```
-pub fn ceil(self: Rational) -> Int {
-  let Rational { numerator, denominator } = self
-  if builtin.remainder_integer(numerator, denominator) > 0 {
-    builtin.quotient_integer(numerator, denominator) + 1
-  } else {
-    builtin.quotient_integer(numerator, denominator)
-  }
-}
-
-test ceil_1() {
-  and {
-    (ceil(ratio(13, 5)) == 3)?,
-    (ceil(ratio(15, 5)) == 3)?,
-    (ceil(ratio(16, 5)) == 4)?,
-    (ceil(ratio(-3, 5)) == 0)?,
-    (ceil(ratio(-5, 5)) == -1)?,
-    (ceil(ratio(-14, 3)) == -4)?,
-    (ceil(ratio(-14, 6)) == -2)?,
-    (ceil(ratio(44, 14)) == 4)?,
-  }
-}
-
-/// Returns the proper fraction of a given `Rational` `r`. That is, a 2-tuple of
-/// an `Int` and `Rational` (n, f) such that:
-///
-/// - `r = n + f`;
-/// - `n` and `f` have the same sign as `r`;
-/// - `f` has an absolute value less than 1.
-pub fn proper_fraction(self: Rational) -> (Int, Rational) {
-  let Rational { numerator, denominator } = self
-  (
-    builtin.quotient_integer(numerator, denominator),
-    Rational {
-      numerator: builtin.remainder_integer(numerator, denominator),
-      denominator,
-    },
-  )
-}
-
-test proper_fraction_1() {
-  let r = ratio(10, 7)
-  let (n, f) = proper_fraction(r)
-  and {
-    (n == 1)?,
-    (f == ratio(3, 7))?,
-    (r == add(from_int(n), f))?,
-  }
-}
-
-test proper_fraction_2() {
-  let r = ratio(-10, 7)
-  let (n, f) = proper_fraction(r)
-  and {
-    (n == -1)?,
-    (f == ratio(-3, 7))?,
-    (r == add(from_int(n), f))?,
-  }
-}
-
-test proper_fraction_3() {
-  let r = ratio(4, 2)
-  let (n, f) = proper_fraction(r)
-  and {
-    (n == 2)?,
-    (f == ratio(0, 2))?,
-    (r == add(from_int(n), f))?,
-  }
-}
-
-/// Round the argument to the nearest whole number. If the argument is
-/// equidistant between two values, the greater value is returned (it
-/// rounds half towards positive infinity).
-///
-/// ```aiken
-/// expect Some(x) = rational.new(2, 3)
-/// rational.round(x) == 1
-///
-/// expect Some(y) = rational.new(3, 2)
-/// rational.round(y) == 2
-///
-/// expect Some(z) = rational.new(-3, 2)
-/// rational.round(z) == -1
-/// ```
-///
-/// ⚠️  This behaves differently than _Haskell_. If you're coming from
-/// `PlutusTx`, beware that in Haskell, rounding on equidistant values depends on the
-/// whole number being odd or even. If you need this behaviour, use [`round_even`](#round_even).
-pub fn round(self: Rational) -> Int {
-  let (n, f) = proper_fraction(self)
-
-  let is_negative = f.numerator < 0
-
-  when compare(abs(f), ratio(1, 2)) is {
-    Less -> n
-    Equal ->
-      if is_negative {
-        n
-      } else {
-        n + 1
-      }
-    Greater ->
-      if is_negative {
-        n - 1
-      } else {
-        n + 1
-      }
-  }
-}
-
-test round_1() {
-  and {
-    (round(ratio(10, 7)) == 1)?,
-    (round(ratio(11, 7)) == 2)?,
-    (round(ratio(3, 2)) == 2)?,
-    (round(ratio(5, 2)) == 3)?,
-    (round(ratio(-3, 2)) == -1)?,
-    (round(ratio(-2, 3)) == -1)?,
-    (round(ratio(-10, 7)) == -1)?,
-    (round(ratio(4, 2)) == 2)?,
-  }
-}
-
-/// Round the argument to the nearest whole number. If the argument is
-/// equidistant between two values, it returns the value that is even (it
-/// rounds half to even, also known as 'banker's rounding').
-///
-/// ```aiken
-/// expect Some(w) = rational.new(2, 3)
-/// rational.round_even(w) == 1
-///
 /// expect Some(x) = rational.new(3, 2)
-/// rational.round_even(x) == 2
-///
-/// expect Some(y) = rational.new(5, 2)
-/// rational.round_even(y) == 2
-///
 /// expect Some(y) = rational.new(-3, 2)
-/// rational.round_even(y) == -2
+///
+/// rational.abs(x) == x
+/// rational.abs(y) == x
 /// ```
-pub fn round_even(self: Rational) -> Int {
-  let (n, f) = proper_fraction(self)
-
-  let m =
-    when compare(f, ratio(0, 1)) is {
-      Less -> -1
-      _ -> 1
-    }
-
-  let is_even = n % 2 == 0
-
-  when compare(abs(f), ratio(1, 2)) is {
-    Less -> n
-    Equal ->
-      if is_even {
-        n
-      } else {
-        n + m
-      }
-    Greater -> n + m
-  }
+pub fn abs(self: Rational) -> Rational {
+  let Rational { numerator: a_n, denominator: a_d } = self
+  Rational { numerator: math.abs(a_n), denominator: a_d }
 }
 
-test round_even_1() {
+test abs_examples() {
   and {
-    (round_even(ratio(10, 7)) == 1)?,
-    (round_even(ratio(11, 7)) == 2)?,
-    (round_even(ratio(3, 2)) == 2)?,
-    (round_even(ratio(5, 2)) == 2)?,
-    (round_even(ratio(-3, 2)) == -2)?,
-    (round_even(ratio(-2, 3)) == -1)?,
-    (round_even(ratio(-10, 7)) == -1)?,
-    (round_even(ratio(4, 2)) == 2)?,
+    (abs(ratio(5, 2)) == ratio(5, 2))?,
+    (abs(ratio(-5, 2)) == ratio(5, 2))?,
+    (abs(ratio(5, 2)) == abs(ratio(-5, 2)))?,
   }
 }
 
@@ -506,28 +184,6 @@ test negate_1() {
     (negate(ratio(5, 2)) == ratio(-5, 2))?,
     (negate(ratio(-5, 2)) == ratio(5, 2))?,
     (negate(negate(ratio(5, 2))) == ratio(5, 2))?,
-  }
-}
-
-/// Absolute value of a `Rational`.
-///
-/// ```aiken
-/// expect Some(x) = rational.new(3, 2)
-/// expect Some(y) = rational.new(-3, 2)
-///
-/// rational.abs(x) == x
-/// rational.abs(y) == x
-/// ```
-pub fn abs(self: Rational) -> Rational {
-  let Rational { numerator: a_n, denominator: a_d } = self
-  Rational { numerator: math.abs(a_n), denominator: a_d }
-}
-
-test abs_examples() {
-  and {
-    (abs(ratio(5, 2)) == ratio(5, 2))?,
-    (abs(ratio(-5, 2)) == ratio(5, 2))?,
-    (abs(ratio(5, 2)) == abs(ratio(-5, 2)))?,
   }
 }
 
@@ -582,6 +238,118 @@ test reduce_1() {
     (reduce(ratio(0, 3)) == ratio(0, 1))?,
   }
 }
+
+// ## Combining
+
+// ### Arithmetic operations
+
+/// Addition: sum of two rational values
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// expect Some(y) = rational.new(3, 4)
+///
+/// Some(rational.add(x, y)) == rational.new(17, 12)
+/// ```
+pub fn add(left: Rational, right: Rational) -> Rational {
+  let Rational { numerator: a_n, denominator: a_d } = left
+  let Rational { numerator: b_n, denominator: b_d } = right
+  Rational { numerator: a_n * b_d + b_n * a_d, denominator: a_d * b_d }
+}
+
+test add_1() {
+  add(ratio(2, 3), ratio(3, 4)) == ratio(17, 12)
+}
+
+test add_2() {
+  add(ratio(-2, 3), ratio(3, 4)) == ratio(1, 12)
+}
+
+/// Division: quotient of two rational values. Returns `None` when the second
+/// value is null.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// expect Some(y) = rational.new(3, 4)
+///
+/// rational.div(x, y) == rational.new(8, 9)
+/// ```
+pub fn div(left: Rational, right: Rational) -> Option<Rational> {
+  reciprocal(right) |> option.map(mul(left, _))
+}
+
+test div_1() {
+  div(ratio(2, 3), ratio(3, 4)) == new(8, 9)
+}
+
+test div_2() {
+  div(ratio(2, 3), ratio(-3, 4)) == new(-8, 9)
+}
+
+/// Multiplication: the product of two rational values.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// expect Some(y) = rational.new(3, 4)
+///
+/// Some(rational.mul(x, y)) == rational.new(6, 12)
+/// ```
+pub fn mul(left: Rational, right: Rational) -> Rational {
+  let Rational { numerator: a_n, denominator: a_d } = left
+  let Rational { numerator: b_n, denominator: b_d } = right
+  Rational { numerator: a_n * b_n, denominator: a_d * b_d }
+}
+
+test mul_1() {
+  mul(ratio(2, 3), ratio(3, 4)) == ratio(6, 12)
+}
+
+test mul_2() {
+  mul(ratio(-2, 3), ratio(-3, 4)) == ratio(6, 12)
+}
+
+test mul_3() {
+  let result =
+    ratio(2, 5)
+      |> mul(ratio(1, 8))
+      |> mul(ratio(3, 10))
+      |> mul(ratio(21, 100))
+      |> mul(ratio(3, 5))
+      |> mul(ratio(2, 8))
+      |> mul(ratio(4, 10))
+      |> mul(ratio(22, 100))
+      |> reduce
+
+  result == ratio(2079, 50000000)
+}
+
+/// Subtraction: difference of two rational values
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// expect Some(y) = rational.new(3, 4)
+///
+/// Some(rational.sub(x, y)) == rational.new(-1, 12)
+/// ```
+pub fn sub(left: Rational, right: Rational) -> Rational {
+  let Rational { numerator: a_n, denominator: a_d } = left
+  let Rational { numerator: b_n, denominator: b_d } = right
+  Rational { numerator: a_n * b_d - b_n * a_d, denominator: a_d * b_d }
+}
+
+test sub_1() {
+  sub(ratio(2, 3), ratio(3, 4)) == ratio(-1, 12)
+}
+
+test sub_2() {
+  sub(ratio(2, 3), ratio(-3, 4)) == ratio(17, 12)
+}
+
+test sub_3() {
+  sub(ratio(-2, 3), ratio(3, 4)) == ratio(-17, 12)
+}
+
+// ### Ordering
 
 /// Compare two rationals for an ordering. This is safe to use even for
 /// non-reduced rationals.
@@ -709,6 +477,8 @@ test compare_with_lt() {
   lt(x, y)? && !lt(y, x)? && !lt(x, x)?
 }
 
+// ### Means
+
 /// Calculate the arithmetic mean between two `Rational` values.
 ///
 /// ```aiken
@@ -804,4 +574,251 @@ test geometric_mean5() {
   expect Some(y) = new(35331, 1000)
   expect Some(yi) = reciprocal(y)
   geometric_mean(x, yi) == new(258, 9398)
+}
+
+// ## Transforming
+
+/// Returns the smallest `Int` not less than a given `Rational`
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// rational.ceil(x) == 1
+///
+/// expect Some(y) = rational.new(44, 14)
+/// rational.ceil(y) == 4
+///
+/// expect Some(z) = rational.new(-14, 3)
+/// rational.ceil(z) == -4
+/// ```
+pub fn ceil(self: Rational) -> Int {
+  let Rational { numerator, denominator } = self
+  if builtin.remainder_integer(numerator, denominator) > 0 {
+    builtin.quotient_integer(numerator, denominator) + 1
+  } else {
+    builtin.quotient_integer(numerator, denominator)
+  }
+}
+
+test ceil_1() {
+  and {
+    (ceil(ratio(13, 5)) == 3)?,
+    (ceil(ratio(15, 5)) == 3)?,
+    (ceil(ratio(16, 5)) == 4)?,
+    (ceil(ratio(-3, 5)) == 0)?,
+    (ceil(ratio(-5, 5)) == -1)?,
+    (ceil(ratio(-14, 3)) == -4)?,
+    (ceil(ratio(-14, 6)) == -2)?,
+    (ceil(ratio(44, 14)) == 4)?,
+  }
+}
+
+/// Returns the greatest `Int` no greater than a given `Rational`
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// rational.floor(x) == 0
+///
+/// expect Some(y) = rational.new(44, 14)
+/// rational.floor(y) == 3
+///
+/// expect Some(z) = rational.new(-14, 3)
+/// rational.floor(z) == -5
+/// ```
+pub fn floor(self: Rational) -> Int {
+  let Rational { numerator: a_n, denominator: a_d } = self
+  a_n / a_d
+}
+
+test floor_1() {
+  and {
+    (floor(ratio(5, 2)) == 2)?,
+    (floor(ratio(5, 3)) == 1)?,
+    (floor(ratio(5, 4)) == 1)?,
+    (floor(ratio(5, 5)) == 1)?,
+    (floor(ratio(5, 6)) == 0)?,
+    (floor(ratio(8, 3)) == 2)?,
+    (floor(ratio(-14, 3)) == -5)?,
+  }
+}
+
+/// Returns the proper fraction of a given `Rational` `r`. That is, a 2-tuple of
+/// an `Int` and `Rational` (n, f) such that:
+///
+/// - `r = n + f`;
+/// - `n` and `f` have the same sign as `r`;
+/// - `f` has an absolute value less than 1.
+pub fn proper_fraction(self: Rational) -> (Int, Rational) {
+  let Rational { numerator, denominator } = self
+  (
+    builtin.quotient_integer(numerator, denominator),
+    Rational {
+      numerator: builtin.remainder_integer(numerator, denominator),
+      denominator,
+    },
+  )
+}
+
+test proper_fraction_1() {
+  let r = ratio(10, 7)
+  let (n, f) = proper_fraction(r)
+  and {
+    (n == 1)?,
+    (f == ratio(3, 7))?,
+    (r == add(from_int(n), f))?,
+  }
+}
+
+test proper_fraction_2() {
+  let r = ratio(-10, 7)
+  let (n, f) = proper_fraction(r)
+  and {
+    (n == -1)?,
+    (f == ratio(-3, 7))?,
+    (r == add(from_int(n), f))?,
+  }
+}
+
+test proper_fraction_3() {
+  let r = ratio(4, 2)
+  let (n, f) = proper_fraction(r)
+  and {
+    (n == 2)?,
+    (f == ratio(0, 2))?,
+    (r == add(from_int(n), f))?,
+  }
+}
+
+/// Round the argument to the nearest whole number. If the argument is
+/// equidistant between two values, the greater value is returned (it
+/// rounds half towards positive infinity).
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// rational.round(x) == 1
+///
+/// expect Some(y) = rational.new(3, 2)
+/// rational.round(y) == 2
+///
+/// expect Some(z) = rational.new(-3, 2)
+/// rational.round(z) == -1
+/// ```
+///
+/// > [!CAUTION]
+/// > This behaves differently than _Haskell_. If you're coming from `PlutusTx`, beware that in Haskell, rounding on equidistant values depends on the whole number being odd or even.
+/// > If you need this behaviour, use [`round_even`](#round_even).
+pub fn round(self: Rational) -> Int {
+  let (n, f) = proper_fraction(self)
+
+  let is_negative = f.numerator < 0
+
+  when compare(abs(f), ratio(1, 2)) is {
+    Less -> n
+    Equal ->
+      if is_negative {
+        n
+      } else {
+        n + 1
+      }
+    Greater ->
+      if is_negative {
+        n - 1
+      } else {
+        n + 1
+      }
+  }
+}
+
+test round_1() {
+  and {
+    (round(ratio(10, 7)) == 1)?,
+    (round(ratio(11, 7)) == 2)?,
+    (round(ratio(3, 2)) == 2)?,
+    (round(ratio(5, 2)) == 3)?,
+    (round(ratio(-3, 2)) == -1)?,
+    (round(ratio(-2, 3)) == -1)?,
+    (round(ratio(-10, 7)) == -1)?,
+    (round(ratio(4, 2)) == 2)?,
+  }
+}
+
+/// Round the argument to the nearest whole number. If the argument is
+/// equidistant between two values, it returns the value that is even (it
+/// rounds half to even, also known as 'banker's rounding').
+///
+/// ```aiken
+/// expect Some(w) = rational.new(2, 3)
+/// rational.round_even(w) == 1
+///
+/// expect Some(x) = rational.new(3, 2)
+/// rational.round_even(x) == 2
+///
+/// expect Some(y) = rational.new(5, 2)
+/// rational.round_even(y) == 2
+///
+/// expect Some(y) = rational.new(-3, 2)
+/// rational.round_even(y) == -2
+/// ```
+pub fn round_even(self: Rational) -> Int {
+  let (n, f) = proper_fraction(self)
+
+  let m =
+    when compare(f, ratio(0, 1)) is {
+      Less -> -1
+      _ -> 1
+    }
+
+  let is_even = n % 2 == 0
+
+  when compare(abs(f), ratio(1, 2)) is {
+    Less -> n
+    Equal ->
+      if is_even {
+        n
+      } else {
+        n + m
+      }
+    Greater -> n + m
+  }
+}
+
+test round_even_1() {
+  and {
+    (round_even(ratio(10, 7)) == 1)?,
+    (round_even(ratio(11, 7)) == 2)?,
+    (round_even(ratio(3, 2)) == 2)?,
+    (round_even(ratio(5, 2)) == 2)?,
+    (round_even(ratio(-3, 2)) == -2)?,
+    (round_even(ratio(-2, 3)) == -1)?,
+    (round_even(ratio(-10, 7)) == -1)?,
+    (round_even(ratio(4, 2)) == 2)?,
+  }
+}
+
+/// Returns the nearest `Int` between zero and a given `Rational`.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(2, 3)
+/// rational.truncate(x) == 0
+///
+/// expect Some(y) = rational.new(44, 14)
+/// rational.truncate(y) == 3
+///
+/// expect Some(z) = rational.new(-14, 3)
+/// rational.truncate(z) == -4
+/// ```
+pub fn truncate(self: Rational) -> Int {
+  let Rational { numerator: a_n, denominator: a_d } = self
+  builtin.quotient_integer(a_n, a_d)
+}
+
+test truncate_1() {
+  and {
+    (truncate(ratio(5, 2)) == 2)?,
+    (truncate(ratio(5, 3)) == 1)?,
+    (truncate(ratio(5, 4)) == 1)?,
+    (truncate(ratio(5, 5)) == 1)?,
+    (truncate(ratio(5, 6)) == 0)?,
+    (truncate(ratio(8, 3)) == 2)?,
+    (truncate(ratio(-14, 3)) == -4)?,
+  }
 }
