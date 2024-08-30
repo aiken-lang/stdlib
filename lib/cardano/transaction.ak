@@ -160,7 +160,7 @@ pub fn find_datum(
                     InlineDatum(data) ->
                       if
                       blake2b_256(builtin.serialise_data(data)) == datum_hash{
-
+                      
                         Some(data)
                       } else {
                         None
