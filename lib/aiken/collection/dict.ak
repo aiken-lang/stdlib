@@ -33,13 +33,11 @@ pub opaque type Dict<key, value> {
 
 // ## Constructing
 
-/// Create a new empty Dict
+/// An empty dictionnary.
 /// ```aiken
-/// dict.to_pairs(dict.new()) == []
+/// dict.to_pairs(dict.empty) == []
 /// ```
-pub fn new() -> Dict<key, value> {
-  Dict { inner: [] }
-}
+pub const empty: Dict<key, value> = Dict { inner: [] }
 
 const foo = #"666f6f"
 
@@ -47,11 +45,10 @@ const bar = #"626172"
 
 const baz = #"62617a"
 
-fn fixture_1() {
-  new()
+const fixture_1 =
+  empty
     |> insert(foo, 42)
     |> insert(bar, 14)
-}
 
 /// Like ['from_pairs'](#from_pairs), but from an already sorted list by ascending
 /// keys. This function fails (i.e. halt the program execution) if the list isn't
@@ -134,22 +131,10 @@ test bench_from_ascending_pairs() {
   let dict =
     from_ascending_pairs(
       [
-        Pair("aaaa", 1),
-        Pair("aaab", 9),
-        Pair("aaba", 5),
-        Pair("aabb", 13),
-        Pair("abaa", 2),
-        Pair("abab", 10),
-        Pair("abba", 6),
-        Pair("abbb", 14),
-        Pair("baaa", 3),
-        Pair("baab", 11),
-        Pair("baba", 7),
-        Pair("babb", 15),
-        Pair("bbaa", 4),
-        Pair("bbab", 12),
-        Pair("bbba", 8),
-        Pair("bbbb", 16),
+        Pair("aaaa", 1), Pair("aaab", 9), Pair("aaba", 5), Pair("aabb", 13),
+        Pair("abaa", 2), Pair("abab", 10), Pair("abba", 6), Pair("abbb", 14),
+        Pair("baaa", 3), Pair("baab", 11), Pair("baba", 7), Pair("babb", 15),
+        Pair("bbaa", 4), Pair("bbab", 12), Pair("bbba", 8), Pair("bbbb", 16),
       ],
     )
 
@@ -181,7 +166,7 @@ fn do_from_pairs(xs: Pairs<ByteArray, value>) -> Pairs<ByteArray, value> {
 }
 
 test from_list_1() {
-  from_pairs([]) == new()
+  from_pairs([]) == empty
 }
 
 test from_list_2() {
@@ -191,33 +176,21 @@ test from_list_2() {
 }
 
 test from_list_3() {
-  from_pairs([Pair(foo, 42), Pair(bar, 14)]) == fixture_1()
+  from_pairs([Pair(foo, 42), Pair(bar, 14)]) == fixture_1
 }
 
 test from_list_4() {
-  from_pairs([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1()
+  from_pairs([Pair(foo, 42), Pair(bar, 14), Pair(foo, 1337)]) == fixture_1
 }
 
 test bench_from_pairs() {
   let dict =
     from_pairs(
       [
-        Pair("bbba", 8),
-        Pair("bbab", 12),
-        Pair("aabb", 13),
-        Pair("aaab", 9),
-        Pair("bbbb", 16),
-        Pair("aaaa", 1),
-        Pair("aaba", 5),
-        Pair("abab", 10),
-        Pair("baba", 7),
-        Pair("baab", 11),
-        Pair("abaa", 2),
-        Pair("baaa", 3),
-        Pair("bbaa", 4),
-        Pair("babb", 15),
-        Pair("abbb", 14),
-        Pair("abba", 6),
+        Pair("bbba", 8), Pair("bbab", 12), Pair("aabb", 13), Pair("aaab", 9),
+        Pair("bbbb", 16), Pair("aaaa", 1), Pair("aaba", 5), Pair("abab", 10),
+        Pair("baba", 7), Pair("baab", 11), Pair("abaa", 2), Pair("baaa", 3),
+        Pair("bbaa", 4), Pair("babb", 15), Pair("abbb", 14), Pair("abba", 6),
       ],
     )
 
@@ -230,7 +203,7 @@ test bench_from_pairs() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: 42)
 ///     |> dict.insert(key: "b", value: 14)
 ///     |> dict.insert(key: "c", value: 42)
@@ -255,12 +228,12 @@ fn do_find(self: Pairs<ByteArray, value>, value v: value) -> Option<ByteArray> {
 }
 
 test find_1() {
-  find(new(), foo) == None
+  find(empty, foo) == None
 }
 
 test find_2() {
   find(
-    new()
+    empty
       |> insert(foo, 14),
     14,
   ) == Some(foo)
@@ -268,7 +241,7 @@ test find_2() {
 
 test find_3() {
   find(
-    new()
+    empty
       |> insert(foo, 14),
     42,
   ) == None
@@ -276,7 +249,7 @@ test find_3() {
 
 test find_4() {
   find(
-    new()
+    empty
       |> insert(foo, 14)
       |> insert(bar, 42)
       |> insert(baz, 14),
@@ -288,7 +261,7 @@ test find_4() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: "Aiken")
 ///     |> dict.get(key: "a")
 ///
@@ -315,12 +288,12 @@ fn do_get(self: Pairs<ByteArray, value>, key k: ByteArray) -> Option<value> {
 }
 
 test get_1() {
-  get(new(), foo) == None
+  get(empty, foo) == None
 }
 
 test get_2() {
   let m =
-    new()
+    empty
       |> insert(foo, "Aiken")
       |> insert(bar, "awesome")
   get(m, key: foo) == Some("Aiken")
@@ -328,7 +301,7 @@ test get_2() {
 
 test get_3() {
   let m =
-    new()
+    empty
       |> insert(foo, "Aiken")
       |> insert(bar, "awesome")
   get(m, key: baz) == None
@@ -336,7 +309,7 @@ test get_3() {
 
 test get_4() {
   let m =
-    new()
+    empty
       |> insert("aaa", "1")
       |> insert("bbb", "2")
       |> insert("ccc", "3")
@@ -353,7 +326,7 @@ test get_4() {
 
 test get_5() {
   let m =
-    new()
+    empty
       |> insert("aaa", "1")
       |> insert("bbb", "2")
       |> insert("ccc", "3")
@@ -372,7 +345,7 @@ test get_5() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: "Aiken")
 ///     |> dict.has_key("a")
 ///
@@ -395,12 +368,12 @@ fn do_has_key(self: Pairs<ByteArray, value>, key k: ByteArray) -> Bool {
 }
 
 test has_key_1() {
-  !has_key(new(), foo)
+  !has_key(empty, foo)
 }
 
 test has_key_2() {
   has_key(
-    new()
+    empty
       |> insert(foo, 14),
     foo,
   )
@@ -408,7 +381,7 @@ test has_key_2() {
 
 test has_key_3() {
   !has_key(
-    new()
+    empty
       |> insert(foo, 14),
     bar,
   )
@@ -416,7 +389,7 @@ test has_key_3() {
 
 test has_key_4() {
   has_key(
-    new()
+    empty
       |> insert(foo, 14)
       |> insert(bar, 42),
     bar,
@@ -425,7 +398,7 @@ test has_key_4() {
 
 /// Efficiently checks whether a dictionary is empty.
 /// ```aiken
-/// dict.is_empty(dict.new()) == True
+/// dict.is_empty(dict.empty) == True
 /// ```
 pub fn is_empty(self: Dict<key, value>) -> Bool {
   when self.inner is {
@@ -435,14 +408,14 @@ pub fn is_empty(self: Dict<key, value>) -> Bool {
 }
 
 test is_empty_1() {
-  is_empty(new())
+  is_empty(empty)
 }
 
 /// Extract all the keys present in a given `Dict`.
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert("a", 14)
 ///     |> dict.insert("b", 42)
 ///     |> dict.insert("a", 1337)
@@ -464,12 +437,12 @@ fn do_keys(self: Pairs<ByteArray, value>) -> List<ByteArray> {
 }
 
 test keys_1() {
-  keys(new()) == []
+  keys(empty) == []
 }
 
 test keys_2() {
   keys(
-    new()
+    empty
       |> insert(foo, 0)
       |> insert(bar, 0),
   ) == [bar, foo]
@@ -479,7 +452,7 @@ test keys_2() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert("a", 100)
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
@@ -499,19 +472,19 @@ fn do_size(self: Pairs<key, value>) -> Int {
 }
 
 test size_1() {
-  size(new()) == 0
+  size(empty) == 0
 }
 
 test size_2() {
   size(
-    new()
+    empty
       |> insert(foo, 14),
   ) == 1
 }
 
 test size_3() {
   size(
-    new()
+    empty
       |> insert(foo, 14)
       |> insert(bar, 42),
   ) == 2
@@ -521,7 +494,7 @@ test size_3() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert("a", 14)
 ///     |> dict.insert("b", 42)
 ///     |> dict.insert("c", 1337)
@@ -543,12 +516,12 @@ fn do_values(self: Pairs<key, value>) -> List<value> {
 }
 
 test values_1() {
-  values(new()) == []
+  values(empty) == []
 }
 
 test values_2() {
   values(
-    new()
+    empty
       |> insert(foo, 3)
       |> insert(bar, 4),
   ) == [4, 3]
@@ -560,7 +533,7 @@ test values_2() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.delete(key: "a")
@@ -593,26 +566,26 @@ fn do_delete(
 }
 
 test delete_1() {
-  delete(new(), foo) == new()
+  delete(empty, foo) == empty
 }
 
 test delete_2() {
   let m =
-    new()
+    empty
       |> insert(foo, 14)
-  delete(m, foo) == new()
+  delete(m, foo) == empty
 }
 
 test delete_3() {
   let m =
-    new()
+    empty
       |> insert(foo, 14)
   delete(m, bar) == m
 }
 
 test delete_4() {
   let m =
-    new()
+    empty
       |> insert(foo, 14)
       |> insert(bar, 14)
   !has_key(delete(m, foo), foo)
@@ -620,7 +593,7 @@ test delete_4() {
 
 test delete_5() {
   let m =
-    new()
+    empty
       |> insert(foo, 14)
       |> insert(bar, 14)
   has_key(delete(m, bar), foo)
@@ -628,7 +601,7 @@ test delete_5() {
 
 test delete_6() {
   let m =
-    new()
+    empty
       |> insert("aaa", 1)
       |> insert("bbb", 2)
       |> insert("ccc", 3)
@@ -647,7 +620,7 @@ test delete_6() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.insert(key: "c", value: 300)
@@ -680,28 +653,28 @@ fn do_filter(
 }
 
 test filter_1() {
-  filter(new(), fn(_, _) { True }) == new()
+  filter(empty, fn(_, _) { True }) == empty
 }
 
 test filter_2() {
   let expected =
-    new()
+    empty
       |> insert(foo, 42)
-  filter(fixture_1(), fn(_, v) { v > 14 }) == expected
+  filter(fixture_1, fn(_, v) { v > 14 }) == expected
 }
 
 test filter_3() {
   let expected =
-    new()
+    empty
       |> insert(bar, 14)
-  filter(fixture_1(), fn(k, _) { k == bar }) == expected
+  filter(fixture_1, fn(k, _) { k == bar }) == expected
 }
 
 /// Insert a value in the dictionary at a given key. If the key already exists, its value is **overridden**. If you need ways to combine keys together, use (`insert_with`)[#insert_with].
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: 1)
 ///     |> dict.insert(key: "b", value: 2)
 ///     |> dict.insert(key: "a", value: 3)
@@ -740,20 +713,20 @@ fn do_insert(
 
 test insert_1() {
   let m1 =
-    new()
+    empty
       |> insert(foo, 42)
   let m2 =
-    new()
+    empty
       |> insert(foo, 14)
   insert(m1, foo, 14) == m2
 }
 
 test insert_2() {
   let m1 =
-    new()
+    empty
       |> insert(foo, 42)
   let m2 =
-    new()
+    empty
       |> insert(bar, 14)
   insert(m1, bar, 14) == insert(m2, foo, 42)
 }
@@ -767,7 +740,7 @@ test insert_2() {
 ///   fn (_k, a, b) { Some(a + b) }
 ///
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert_with(key: "a", value: 1, with: sum)
 ///     |> dict.insert_with(key: "b", value: 2, with: sum)
 ///     |> dict.insert_with(key: "a", value: 3, with: sum)
@@ -791,7 +764,7 @@ test insert_with_1() {
     fn(_k, a, b) { Some(a + b) }
 
   let result =
-    new()
+    empty
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
       |> to_pairs()
@@ -804,7 +777,7 @@ test insert_with_2() {
     fn(_k, a, b) { Some(a + b) }
 
   let result =
-    new()
+    empty
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
       |> insert_with(key: "foo", value: 3, with: sum)
@@ -824,7 +797,7 @@ test insert_with_3() {
     }
 
   let result =
-    new()
+    empty
       |> insert_with(key: "foo", value: 1, with: with)
       |> insert_with(key: "bar", value: 2, with: with)
       |> insert_with(key: "foo", value: 3, with: with)
@@ -838,7 +811,7 @@ test insert_with_3() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert("a", 100)
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
@@ -865,16 +838,16 @@ fn do_map(
 
 test map_1() {
   let result =
-    fixture_1()
+    fixture_1
       |> map(with: fn(k, _) { k })
   get(result, foo) == Some(foo)
 }
 
 test map_2() {
   let result =
-    fixture_1()
+    fixture_1
       |> map(with: fn(_, v) { v + 1 })
-  get(result, foo) == Some(43) && size(result) == size(fixture_1())
+  get(result, foo) == Some(43) && size(result) == size(fixture_1)
 }
 
 // ## Combining
@@ -909,19 +882,19 @@ fn do_union(
 }
 
 test union_1() {
-  union(fixture_1(), new()) == fixture_1()
+  union(fixture_1, empty) == fixture_1
 }
 
 test union_2() {
-  union(new(), fixture_1()) == fixture_1()
+  union(empty, fixture_1) == fixture_1
 }
 
 test union_3() {
   let left =
-    new()
+    empty
       |> insert(foo, 14)
   let right =
-    new()
+    empty
       |> insert(bar, 42)
       |> insert(baz, 1337)
   union(left, right) == from_pairs(
@@ -931,10 +904,10 @@ test union_3() {
 
 test union_4() {
   let left =
-    new()
+    empty
       |> insert(foo, 14)
   let right =
-    new()
+    empty
       |> insert(bar, 42)
       |> insert(foo, 1337)
   union(left, right) == from_pairs([Pair(foo, 14), Pair(bar, 42)])
@@ -1008,11 +981,11 @@ fn do_insert_with(
 
 test union_with_1() {
   let left =
-    new()
+    empty
       |> insert(foo, 14)
 
   let right =
-    new()
+    empty
       |> insert(bar, 42)
       |> insert(foo, 1337)
 
@@ -1028,7 +1001,7 @@ test union_with_1() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.insert(key: "c", value: 300)
@@ -1056,11 +1029,11 @@ fn do_foldl(
 }
 
 test fold_1() {
-  foldl(new(), 14, fn(_, _, _) { 42 }) == 14
+  foldl(empty, 14, fn(_, _, _) { 42 }) == 14
 }
 
 test fold_2() {
-  foldl(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
+  foldl(fixture_1, zero: 0, with: fn(_, v, total) { v + total }) == 56
 }
 
 /// Fold over the key-value pairs in a dictionary. The fold direction follows keys
@@ -1068,7 +1041,7 @@ test fold_2() {
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert(key: "a", value: 100)
 ///     |> dict.insert(key: "b", value: 200)
 ///     |> dict.insert(key: "c", value: 300)
@@ -1096,18 +1069,18 @@ fn do_foldr(
 }
 
 test foldr_1() {
-  foldr(new(), 14, fn(_, _, _) { 42 }) == 14
+  foldr(empty, 14, fn(_, _, _) { 42 }) == 14
 }
 
 test foldr_2() {
-  foldr(fixture_1(), zero: 0, with: fn(_, v, total) { v + total }) == 56
+  foldr(fixture_1, zero: 0, with: fn(_, v, total) { v + total }) == 56
 }
 
 /// Get the inner list holding the dictionary data.
 ///
 /// ```aiken
 /// let result =
-///   dict.new()
+///   dict.empty
 ///     |> dict.insert("a", 100)
 ///     |> dict.insert("b", 200)
 ///     |> dict.insert("c", 300)
@@ -1120,9 +1093,9 @@ pub fn to_pairs(self: Dict<key, value>) -> Pairs<ByteArray, value> {
 }
 
 test to_list_1() {
-  to_pairs(new()) == []
+  to_pairs(empty) == []
 }
 
 test to_list_2() {
-  to_pairs(fixture_1()) == [Pair(bar, 14), Pair(foo, 42)]
+  to_pairs(fixture_1) == [Pair(bar, 14), Pair(foo, 42)]
 }

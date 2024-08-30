@@ -48,6 +48,13 @@
     - `aiken/transaction/credential` -> [`cardano/address`](https://aiken-lang.github.io/stdlib/cardano/address.html) & `aiken/crypto`
     - `aiken/transaction/value` -> [`cardano/assets`](https://aiken-lang.github.io/stdlib/cardano/assets.html)
 
+- Several zero-argument functions have been turned into top-level constants
+  - `aiken/dict.new()` -> [`aiken/collection/dict.empty`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#empty)
+  - `aiken/interval.empty()` -> [`aiken/interval.empty`](https://aiken-lang.github.io/stdlib/aiken/interval.html#empty)
+  - `aiken/interval.everything()` -> [`aiken/interval.everything`](https://aiken-lang.github.io/stdlib/aiken/interval.html#everything)
+  - `aiken/math/rational.zero()` -> [`aiken/math/rational.zero`](https://aiken-lang.github.io/stdlib/aiken/math/rational.html#zero)
+  - `aiken/transaction/value.zero()` -> [`cardano/assets.zero`](https://aiken-lang.github.io/stdlib/cardano/assets.html#zero)
+
 - The `Transaction` type from [`cardano/transaction`](https://aiken-lang.github.io/stdlib/cardano/transaction.html) (originally `aiken/transaction`) has been greatly reworked to match the new transaction format in Plutus V3.
 
 - The `ScriptContext` type has split from `cardano/transaction` (originally `aiken/transaction`) and moved into its own module [`cardano/script_context`](https://aiken-lang.github.io/stdlib/cardano/script_context.html) and adjusted to its new form as per Plutus V3.

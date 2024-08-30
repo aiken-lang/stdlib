@@ -190,10 +190,10 @@ pub fn entirely_between(lower_bound: a, upper_bound: a) -> Interval<a> {
 /// Create an empty interval that contains no value.
 ///
 /// ```aiken
-/// interval.contains(empty(), 0) == False
-/// interval.contains(empty(), 1000) == False
+/// interval.contains(empty, 0) == False
+/// interval.contains(empty, 1000) == False
 /// ```
-pub fn empty() -> Interval<a> {
+pub const empty: Interval<a> =
   Interval {
     lower_bound: IntervalBound {
       bound_type: PositiveInfinity,
@@ -204,15 +204,14 @@ pub fn empty() -> Interval<a> {
       is_inclusive: True,
     },
   }
-}
 
 /// Create an interval that contains every possible values. i.e. (-INF, +INF)
 ///
 /// ```aiken
-/// interval.contains(everything(), 0) == True
-/// interval.contains(everything(), 1000) == True
+/// interval.contains(everything, 0) == True
+/// interval.contains(everything, 1000) == True
 /// ```
-pub fn everything() -> Interval<a> {
+pub const everything: Interval<a> =
   Interval {
     lower_bound: IntervalBound {
       bound_type: NegativeInfinity,
@@ -223,7 +222,6 @@ pub fn everything() -> Interval<a> {
       is_inclusive: True,
     },
   }
-}
 
 // ## Inspecting
 
@@ -276,7 +274,7 @@ pub fn contains(self: Interval<Int>, elem: Int) -> Bool {
 }
 
 test contains_1() {
-  let iv = everything()
+  let iv = everything
   contains(iv, 14)
 }
 
@@ -331,14 +329,14 @@ test contains_11() {
 }
 
 test contains_12() {
-  let iv = empty()
+  let iv = empty
   !contains(iv, 14)
 }
 
 /// Tells whether an interval is empty; i.e. that is contains no value.
 ///
 /// ```aiken
-/// let iv1 = interval.empty()
+/// let iv1 = interval.empty
 ///
 /// let iv2 = Interval {
 ///     lower_bound: IntervalBound { bound_type: Finite(0), is_inclusive: False },

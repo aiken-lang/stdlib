@@ -47,13 +47,12 @@ pub fn from_asset(
   quantity: Int,
 ) -> Value {
   if quantity == 0 {
-    dict.new()
-      |> Value
+    zero
   } else {
     let asset =
-      dict.new()
+      dict.empty
         |> dict.insert(asset_name, quantity)
-    dict.new()
+    dict.empty
       |> dict.insert(policy_id, asset)
       |> Value
   }
@@ -72,7 +71,7 @@ pub fn from_asset(
 pub fn from_asset_list(xs: Pairs<PolicyId, Pairs<AssetName, Int>>) -> Value {
   xs
     |> list.foldr(
-        dict.new(),
+        dict.empty,
         fn(inner, acc) {
           expect Pair(p, [_, ..] as x) = inner
           x
@@ -92,17 +91,17 @@ pub fn from_asset_list(xs: Pairs<PolicyId, Pairs<AssetName, Int>>) -> Value {
 
 test from_asset_list_1() {
   let v = from_asset_list([])
-  v == zero()
+  v == zero
 }
 
 test from_asset_list_2() fail {
   let v = from_asset_list([Pair(#"33", [])])
-  v == zero()
+  v == zero
 }
 
 test from_asset_list_3() fail {
   let v = from_asset_list([Pair(#"33", [Pair(#"", 0)])])
-  v != zero()
+  v != zero
 }
 
 test from_asset_list_4() {
@@ -123,7 +122,7 @@ test from_asset_list_6() fail {
         Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
       ],
     )
-  v != zero()
+  v != zero
 }
 
 test from_asset_list_7() fail {
@@ -134,7 +133,7 @@ test from_asset_list_7() fail {
         Pair(#"34", [Pair(#"", 1), Pair(#"", 1)]),
       ],
     )
-  v != zero()
+  v != zero
 }
 
 test from_asset_list_8() {
@@ -142,15 +141,11 @@ test from_asset_list_8() {
     from_asset_list(
       [
         Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
-        Pair(#"34", [Pair(#"31", 1)]),
-        Pair(#"35", [Pair(#"", 1)]),
+        Pair(#"34", [Pair(#"31", 1)]), Pair(#"35", [Pair(#"", 1)]),
       ],
     )
   flatten(v) == [
-    (#"33", #"", 1),
-    (#"33", #"33", 1),
-    (#"34", #"31", 1),
-    (#"35", #"", 1),
+    (#"33", #"", 1), (#"33", #"33", 1), (#"34", #"31", 1), (#"35", #"", 1),
   ]
 }
 
@@ -158,16 +153,12 @@ test from_asset_list_9() {
   let v =
     from_asset_list(
       [
-        Pair(#"35", [Pair(#"", 1)]),
-        Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
+        Pair(#"35", [Pair(#"", 1)]), Pair(#"33", [Pair(#"", 1), Pair(#"33", 1)]),
         Pair(#"34", [Pair(#"31", 1)]),
       ],
     )
   flatten(v) == [
-    (#"33", #"", 1),
-    (#"33", #"33", 1),
-    (#"34", #"31", 1),
-    (#"35", #"", 1),
+    (#"33", #"", 1), (#"33", #"33", 1), (#"34", #"31", 1), (#"35", #"", 1),
   ]
 }
 
@@ -179,15 +170,13 @@ pub fn from_lovelace(quantity: Int) -> Value {
 }
 
 /// Construct an empty `Value` with nothing in it.
-pub fn zero() -> Value {
-  Value { inner: dict.new() }
-}
+pub const zero: Value = Value { inner: dict.empty }
 
 // ## Inspecting
 
 /// Check is a `Value` is zero. That is, it has no assets and holds no Ada/Lovelace.
 pub fn is_zero(self: Value) -> Bool {
-  self == zero()
+  self == zero
 }
 
 /// A specialized version of `quantity_of` for the Ada currency.
@@ -216,7 +205,7 @@ pub fn quantity_of(
 pub fn tokens(self: Value, policy_id: PolicyId) -> Dict<AssetName, Int> {
   self.inner
     |> dict.get(policy_id)
-    |> option.or_else(dict.new())
+    |> option.or_else(dict.empty)
 }
 
 // ## Combining
@@ -268,10 +257,10 @@ pub fn add(
 
 test add_1() {
   let v =
-    zero()
+    zero
       |> add(#"acab", #"beef", 321)
       |> add(#"acab", #"beef", -321)
-  v == zero()
+  v == zero
 }
 
 test add_2() {
@@ -292,17 +281,17 @@ test add_3() {
 
 test add_4() {
   let v =
-    zero()
+    zero
       |> add(#"acab", #"beef", 0)
-  v == zero()
+  v == zero
 }
 
 test add_5() {
   let v =
-    zero()
+    zero
       |> add(#"acab", #"beef", 0)
       |> add(#"acab", #"beef", 0)
-  v == zero()
+  v == zero
 }
 
 /// Combine two `Value` together.
@@ -338,7 +327,7 @@ pub fn merge(left v0: Value, right v1: Value) -> Value {
 test merge_1() {
   let v1 = from_lovelace(1)
   let v2 = from_lovelace(-1)
-  merge(v1, v2) == zero()
+  merge(v1, v2) == zero
 }
 
 test merge_2() {
@@ -352,10 +341,7 @@ test merge_2() {
       |> merge(v2)
 
   flatten(v) == [
-    (#"", #"", 42),
-    (#"00", #"", 1),
-    (#"01", #"", 2),
-    (#"02", #"", 3),
+    (#"", #"", 42), (#"00", #"", 1), (#"01", #"", 2), (#"02", #"", 3),
   ]
 }
 
@@ -365,7 +351,7 @@ test merge_3() {
   let v3 = from_asset(#"01", #"", 1)
 
   let v =
-    zero()
+    zero
       |> merge(v1)
       |> merge(v2)
       |> merge(v3)
@@ -377,15 +363,15 @@ test merge_4() {
   let v1 = from_asset(#"00", #"", 1)
   let v2 = from_asset(#"00", #"", -1)
 
-  merge(v1, v2) == zero()
+  merge(v1, v2) == zero
 }
 
 test merge_5() {
   let v =
-    zero()
+    zero
       |> add(#"acab", #"beef", 0)
 
-  merge(zero(), v) == zero()
+  merge(zero, v) == zero
 }
 
 /// Negates quantities of all tokens (including Ada) in that `Value`.
@@ -410,7 +396,7 @@ pub fn without_lovelace(self: Value) -> Value {
 
 test without_lovelace_1() {
   let v = from_lovelace(1000000)
-  without_lovelace(v) == zero()
+  without_lovelace(v) == zero
 }
 
 test without_lovelace_2() {
@@ -475,12 +461,12 @@ pub fn flatten_with(
 }
 
 test flatten_with_1() {
-  flatten_with(zero(), fn(p, a, q) { Some((p, a, q)) }) == []
+  flatten_with(zero, fn(p, a, q) { Some((p, a, q)) }) == []
 }
 
 test flatten_with_2() {
   let v =
-    zero()
+    zero
       |> add("a", "1", 14)
       |> add("b", "", 42)
       |> add("a", "2", 42)
@@ -500,7 +486,7 @@ test flatten_with_2() {
 /// Reduce a value into a single result
 ///
 /// ```
-/// assets.zero()
+/// assets.zero
 ///  |> assets.add("a", "1", 10)
 ///  |> assets.add("b", "2", 20)
 ///  |> assets.reduce(v, 0, fn(_, _, quantity, acc) { acc + quantity })
@@ -522,7 +508,7 @@ pub fn reduce(
 
 test reduce_1() {
   let v =
-    zero()
+    zero
       |> add("a", "1", 10)
       |> add("b", "2", 20)
   let result = reduce(v, 0, fn(_, _, quantity, acc) { acc + quantity })
@@ -531,7 +517,7 @@ test reduce_1() {
 
 test reduce_2() {
   let v =
-    zero()
+    zero
       |> add("a", "1", 5)
       |> add("a", "2", 15)
       |> add("b", "", 10)
@@ -545,7 +531,7 @@ test reduce_2() {
 }
 
 test reduce_3() {
-  let v = zero()
+  let v = zero
   let result = reduce(v, 1, fn(_, _, quantity, acc) { acc + quantity })
   result == 1
 }

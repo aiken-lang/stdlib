@@ -112,7 +112,7 @@ test push_2() {
   push(#[2, 3], 1) == #[1, 2, 3]
 }
 
-test push_3() {
+test push_3() fail {
   let x = 257
   push(#[2, 3], x) == #[1, 2, 3]
 }
@@ -243,7 +243,7 @@ pub fn test_bit(self: ByteArray, ix: Int) -> Bool {
   builtin.less_than_equals_bytearray(
     #[128],
     builtin.cons_bytearray(
-      builtin.index_bytearray(self, ix / 8) * math.pow2(ix % 8),
+      builtin.index_bytearray(self, ix / 8) * math.pow2(ix % 8) % 256,
       "",
     ),
   )

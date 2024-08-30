@@ -84,12 +84,10 @@ test new_1() {
 }
 
 /// A null `Rational`.
-pub fn zero() -> Rational {
-  Rational { numerator: 0, denominator: 1 }
-}
+pub const zero: Rational = Rational { numerator: 0, denominator: 1 }
 
 test zero_1() {
-  zero() == ratio(0, 1)
+  zero == ratio(0, 1)
 }
 
 // ## Inspecting
@@ -194,7 +192,7 @@ test negate_1() {
 /// expect Some(x) = rational.new(2, 5)
 /// rational.reciprocal(x) == rational.new(5, 2)
 ///
-/// let y = rational.zero()
+/// let y = rational.zero
 /// rational.reciprocal(y) == None
 /// ```
 pub fn reciprocal(self: Rational) -> Option<Rational> {
@@ -491,7 +489,7 @@ test compare_with_lt() {
 /// rational.compare(result, y) == Equal
 /// ```
 pub fn arithmetic_mean(self: List<Rational>) -> Option<Rational> {
-  div(list.foldr(self, zero(), add), from_int(list.length(self)))
+  div(list.foldr(self, zero, add), from_int(list.length(self)))
 }
 
 test arithmetic_mean_1() {

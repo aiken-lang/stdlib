@@ -1313,9 +1313,7 @@ test indexed_foldr_2() {
   let letters =
     ["a", "b", "c"]
   indexed_foldr(letters, [], fn(i, x, xs) { [(i, x), ..xs] }) == [
-    (0, "a"),
-    (1, "b"),
-    (2, "c"),
+    (0, "a"), (1, "b"), (2, "c"),
   ]
 }
 

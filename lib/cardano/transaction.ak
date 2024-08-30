@@ -201,28 +201,27 @@ pub fn find_script_outputs(
 /// ```aiken
 /// use aiken/interval
 ///
-/// transaction.placeholder().id ==
+/// transaction.placeholder.id ==
 ///   #"0000000000000000000000000000000000000000000000000000000000000000"
 ///
-/// transaction.placeholder().validity_range == interval.everything()
+/// transaction.placeholder.validity_range == interval.everything()
 /// ```
-pub fn placeholder() -> Transaction {
+pub const placeholder: Transaction =
   Transaction {
     inputs: [],
     reference_inputs: [],
     outputs: [],
     fee: 0,
-    mint: assets.zero(),
+    mint: assets.zero,
     certificates: [],
     withdrawals: [],
-    validity_range: interval.everything(),
+    validity_range: interval.everything,
     extra_signatories: [],
     redeemers: [],
-    datums: dict.new(),
+    datums: dict.empty,
     id: #"0000000000000000000000000000000000000000000000000000000000000000",
     votes: [],
     proposal_procedures: [],
     current_treasury_amount: None,
     treasury_donation: None,
   }
-}

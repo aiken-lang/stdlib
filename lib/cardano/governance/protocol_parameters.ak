@@ -303,10 +303,8 @@ fn into_script_execution_prices(param: Data) -> ScriptExecutionPrices {
 
 fn into_spo_voting_thresholds(param: Data) -> StakePoolOperatorVotingThresholds {
   expect [
-    motion_of_no_confidence,
-    constitutional_committee,
-    constitutional_committee_under_no_confidence,
-    hard_fork,
+    motion_of_no_confidence, constitutional_committee,
+    constitutional_committee_under_no_confidence, hard_fork,
     protocol_parameters_security_group,
   ]: List<Data> = param
 
@@ -333,15 +331,10 @@ fn into_drep_voting_thresholds(
   param: Data,
 ) -> DelegateRepresentativeVotingThresholds {
   expect [
-    motion_of_no_confidence,
-    constitutional_committee,
-    constitutional_committee_under_no_confidence,
-    constitution,
-    hard_fork,
-    protocol_parameters_network_group,
-    protocol_parameters_economic_group,
-    protocol_parameters_technical_group,
-    protocol_parameters_governance_group,
+    motion_of_no_confidence, constitutional_committee,
+    constitutional_committee_under_no_confidence, constitution, hard_fork,
+    protocol_parameters_network_group, protocol_parameters_economic_group,
+    protocol_parameters_technical_group, protocol_parameters_governance_group,
     treasury_withdrawal,
   ]: List<Data> = param
 
