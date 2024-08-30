@@ -515,6 +515,10 @@
   - [`cardano/governance`](https://aiken-lang.github.io/stdlib/cardano/governance.html)
   - [`cardano/governance/protocol_parameters`](https://aiken-lang.github.io/stdlib/cardano/governance/protocol_parameters.html)
 
+- New primitives in `aiken/collection/pairs`:
+  - [`insert_by_ascending_key`](https://aiken-lang.github.io/stdlib/aiken/collection/pairs.html#insert_by_ascending_key)
+  - [`repsert_by_ascending_key`](https://aiken-lang.github.io/stdlib/aiken/collection/pairs.html#repsert_by_ascending_key)
+
 - New primitives in `aiken/crypto`:
   - [`blake2b_224`](https://aiken-lang.github.io/stdlib/aiken/crypto.html#blake2b_224)
   - [`keccak_256`](https://aiken-lang.github.io/stdlib/aiken/crypto.html#keccak_256)

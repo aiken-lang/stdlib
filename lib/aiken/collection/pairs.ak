@@ -12,6 +12,8 @@
 //// > and thus allow for duplicate keys. This is reflected in the functions used
 //// > to interact with them.
 
+use aiken/primitive/bytearray
+
 // ## Inspecting
 
 /// Get all values in the alist associated with a given key.
@@ -482,6 +484,61 @@ test delete_last_4() {
   delete_last(fixture, "a") == [Pair("a", 1), Pair("b", 2)]
 }
 
+/// Insert a value in the `Pairs` at a given key. If the key already exists,
+/// the value is added in front.
+///
+/// ```aiken
+/// use aiken/primitive/bytearray
+///
+/// let result =
+///   []
+///     |> pairs.insert_by_ascending_key(key: "foo", value: 1, compare: bytearray.compare)
+///     |> pairs.insert_by_ascending_key(key: "bar", value: 2, compare: bytearray.compare)
+///     |> pairs.insert_by_ascending_key(key: "foo", value: 3, compare: bytearray.compare)
+///
+/// result == [Pair("bar", 2), Pair("foo", 3), Pair("foo", 1)]
+/// ```
+pub fn insert_by_ascending_key(
+  self: Pairs<key, value>,
+  key k: key,
+  value v: value,
+  compare: fn(key, key) -> Ordering,
+) -> Pairs<key, value> {
+  when self is {
+    [] ->
+      [Pair(k, v)]
+    [Pair(k2, v2), ..rest] ->
+      if compare(k, k2) == Less {
+        [Pair(k, v), ..self]
+      } else {
+        if k == k2 {
+          [Pair(k, v), ..self]
+        } else {
+          [Pair(k2, v2), ..insert_by_ascending_key(rest, k, v, compare)]
+        }
+      }
+  }
+}
+
+test insert_by_ascending_key_1() {
+  let m =
+    []
+      |> insert_by_ascending_key("foo", 42, bytearray.compare)
+      |> insert_by_ascending_key("foo", 14, bytearray.compare)
+
+  m == [Pair("foo", 14), Pair("foo", 42)]
+}
+
+test insert_by_ascending_key_2() {
+  let m =
+    []
+      |> insert_by_ascending_key("foo", 42, bytearray.compare)
+      |> insert_by_ascending_key("bar", 14, bytearray.compare)
+      |> insert_by_ascending_key("baz", 1337, bytearray.compare)
+
+  m == [Pair("bar", 14), Pair("baz", 1337), Pair("foo", 42)]
+}
+
 /// Apply a function to all key-value pairs in a alist, replacing the values.
 ///
 /// ```aiken
@@ -513,6 +570,61 @@ test map_2() {
     [Pair("a", 1), Pair("b", 2)]
 
   map(fixture, with: fn(_, v) { v + 1 }) == [Pair("a", 2), Pair("b", 3)]
+}
+
+/// Insert a value in the `Pairs` at a given key. If the key already exists,
+/// its value is replaced.
+///
+/// ```aiken
+/// use aiken/primitive/bytearray
+///
+/// let result =
+///   []
+///     |> pairs.repsert_by_ascending_key(key: "foo", value: 1, compare: bytearray.compare)
+///     |> pairs.repsert_by_ascending_key(key: "bar", value: 2, compare: bytearray.compare)
+///     |> pairs.repsert_by_ascending_key(key: "foo", value: 3, compare: bytearray.compare)
+///
+/// result == [Pair("bar", 2), Pair("foo", 3)]
+/// ```
+pub fn repsert_by_ascending_key(
+  self: Pairs<key, value>,
+  key k: key,
+  value v: value,
+  compare: fn(key, key) -> Ordering,
+) -> Pairs<key, value> {
+  when self is {
+    [] ->
+      [Pair(k, v)]
+    [Pair(k2, v2), ..rest] ->
+      if compare(k, k2) == Less {
+        [Pair(k, v), ..self]
+      } else {
+        if k == k2 {
+          [Pair(k, v), ..rest]
+        } else {
+          [Pair(k2, v2), ..repsert_by_ascending_key(rest, k, v, compare)]
+        }
+      }
+  }
+}
+
+test repsert_by_ascending_key_1() {
+  let m =
+    []
+      |> repsert_by_ascending_key("foo", 42, bytearray.compare)
+      |> repsert_by_ascending_key("foo", 14, bytearray.compare)
+
+  m == [Pair("foo", 14)]
+}
+
+test repsert_by_ascending_key_2() {
+  let m =
+    []
+      |> repsert_by_ascending_key("foo", 42, bytearray.compare)
+      |> repsert_by_ascending_key("bar", 14, bytearray.compare)
+      |> repsert_by_ascending_key("baz", 1337, bytearray.compare)
+
+  m == [Pair("bar", 14), Pair("baz", 1337), Pair("foo", 42)]
 }
 
 // ## Transforming
