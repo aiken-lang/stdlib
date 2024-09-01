@@ -8,6 +8,12 @@
   <hr/>
 </div>
 
+## Getting started
+
+```
+aiken add aiken-lang/stdlib --version v2
+```
+
 ## Compatibility
 
 aiken's version | stdlib's version(s)
