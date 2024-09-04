@@ -15,6 +15,8 @@
 //// This module provides functionality for basic arithmetic operations (addition, subtraction, multiplication, division) within this scalar field.
 //// Additionally, it includes advanced operations such as exponentiation and calculation of multiplicative inverses, tailored for cryptographic applications.
 
+use aiken/builtin
+
 /// The prime number defining the scalar field of the BLS12-381 curve.
 pub const bls12_381_scalar_field_prime =
   52435875175126190479447740508185965837690552500527637822603658699938581184513
@@ -42,6 +44,15 @@ test new_1() {
   }
 }
 
+/// Constructs a new `Scalar` element from a byte array, using the specified endianness.
+pub fn new_from_bytearray(endianness: Bool, bytes: ByteArray) -> Option<Scalar> {
+  new(builtin.bytearray_to_integer(endianness, bytes))
+}
+
+test new_from_bytearray_1() {
+  new_from_bytearray(True, #"ffffff") == Some(Scalar(16777215))
+}
+
 /// Converts a `Scalar` element back to its integer representation.
 pub fn to_int(self: Scalar) -> Int {
   self.integer
@@ -49,6 +60,15 @@ pub fn to_int(self: Scalar) -> Int {
 
 test to_int_1() {
   to_int(Scalar(834884848)) == 834884848
+}
+
+/// Converts a `Scalar` element to a byte array, using the specified endianness and output size.
+pub fn to_bytearray(self: Scalar, endianness: Bool, size: Int) -> ByteArray {
+  builtin.integer_to_bytearray(endianness, size, self.integer)
+}
+
+test to_bytearray_1() {
+  to_bytearray(Scalar(16777215), True, 3) == #"ffffff"
 }
 
 /// Adds two `Scalar` elements, ensuring the result stays within the finite field range.
