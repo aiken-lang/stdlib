@@ -13,33 +13,39 @@
 use aiken/bls12_381/scalar
 use aiken/builtin
 
-/// The generator of the G1 group of the BLS12-381 curve.
+/// The compressed generator of the G1 group of the BLS12-381 curve.
 /// This constant represents a fixed base point on the elliptic curve.
+/// Note that flat encoded plutus does not allow for the direct usage of BLS12-381 points.
+/// More explicit, any points in plutus data or scripts must be decompressed before usage onchain.
 pub const generator =
-  #<Bls12_381, G1>"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb"
+  #"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb"
 
 test generator_1() {
   builtin.bls12_381_g1_scalar_mul(
     scalar.bls12_381_scalar_field_prime,
-    generator,
+    decompress(generator),
   ) == #<Bls12_381, G1>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 }
 
 /// Represents the additive identity (zero) in the G1 group.
+/// Note that flat encoded plutus does not allow for the direct usage of BLS12-381 points.
+/// More explicit, any points in plutus data or scripts must be decompressed before usage onchain.
 pub const zero =
-  #<Bls12_381, G1>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  #"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
 test zero_1() {
+  let zero_g1 = decompress(zero)
+  let g1 = decompress(generator)
   and {
-    zero == builtin.bls12_381_g1_scalar_mul(
+    zero_g1 == builtin.bls12_381_g1_scalar_mul(
       scalar.bls12_381_scalar_field_prime,
-      generator,
+      g1,
     ),
-    zero == builtin.bls12_381_g1_scalar_mul(
+    zero_g1 == builtin.bls12_381_g1_scalar_mul(
       scalar.bls12_381_scalar_field_prime,
       #<Bls12_381, G1>"88c7e388ee58f1db9a24d7098b01d13634298bebf2d159254975bd450cb0d287fcc622eb71edde8b469a8513551baf1f",
     ),
-    zero == builtin.bls12_381_g1_scalar_mul(
+    zero_g1 == builtin.bls12_381_g1_scalar_mul(
       scalar.bls12_381_scalar_field_prime,
       #<Bls12_381, G1>"a6ac32e625dc30b8d31bacf5f4c89c27b0388b15f57ae10de8d5cec02dd1f113c9a31077be05ab587ca57a88d34deb75",
     ),
@@ -64,7 +70,9 @@ pub fn compress(point) {
 }
 
 test compress_1() {
-  compress(generator) == #"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb"
+  compress(
+    #<Bls12_381, G1>"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb",
+  ) == #"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb"
 }
 
 /// Decompresses a point in the G1 group from its compressed form.
@@ -75,7 +83,7 @@ pub fn decompress(bytes) {
 test decompress_1() {
   decompress(
     #"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb",
-  ) == generator
+  ) == #<Bls12_381, G1>"97f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb"
 }
 
 /// Adds two points in the G1 group.
@@ -84,7 +92,8 @@ pub fn add(left, right) {
 }
 
 test add_1() {
-  builtin.bls12_381_g1_add(generator, generator) == add(generator, generator)
+  let g1 = decompress(generator)
+  builtin.bls12_381_g1_add(g1, g1) == add(g1, g1)
 }
 
 /// Subtracts one point in the G1 group from another.
@@ -93,7 +102,8 @@ pub fn sub(left, right) {
 }
 
 test sub_1() {
-  generator == sub(add(generator, generator), generator)
+  let g1 = decompress(generator)
+  g1 == sub(add(g1, g1), g1)
 }
 
 /// Exponentiates a point in the G1 group with a `scalar`.
@@ -104,7 +114,8 @@ pub fn scale(point, e: scalar.Scalar) {
 
 test scale_1() {
   expect Some(x) = scalar.new(2)
-  builtin.bls12_381_g1_add(generator, generator) == scale(generator, x)
+  let g1 = decompress(generator)
+  builtin.bls12_381_g1_add(g1, g1) == scale(g1, x)
 }
 
 /// Hashes arbitrary data to a point in the G1 group.
