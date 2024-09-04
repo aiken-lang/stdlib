@@ -31,9 +31,7 @@ jobs:
         uses: actions/configure-pages@v2
 
       - name: 🧰 Install Aiken
-        uses: aiken-lang/setup-aiken@v0.1.0
-        with:
-          version: v1.0.18-alpha
+        run: cargo install --verbose --git https://github.com/aiken-lang/aiken.git
 
       - name: 📝 Run fmt
         run: aiken fmt --check

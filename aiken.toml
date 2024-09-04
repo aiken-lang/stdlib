@@ -1,11 +1,14 @@
 name = "aiken-lang/stdlib"
-version = "1.6.0"
-licences = ["Apache-2.0"]
+version = "main"
+compiler = "v1.1.0"
+plutus = "v3"
 description = "The Aiken Standard Library"
-
-dependencies = []
 
 [repository]
 user = "aiken-lang"
 project = "stdlib"
 platform = "github"
+
+dependencies = []
+
+[config]
