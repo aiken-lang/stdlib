@@ -47,7 +47,7 @@ test zero_1() {
 }
 
 /// Compresses a point in the G2 group into a more compact representation.
-/// The compressed representation is the concatination of two 48-byte string, corresponding to a modified and complexified `x` coordinate.
+/// The compressed representation is the concatenation of two 48-byte strings, corresponding to a modified and complexified `x` coordinate.
 /// The leading most significant 3 bits of this string indicate how to reconstruct the `y` coordinate.
 /// 
 /// More explicitly via [Zcash's spec](https://github.com/supranational/blst#serialization-format),
