@@ -47,8 +47,8 @@ test zero_1() {
 }
 
 /// Compresses a point in the G1 group into a more compact representation.
-/// The compressed representation is a 48-byte string the `x` coordinate.
-/// The leading most significant 3 bits indicate how to reconstruct the `y` coordinate.
+/// The compressed representation is a 48-byte string, corresponding to a modified `x` coordinate.
+/// The leading most significant 3 bits of this string indicate how to reconstruct the `y` coordinate.
 /// 
 /// More explicitly via [Zcash's spec](https://github.com/supranational/blst#serialization-format),
 ///
@@ -97,17 +97,19 @@ test sub_1() {
 }
 
 /// Exponentiates a point in the G1 group with a `scalar`.
-pub fn scale(e: scalar.Scalar, point) {
+/// This operation is equivalent to the repeated addition of the point with itself `e` times.
+pub fn scale(point, e: scalar.Scalar) {
   builtin.bls12_381_g1_scalar_mul(scalar.to_int(e), point)
 }
 
 test scale_1() {
   expect Some(x) = scalar.new(2)
-  builtin.bls12_381_g1_add(generator, generator) == scale(x, generator)
+  builtin.bls12_381_g1_add(generator, generator) == scale(generator, x)
 }
 
 /// Hashes arbitrary data to a point in the G1 group.
 /// The `dst` parameter is a domain separation tag.
+/// You can use this parameter to cryptographically separate different uses of the hash function between applications.
 pub fn hash_to_group(bytes, dst) {
   builtin.bls12_381_g1_hash_to_group(bytes, dst)
 }
