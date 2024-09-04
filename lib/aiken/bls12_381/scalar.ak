@@ -25,6 +25,7 @@ pub opaque type Scalar {
 }
 
 /// Constructs a new `Scalar` element from an integer, ensuring it's within the valid range of the field.
+/// Returns `None` if the integer is negative or greater than the prime number defining the field.
 pub fn new(n: Int) -> Option<Scalar> {
   if n >= 0 && n < bls12_381_scalar_field_prime {
     Some(Scalar(n))
@@ -59,12 +60,7 @@ test add_1() {
   and {
     (add(Scalar(834884848), Scalar(834884848)) == Scalar(1669769696))?,
     (add(Scalar(bls12_381_scalar_field_prime - 1), Scalar(1)) == Scalar(0))?,
-    (add(
-      Scalar(3),
-      Scalar(
-        52435875175126190479447740508185965837690552500527637822603658699938581184513,
-      ),
-    ) == Scalar(3))?,
+    (add(Scalar(3), Scalar(bls12_381_scalar_field_prime)) == Scalar(3))?,
   }
 }
 
@@ -100,7 +96,7 @@ test one_1() {
 
 /// Calculates the additive inverse of a `Scalar` element.
 pub fn neg(self: Scalar) -> Scalar {
-  // sub(zero(), self)
+  // this is basicly sub(zero(), self), but more efficient as it saves one modulo operation
   if self.integer == 0 {
     self
   } else {
@@ -134,6 +130,8 @@ test mul_1() {
 }
 
 /// Exponentiates an `Scalar` element by a non-negative integer exponent, using repeated squaring.
+/// Note that this function returns `scalar.zero()` for negative exponents.
+/// A dedicated builtin function for this is in the making, see CIP 109.
 pub fn scale(self: Scalar, e: Int) -> Scalar {
   if e < 0 {
     zero()
@@ -168,7 +166,7 @@ fn helper_pow_of_two(self: Scalar, k: Int) -> Scalar {
 }
 
 /// A faster version of `scale` for the case where the exponent is a power of two.
-/// That is `e = 2^k` for some non-negative integer `k`.
+/// That is, the exponent `e = 2^k` for some non-negative integer `k`. Which is used alot in zk-SNARKs.
 pub fn pow_of_two(self: Scalar, k: Int) -> Scalar {
   if k < 0 {
     zero()
@@ -188,7 +186,7 @@ test pow_of_two_1() {
   }
 }
 
-/// Divides one `Scalar` element by another, returning None if the divisor is zero.
+/// Divides one `Scalar` element by another, returning `None` if the divisor is zero.
 pub fn div(left: Scalar, right: Scalar) -> Option<Scalar> {
   if right == zero() {
     None
@@ -209,7 +207,7 @@ test div_1() {
   }
 }
 
-/// Calculates the multiplicative inverse of an `Scalar` element, returning None if the element is zero.
+/// Calculates the multiplicative inverse of an `Scalar` element, returning `None` if the element is zero.
 pub fn recip(self: Scalar) -> Option<Scalar> {
   div(one(), self)
 }
