@@ -88,6 +88,18 @@ test decompress_1() {
   decompress(generator) == g2
 }
 
+pub fn equal(left, right) {
+  builtin.bls12_381_g2_equal(left, right)
+}
+
+test equal_1() {
+  let g2 = decompress(generator)
+  equal(
+    g2,
+    #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8",
+  )
+}
+
 /// Adds two points in the G2 group.
 pub fn add(left, right) {
   builtin.bls12_381_g2_add(left, right)
