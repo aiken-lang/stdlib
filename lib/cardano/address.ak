@@ -79,8 +79,8 @@ pub type StakeCredential =
 /// A 'PaymentCredential' represents the spending conditions associated with
 /// some output. Hence,
 ///
-/// - a `VerificationKeyCredential` captures an output locked by a public/private key pair;
-/// - and a `ScriptCredential` captures an output locked by a native or Plutus script.
+/// - a `VerificationKey` captures an output locked by a public/private key pair;
+/// - and a `Script` captures an output locked by a native or Plutus script.
 ///
 pub type PaymentCredential =
   Credential
