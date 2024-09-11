@@ -14,6 +14,7 @@ use aiken/builtin
 use aiken/collection/list
 use aiken/math
 use aiken/option
+use aiken/fuzz.{both, either, map}
 
 /// Opaque type used to ensure the sign of the Rational is managed strictly in the numerator.
 pub opaque type Rational {
@@ -819,4 +820,94 @@ test truncate_1() {
     (truncate(ratio(8, 3)) == 2)?,
     (truncate(ratio(-14, 3)) == -4)?,
   }
+}
+
+/// Integer Power: a rational fraction, x, raised to the integer power y.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(50, 2500)
+/// let y = 3
+///
+/// rational.int_power(x, y) == rational.new(1, 125000)
+/// ```
+pub fn int_power(x: Rational, y: Int) -> Option<Rational> {
+
+  let Rational { numerator: a, denominator: b } = x
+
+  if y > 0 {
+    Some(Rational { numerator: math.pow(a, y), denominator: math.pow(b, y) })
+  } else if y < 0 {
+    if a == 0 {
+      None
+    }else{
+      Some(Rational { numerator: math.pow(b, math.abs(y)), denominator: math.pow(a, math.abs(y)) })
+    }
+  } else {
+    Some(Rational { numerator: 1, denominator: 1 })
+  }
+}
+
+
+fn positive_rational_fuzz() -> Fuzzer<Rational>{
+  map(
+    both(fuzz.int_at_least(1), fuzz.int_at_least(1)), 
+    fn((num,den)){
+      ratio(num,den)
+    }
+  )
+}
+
+fn negative_rational_fuzz() -> Fuzzer<Rational>{
+  map(both(fuzz.int_at_most(-1),fuzz.int_at_most(1)),
+    fn((num,den)){
+      ratio(num,den)
+    }
+  )
+}
+
+fn rational_fuzz() -> Fuzzer<Rational> {
+  either(negative_rational_fuzz(),positive_rational_fuzz())
+}
+
+
+test int_power_negative_exponent_non_zero_coeficient() {
+    expect Some(base) = new(50, 2500)
+    expect Some(calculated_result) = int_power(base, -3)
+    expect Some(expected_result) = new(125000, 1)
+    reduce(calculated_result) == expected_result
+}
+
+test int_power_positive_exponent() {
+  expect Some(base) = new(50, 2500)
+  expect Some(calculated_result) = int_power(base, 3)
+  expect Some(expected_result) = new(1, 125000)
+  reduce(calculated_result) == expected_result
+}
+
+test int_power_exponent_zero() {
+  expect Some(base) = new(50, 2500)
+  expect Some(calculated_result) = int_power(base, 0)
+  expect Some(expected_result) = new(1, 1)
+  reduce(calculated_result) == expected_result
+}
+
+test prop_power_of_zero_returns_one(rational via rational_fuzz()){
+  expect Some(calculated_result) = int_power(rational, 0)
+  expect Some(expected_result) = new(1,1)
+  calculated_result == expected_result
+}
+
+test prop_power_of_one_returns_same_fraction(rational via rational_fuzz()){
+  expect Some(calculated_result) = int_power(rational, 1)
+  calculated_result == rational
+}
+
+test prop_power_numerator_zero_exponent_negative_returns_none((denominator,exponent) via both(fuzz.int_at_least(1),fuzz.int_at_most(-1))){
+  expect None = int_power(ratio(0,denominator),exponent)
+}
+
+
+test prop_power_unit_fraction_is_immutable(exponent via fuzz.int()) {
+  expect Some(calculated_result) = int_power(ratio(1,1), exponent)
+  calculated_result == ratio(1,1)
 }
