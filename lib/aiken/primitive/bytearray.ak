@@ -626,3 +626,28 @@ test to_hex_1() {
 test to_hex_2() {
   to_hex("The quick brown fox jumps over the lazy dog") == @"54686520717569636B2062726F776E20666F78206A756D7073206F76657220746865206C617A7920646F67"
 }
+
+/// Checks a ByteArray whether it start with a certain prefix
+///
+/// ```aiken
+/// bytearray.starts_with("Hello world!", "Hello") == True
+/// ```
+pub fn starts_with(self: ByteArray, prefix: ByteArray) -> Bool {
+  let prefix_length = length(prefix)
+  take(self, prefix_length) == prefix
+}
+
+test starts_with_1() {
+  let x = "Hello, World!"
+  starts_with(x, "Hello")
+}
+
+test starts_with_2() {
+  let x = "Hello, World!"
+  starts_with(x, "World") == False
+}
+
+test starts_with_3() {
+  let x = ""
+  starts_with(x, "World") == False
+}
