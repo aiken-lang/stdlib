@@ -651,3 +651,15 @@ test starts_with_3() {
   let x = ""
   starts_with(x, "World") == False
 }
+
+test starts_with_4() {
+  starts_with("", "")
+}
+
+test starts_with_5() {
+  starts_with("Hello, World!", "Hello, World!")
+}
+
+test starts_with_6() {
+  !starts_with("Hello, World!", "Hello")
+}
