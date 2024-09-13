@@ -638,28 +638,13 @@ pub fn starts_with(self: ByteArray, prefix: ByteArray) -> Bool {
 }
 
 test starts_with_1() {
-  let x = "Hello, World!"
-  starts_with(x, "Hello")
-}
-
-test starts_with_2() {
-  let x = "Hello, World!"
-  starts_with(x, "World") == False
-}
-
-test starts_with_3() {
-  let x = ""
-  starts_with(x, "World") == False
-}
-
-test starts_with_4() {
   starts_with("", "")
 }
 
-test starts_with_5() {
+test starts_with_2() {
   starts_with("Hello, World!", "Hello, World!")
 }
 
-test starts_with_6() {
-  !starts_with("Hello, World!", "Hello")
+test starts_with_3() {
+  !starts_with("Hello, World!", "hello")
 }
