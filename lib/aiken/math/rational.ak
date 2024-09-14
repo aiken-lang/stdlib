@@ -821,51 +821,51 @@ test truncate_1() {
   }
 }
 
+/// Computes the rational number x raised to the power y. Returns `None` for
+/// invalid exponentiation.
 ///
 /// ```aiken
-/// It computes the rational number x raised to the power y and returns an 
-/// Option<Rational> (either Some(Rational) or None).
+/// expect Some(x) = rational.new(50, 2500)
+/// rational.reduce(rational.pow(x, 3)) == rational.new(1, 125000)
 ///
 /// expect Some(x) = rational.new(50, 2500)
-/// rational.reduce(rational.int_power(x, 3)) == rational.new(1, 125000)
-/// 
-/// expect Some(x) = rational.new(50, 2500)
-/// rational.reduce(rational.int_power(x, -3)) == rational.new(125000, 1)
+/// rational.reduce(rational.pow(x, -3)) == rational.new(125000, 1)
 /// ```
-pub fn int_power(x: Rational, y: Int) -> Option<Rational> {
+pub fn pow(x: Rational, y: Int) -> Option<Rational> {
   let Rational { numerator: a, denominator: b } = x
-  
+
   if a == 0 && y <= 0 {
-      None
+    None
   } else if y > 0 {
-      Some(Rational { numerator: math.pow(a, y), denominator: math.pow(b, y) })
+    Some(Rational { numerator: math.pow(a, y), denominator: math.pow(b, y) })
   } else if y < 0 {
-      Some(Rational { numerator: math.pow(b, math.abs(y)), denominator: math.pow(a, math.abs(y)) })
+    Some(Rational { numerator: math.pow(b, -y), denominator: math.pow(a, -y) })
   } else {
-      Some(Rational { numerator: 1, denominator: 1 })
+    Some(Rational { numerator: 1, denominator: 1 })
   }
 }
 
-test int_power_negative_exponent_non_zero_fraction() {
+test pow_negative_exponent_non_zero_fraction() {
   expect Some(base) = new(50, 2500)
-  expect Some(calculated_result) = int_power(base, -3)
+  expect Some(calculated_result) = pow(base, -3)
   expect Some(expected_result) = new(125000, 1)
   reduce(calculated_result) == expected_result
 }
 
-test int_power_positive_exponent() {
+test pow_positive_exponent() {
   expect Some(base) = new(50, 2500)
-  expect Some(calculated_result) = int_power(base, 3)
+  expect Some(calculated_result) = pow(base, 3)
   expect Some(expected_result) = new(1, 125000)
   reduce(calculated_result) == expected_result
 }
 
-test int_power_exponent_zero() {
+test pow_exponent_zero() {
   expect Some(base) = new(50, 2500)
-  int_power(base, 0) == new(1, 1)
+  pow(base, 0) == new(1, 1)
 }
 
-test int_power_rational_zero_exponent_zero(){
-  expect Some(base) = new(0,1)
-  int_power(base,0) == None
+test pow_rational_zero_exponent_zero() {
+  expect Some(base) = new(0, 1)
+  pow(base, 0) == None
 }
+
