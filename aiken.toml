@@ -9,6 +9,9 @@ user = "aiken-lang"
 project = "stdlib"
 platform = "github"
 
-dependencies = []
+[[dependencies]]
+name = "aiken-lang/fuzz"
+version = "v2"
+source = "github"
 
 [config]
