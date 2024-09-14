@@ -648,3 +648,7 @@ test starts_with_2() {
 test starts_with_3() {
   !starts_with("Hello, World!", "hello")
 }
+
+test starts_with_4() {
+  !starts_with("", "World")
+}
