@@ -10,45 +10,35 @@
 ////
 //// This module ensures that all operations respect the properties of the BLS12-381 curve and the mathematical structure of the G2 group.
 
-use aiken/bls12_381/scalar
 use aiken/builtin
+use aiken/crypto/bls12_381/scalar.{Scalar}
 
 /// The compressed generator of the G2 group of the BLS12-381 curve.
 /// This constant represents a fixed base point on the elliptic curve.
 /// Note that flat encoded plutus does not allow for the direct usage of BLS12-381 points.
 /// More explicit, any points in plutus data or scripts must be decompressed before usage onchain.
-pub const generator =
-  #"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
-
-// #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
+pub const generator: G2Element =
+  #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
 
 test generator_1() {
-  builtin.bls12_381_g2_scalar_mul(
-    scalar.bls12_381_scalar_field_prime,
-    decompress(generator),
-  ) == #<Bls12_381, G2>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  builtin.bls12_381_g2_scalar_mul(scalar.field_prime, generator) == #<Bls12_381, G2>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 }
 
 /// Represents the additive identity (zero) in the G2 group.
 /// Note that flat encoded plutus does not allow for the direct usage of BLS12-381 points.
 /// More explicit, any points in plutus data or scripts must be decompressed before usage onchain.
-pub const zero =
-  #"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+pub const zero: G2Element =
+  #<Bls12_381, G2>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
 test zero_1() {
-  let zero_g2 = decompress(zero)
-  let g2 = decompress(generator)
   and {
-    zero_g2 == builtin.bls12_381_g2_scalar_mul(
-      scalar.bls12_381_scalar_field_prime,
-      g2,
-    ),
-    zero_g2 == builtin.bls12_381_g2_scalar_mul(
-      scalar.bls12_381_scalar_field_prime,
+    zero == builtin.bls12_381_g2_scalar_mul(scalar.field_prime, generator),
+    zero == builtin.bls12_381_g2_scalar_mul(
+      scalar.field_prime,
       #<Bls12_381, G2>"9964a9ac2ee28a4dab595ff0970d446373bf46701c5d0b29ce8e1ba995d811a1c7b193c928269192c64ba1fbe4b1940207c251e086b452b920bc72e3cebab46ce672b9b088ca620a471d3b888d9737f6abd165319aa457dbf8835e3d34196051",
     ),
-    zero_g2 == builtin.bls12_381_g2_scalar_mul(
-      scalar.bls12_381_scalar_field_prime,
+    zero == builtin.bls12_381_g2_scalar_mul(
+      scalar.field_prime,
       #<Bls12_381, G2>"a900e25cb53cf1eeb1a82c0c83292937c49c97966351273767a204256a7ef6e95aa391404387075d361e7b13ccd694db03aa73ee0e1bd2c3dd735582b99fdf71696de72e4eda18ae99ea45995f1c9605aa0057008ee9a4da604b5716fb4a345b",
     ),
   }
@@ -57,16 +47,15 @@ test zero_1() {
 /// Compresses a point in the G2 group into a more compact representation.
 /// The compressed representation is the concatenation of two 48-byte strings, corresponding to a modified and complexified `x` coordinate.
 /// The leading most significant 3 bits of this string indicate how to reconstruct the `y` coordinate.
-/// 
-/// More explicitly via [Zcash's spec](https://github.com/supranational/blst#serialization-format),
 ///
-/// ```text
-/// The most-significant three bits of a G1 or G2 encoding should be masked away before the coordinate(s) are interpreted. These bits are used to unambiguously represent the underlying element:
-/// 
-///     - The most significant bit, when set, indicates that the point is in compressed form. Otherwise, the point is in uncompressed form.
-///     - The second-most significant bit indicates that the point is at infinity. If this bit is set, the remaining bits of the group element's encoding should be set to zero.
-///     - The third-most significant bit is set if (and only if) this point is in compressed form and it is not the point at infinity and its y-coordinate is the lexicographically largest of the two associated with the encoded x-coordinate.
-/// ```
+/// > [!NOTE]
+/// > More explicitly via [Zcash's spec](https://github.com/supranational/blst#serialization-format):
+/// >
+/// > <i>The most-significant three bits of a G1 or G2 encoding should be masked away before the coordinate(s) are interpreted. These bits are used to unambiguously represent the underlying element:
+/// >
+/// > - The most significant bit, when set, indicates that the point is in compressed form. Otherwise, the point is in uncompressed form.
+/// > - The second-most significant bit indicates that the point is at infinity. If this bit is set, the remaining bits of the group element's encoding should be set to zero.
+/// > - The third-most significant bit is set if (and only if) this point is in compressed form and it is not the point at infinity and its y-coordinate is the lexicographically largest of the two associated with the encoded x-coordinate.</i>
 pub fn compress(point) {
   builtin.bls12_381_g2_compress(point)
 }
@@ -85,7 +74,7 @@ pub fn decompress(bytes) {
 test decompress_1() {
   let g2 =
     #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
-  decompress(generator) == g2
+  generator == g2
 }
 
 pub fn equal(left, right) {
@@ -93,9 +82,8 @@ pub fn equal(left, right) {
 }
 
 test equal_1() {
-  let g2 = decompress(generator)
   equal(
-    g2,
+    generator,
     #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8",
   )
 }
@@ -105,38 +93,30 @@ pub fn add(left, right) {
   builtin.bls12_381_g2_add(left, right)
 }
 
-test add_1() {
-  let g2 = decompress(generator)
-  builtin.bls12_381_g2_add(g2, g2) == add(g2, g2)
-}
-
 /// Subtracts one point in the G2 group from another.
 pub fn sub(left, right) {
   builtin.bls12_381_g2_add(left, builtin.bls12_381_g2_neg(right))
 }
 
 test sub_1() {
-  let g2 = decompress(generator)
-  g2 == sub(add(g2, g2), g2)
+  generator == sub(add(generator, generator), generator)
 }
 
 /// Exponentiates a point in the G2 group with a `scalar`.
 /// This operation is equivalent to the repeated addition of the point with itself `e` times.
-pub fn scale(point, e: scalar.Scalar) {
+pub fn scale(point, e: Scalar) {
   builtin.bls12_381_g2_scalar_mul(scalar.to_int(e), point)
 }
 
 test scale_1() {
   expect Some(x) = scalar.new(2)
-  let g2 = decompress(generator)
-  builtin.bls12_381_g2_add(g2, g2) == scale(g2, x)
+  builtin.bls12_381_g2_add(generator, generator) == scale(generator, x)
 }
 
 /// Hashes arbitrary data to a point in the G2 group.
-/// The `dst` parameter is a domain separation tag.
-/// You can use this parameter to cryptographically separate different uses of the hash function between applications.
-pub fn hash_to_group(bytes, dst) {
-  builtin.bls12_381_g2_hash_to_group(bytes, dst)
+/// You can use the `domain_separation_tag` parameter to cryptographically separate different uses of the hash function between applications.
+pub fn hash_to_group(bytes, domain_separation_tag) {
+  builtin.bls12_381_g2_hash_to_group(bytes, domain_separation_tag)
 }
 
 test hash_to_group_1() {

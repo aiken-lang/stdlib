@@ -1,6 +1,7 @@
 //// This module implements operations between rational numbers.
 ////
-//// > [!CAUTION] Internally, rational aren't automatically reduced as this is **only done on-demand**.
+//// > [!CAUTION]
+//// > Internally, rational aren't automatically reduced as this is **only done on-demand**.
 //// >
 //// > Thus, for example:
 //// >
@@ -639,6 +640,54 @@ test floor_1() {
   }
 }
 
+/// Computes the rational number x raised to the power y. Returns `None` for
+/// invalid exponentiation.
+///
+/// ```aiken
+/// expect Some(x) = rational.new(50, 2500)
+/// rational.reduce(rational.pow(x, 3)) == rational.new(1, 125000)
+///
+/// expect Some(x) = rational.new(50, 2500)
+/// rational.reduce(rational.pow(x, -3)) == rational.new(125000, 1)
+/// ```
+pub fn pow(x: Rational, y: Int) -> Option<Rational> {
+  let Rational { numerator: a, denominator: b } = x
+
+  if a == 0 && y <= 0 {
+    None
+  } else if y > 0 {
+    Some(Rational { numerator: math.pow(a, y), denominator: math.pow(b, y) })
+  } else if y < 0 {
+    Some(Rational { numerator: math.pow(b, -y), denominator: math.pow(a, -y) })
+  } else {
+    Some(Rational { numerator: 1, denominator: 1 })
+  }
+}
+
+test pow_negative_exponent_non_zero_fraction() {
+  expect Some(base) = new(50, 2500)
+  expect Some(calculated_result) = pow(base, -3)
+  expect Some(expected_result) = new(125000, 1)
+  reduce(calculated_result) == expected_result
+}
+
+test pow_positive_exponent() {
+  expect Some(base) = new(50, 2500)
+  expect Some(calculated_result) = pow(base, 3)
+  expect Some(expected_result) = new(1, 125000)
+  reduce(calculated_result) == expected_result
+}
+
+test pow_exponent_zero() {
+  expect Some(base) = new(50, 2500)
+  pow(base, 0) == new(1, 1)
+}
+
+test pow_rational_zero_exponent_zero() {
+  expect Some(base) = new(0, 1)
+  pow(base, 0) == None
+}
+
 /// Returns the proper fraction of a given `Rational` `r`. That is, a 2-tuple of
 /// an `Int` and `Rational` (n, f) such that:
 ///
@@ -820,52 +869,3 @@ test truncate_1() {
     (truncate(ratio(-14, 3)) == -4)?,
   }
 }
-
-/// Computes the rational number x raised to the power y. Returns `None` for
-/// invalid exponentiation.
-///
-/// ```aiken
-/// expect Some(x) = rational.new(50, 2500)
-/// rational.reduce(rational.pow(x, 3)) == rational.new(1, 125000)
-///
-/// expect Some(x) = rational.new(50, 2500)
-/// rational.reduce(rational.pow(x, -3)) == rational.new(125000, 1)
-/// ```
-pub fn pow(x: Rational, y: Int) -> Option<Rational> {
-  let Rational { numerator: a, denominator: b } = x
-
-  if a == 0 && y <= 0 {
-    None
-  } else if y > 0 {
-    Some(Rational { numerator: math.pow(a, y), denominator: math.pow(b, y) })
-  } else if y < 0 {
-    Some(Rational { numerator: math.pow(b, -y), denominator: math.pow(a, -y) })
-  } else {
-    Some(Rational { numerator: 1, denominator: 1 })
-  }
-}
-
-test pow_negative_exponent_non_zero_fraction() {
-  expect Some(base) = new(50, 2500)
-  expect Some(calculated_result) = pow(base, -3)
-  expect Some(expected_result) = new(125000, 1)
-  reduce(calculated_result) == expected_result
-}
-
-test pow_positive_exponent() {
-  expect Some(base) = new(50, 2500)
-  expect Some(calculated_result) = pow(base, 3)
-  expect Some(expected_result) = new(1, 125000)
-  reduce(calculated_result) == expected_result
-}
-
-test pow_exponent_zero() {
-  expect Some(base) = new(50, 2500)
-  pow(base, 0) == new(1, 1)
-}
-
-test pow_rational_zero_exponent_zero() {
-  expect Some(base) = new(0, 1)
-  pow(base, 0) == None
-}
-

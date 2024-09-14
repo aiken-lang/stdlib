@@ -898,7 +898,7 @@ test flat_map_2() {
 /// ```aiken
 /// list.for_each(labels, do: fn(lbl) { trace lbl Void })
 /// ```
-fn for_each(self: List<a>, do: fn(a) -> Void) -> Void {
+pub fn for_each(self: List<a>, do: fn(a) -> Void) -> Void {
   foldr(self, Void, fn(x, _) { do(x) })
 }
 
