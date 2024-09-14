@@ -158,9 +158,7 @@ pub fn find_datum(
                 fn(output) {
                   when output.datum is {
                     InlineDatum(data) ->
-                      if
-                      blake2b_256(builtin.serialise_data(data)) == datum_hash{
-                      
+                      if blake2b_256(builtin.serialise_data(data)) == datum_hash {
                         Some(data)
                       } else {
                         None
