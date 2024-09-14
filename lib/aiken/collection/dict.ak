@@ -850,6 +850,91 @@ test map_2() {
   get(result, foo) == Some(43) && size(result) == size(fixture_1)
 }
 
+/// Remove a key-value pair from the dictionary and return its value. If the key is not found, no changes are made.
+///
+/// ```aiken
+/// let (value, _) =
+///   dict.empty
+///     |> dict.insert(key: "a", value: 100)
+///     |> dict.insert(key: "b", value: 200)
+///     |> dict.pop(key: "a")
+///
+/// result == 100
+/// ```
+pub fn pop(
+  self: Dict<key, value>,
+  key: ByteArray,
+) -> (Option<value>, Dict<key, value>) {
+  do_pop(self.inner, key, fn(value, inner) { (value, Dict { inner }) })
+}
+
+fn do_pop(
+  self: Pairs<ByteArray, value>,
+  key k: ByteArray,
+  return: fn(Option<value>, Pairs<ByteArray, value>) -> result,
+) -> result {
+  when self is {
+    [] -> return(None, [])
+    [Pair(k2, v2), ..rest] ->
+      if builtin.less_than_equals_bytearray(k, k2) {
+        if k == k2 {
+          return(Some(v2), rest)
+        } else {
+          return(None, self)
+        }
+      } else {
+        do_pop(
+          rest,
+          k,
+          fn(value, inner) { return(value, [Pair(k2, v2), ..inner]) },
+        )
+      }
+  }
+}
+
+test pop_1() {
+  pop(empty, foo) == (None, empty)
+}
+
+test pop_2() {
+  let m =
+    empty
+      |> insert(foo, 14)
+  pop(m, foo) == (Some(14), empty)
+}
+
+test pop_3() {
+  let m =
+    empty
+      |> insert(foo, 14)
+  pop(m, bar) == (None, m)
+}
+
+test pop_4() {
+  let m =
+    empty
+      |> insert(foo, 14)
+      |> insert(bar, 14)
+  pop(m, foo) == (Some(14), empty |> insert(bar, 14))
+}
+
+test pop_6() {
+  let m =
+    empty
+      |> insert("aaa", 1)
+      |> insert("bbb", 2)
+      |> insert("ccc", 3)
+      |> insert("ddd", 4)
+      |> insert("eee", 5)
+      |> insert("fff", 6)
+      |> insert("ggg", 7)
+      |> insert("hhh", 8)
+      |> insert("iii", 9)
+      |> insert("jjj", 10)
+
+  pop(m, "bcd") == (None, m)
+}
+
 // ## Combining
 
 /// Combine two dictionaries. If the same key exist in both the left and

@@ -1,3 +1,4 @@
+use aiken/builtin
 use aiken/collection/dict.{Dict, from_ascending_pairs_with}
 use aiken/collection/list
 use aiken/crypto.{Blake2b_224, Hash, Script}
@@ -177,6 +178,338 @@ pub const zero: Value = Value { inner: dict.empty }
 /// Check is a `Value` is zero. That is, it has no assets and holds no Ada/Lovelace.
 pub fn is_zero(self: Value) -> Bool {
   self == zero
+}
+
+/// Efficiently compare two values together, allowing a custom behaviour for Ada/Lovelace.
+/// The second parameter is provided as `Data`, allowing to conveniently compare serialized
+/// datums or similar structurually equivalent types (such as `Pairs<PolicyId, Pairs<AssetName, Lovelace>>`).
+///
+/// The third argument is a callback function to assert the left and right lovelace
+/// quantities. Its first argument refers to the quantity of the first argument of
+/// `match`, and the second argument of the callback to the quantity of the second
+/// argument of `match`. In the absence of lovelace in any value, it defaults to `0`.
+///
+/// ```aiken
+/// const value: Value =
+///   assets.from_lovelace(30)
+///     |> assets.add("foo", "bar", 1)
+///     |> assets.add("foo", "baz", 42)
+///
+/// const datum: Data =
+///   assets.from_lovelace(20)
+///     |> assets.add("foo", "bar", 1)
+///     |> assets.add("foo", "baz", 42)
+///
+/// True == assets.match(value, datum, >=)
+///
+/// False == assets.match(value, datum, ==)
+///
+/// True == assets.match(value, datum, fn(value_lovelace, datum_lovelace) {
+///   2 * datum_lovelace >= value_lovelace
+/// })
+/// ```
+pub fn match(
+  left: Value,
+  right: Data,
+  assert_lovelace: fn(Lovelace, Lovelace) -> Bool,
+) -> Bool {
+  builtin.choose_data(
+    right,
+    False,
+    {
+      let (left_lovelace, left_assets) = dict.pop(left.inner, ada_policy_id)
+      let left_assets: Data = left_assets
+      let left_lovelace =
+        when left_lovelace is {
+          Some(tokens) -> builtin.head_list(dict.to_pairs(tokens)).2nd
+          None -> 0
+        }
+      when builtin.un_map_data(right) is {
+        [] -> left_assets == right && assert_lovelace(left_lovelace, 0)
+        [first_asset, ..right_assets] ->
+          if first_asset.1st == builtin.b_data(ada_policy_id) {
+            and {
+              assert_lovelace(
+                left_lovelace,
+                builtin.un_i_data(
+                  builtin.head_list(builtin.un_map_data(first_asset.2nd)).2nd,
+                ),
+              ),
+              left_assets == builtin.map_data(right_assets),
+            }
+          } else {
+            and {
+              assert_lovelace(left_lovelace, 0),
+              left_assets == right,
+            }
+          }
+      }
+    },
+    False,
+    False,
+    False,
+  )
+}
+
+const fixture_match_value: Value =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 42)
+    |> add("foo", "01", 1)
+    |> add("foo", "02", 1)
+    |> add("bar", "01", 42)
+
+const fixture_match_data: Data =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 14)
+    |> add("foo", "01", 1)
+    |> add("foo", "02", 1)
+    |> add("bar", "01", 42)
+
+const fixture_match_data_missing_foo_02: Data =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 14)
+    |> add("foo", "01", 1)
+    |> add("bar", "01", 42)
+
+const fixture_match_data_altered_foo_01: Data =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 14)
+    |> add("foo", "01", 14)
+    |> add("foo", "02", 1)
+    |> add("bar", "01", 42)
+
+const fixture_match_data_missing_bar: Data =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 14)
+    |> add("foo", "01", 1)
+    |> add("foo", "02", 1)
+
+const fixture_match_data_extra_policy: Data =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 14)
+    |> add("foo", "01", 1)
+    |> add("foo", "02", 1)
+    |> add("bar", "01", 42)
+    |> add("baz", "01", 1)
+
+const fixture_match_data_extra_asset: Data =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 14)
+    |> add("foo", "01", 1)
+    |> add("foo", "02", 1)
+    |> add("foo", "03", 1)
+    |> add("bar", "01", 42)
+
+const fixture_match_data_no_assets: Data =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 14)
+
+test match_1() {
+  match(fixture_match_value, fixture_match_data, fn(_, _) { True })
+}
+
+test match_2() {
+  !match(
+    fixture_match_value,
+    fixture_match_data,
+    fn(source, target) { source == target },
+  )
+}
+
+test match_3() {
+  !match(
+    fixture_match_value,
+    fixture_match_data_missing_foo_02,
+    fn(_, _) { True },
+  )
+}
+
+test match_4() {
+  !match(fixture_match_value, fixture_match_data_missing_bar, fn(_, _) { True })
+}
+
+test match_5() {
+  !match(
+    fixture_match_value,
+    fixture_match_data_altered_foo_01,
+    fn(_, _) { True },
+  )
+}
+
+test match_6() {
+  !match(
+    fixture_match_value,
+    fixture_match_data_extra_policy,
+    fn(_, _) { True },
+  )
+}
+
+test match_7() {
+  !match(fixture_match_value, fixture_match_data_extra_asset, fn(_, _) { True })
+}
+
+test match_8() {
+  !match(fixture_match_value, fixture_match_data_no_assets, fn(_, _) { True })
+}
+
+test match_9() {
+  match(zero, zero, ==)
+}
+
+test match_10() {
+  match(
+    without_lovelace(fixture_match_value),
+    without_lovelace(fixture_match_value),
+    fn(left, right) { left == 0 && right == 0 },
+  )
+}
+
+test match_11() {
+  match(
+    without_lovelace(fixture_match_value),
+    fixture_match_value,
+    fn(left, right) { left == 0 && right > 0 },
+  )
+}
+
+test match_12() {
+  match(
+    fixture_match_value,
+    without_lovelace(fixture_match_value),
+    fn(left, right) { left > 0 && right == 0 },
+  )
+}
+
+test match_13() {
+  match(
+    zero |> add(ada_policy_id, ada_asset_name, 42),
+    zero,
+    fn(left, right) { left == 42 && right == 0 },
+  )
+}
+
+test match_14() {
+  match(
+    zero,
+    zero |> add(ada_policy_id, ada_asset_name, 42),
+    fn(left, right) { left == 0 && right == 42 },
+  )
+}
+
+const fixture_match_benchmark_left: Value =
+  zero
+    |> add(ada_policy_id, ada_asset_name, 1337)
+    |> add(
+        #"0246a14d04c3a0e9b65f6b90a3d1aa5faee5d56ab1e30ec7e8b02f29",
+        "MATTR",
+        200,
+      )
+    |> add(
+        #"0a9e126256cb38c4865cdac6eb2ada51c328ba0df2ebde22ae126c0d",
+        "ProphecyPoster076",
+        1,
+      )
+    |> add(
+        #"1774343241680e4daef7cbfe3536fc857ce23fb66cd0b66320b2e3dd",
+        "BISON",
+        12_004_999_999,
+      )
+    |> add(
+        #"279c909f348e533da5808898f87f9a14bb2c3dfbbacccd631d927a3f",
+        "SNEK",
+        1486,
+      )
+    |> add(
+        #"651dfc074202423585996ffa717cb45237d307e705e2cc3dab1ccabd",
+        "MAYZSilverFoundersEdition0035",
+        1,
+      )
+    |> add(
+        #"63df49056617dd14034986cf7c250bad6552fd2f0f9c71d797932008",
+        "CardanoSpaceSession",
+        20,
+      )
+    |> add(
+        #"5b01968867e13432afaa2f814e1d15e332d6cd0aa77e350972b0967d",
+        "ADAOGovernanceToken",
+        1,
+      )
+    |> add(
+        #"a0028f350aaabe0545fdcb56b039bfb08e4bb4d8c4d7c3c7d481c235",
+        "HOSKY",
+        400_001_000,
+      )
+    |> add(
+        #"da8c30857834c6ae7203935b89278c532b3995245295456f993e1d24",
+        "LQ",
+        10_635_899,
+      )
+    |> add(
+        #"95d9a98c2f7999a3d5e0f4d795cb1333837c09eb0f24835cd2ce954c",
+        "GrandmasterAdventurer659",
+        1,
+      )
+    |> add(
+        #"702cbdb06a81ef2fa4f85f9e32159c03f502539d762a71194fc11eb3",
+        "AdventurerOfThiolden8105",
+        1,
+      )
+    |> add(
+        #"d0112837f8f856b2ca14f69b375bc394e73d146fdadcc993bb993779",
+        "DiscoSolaris3725",
+        1,
+      )
+    |> add(
+        #"8dd5717e7d4d993019dbd788c19837910e3fcf647ab282f828c80a7a",
+        "CardaWorld535",
+        1,
+      )
+    |> add(
+        #"8dd5717e7d4d993019dbd788c19837910e3fcf647ab282f828c80a7a",
+        "CardaWorld1213",
+        1,
+      )
+    |> add(
+        #"8dd5717e7d4d993019dbd788c19837910e3fcf647ab282f828c80a7a",
+        "CardaWorld1518",
+        1,
+      )
+    |> add(
+        #"8dd5717e7d4d993019dbd788c19837910e3fcf647ab282f828c80a7a",
+        "CardaWorld1537",
+        1,
+      )
+    |> add(
+        #"8dd5717e7d4d993019dbd788c19837910e3fcf647ab282f828c80a7a",
+        "CardaWorld4199",
+        1,
+      )
+    |> add(
+        #"8dd5717e7d4d993019dbd788c19837910e3fcf647ab282f828c80a7a",
+        "CardaWorld3767",
+        1,
+      )
+    |> add(
+        #"7597444754551a8c17edbf7291cdaeca898ca02ee4e732b09a949396",
+        "Algae1",
+        1,
+      )
+    |> add(
+        #"7597444754551a8c17edbf7291cdaeca898ca02ee4e732b09a949396",
+        "Algae2",
+        1,
+      )
+
+const fixture_match_benchmark_right: Data = fixture_match_benchmark_left
+
+test match_benchmark() {
+  match(fixture_match_benchmark_left, fixture_match_benchmark_right, ==)
+}
+
+test match_benchmark_vs() {
+  let data: Data = fixture_match_benchmark_right
+  expect pairs: Pairs<PolicyId, Pairs<AssetName, Int>> = data
+  fixture_match_benchmark_left == from_asset_list(pairs)
 }
 
 /// A specialized version of `quantity_of` for the Ada currency.
@@ -386,6 +719,52 @@ test merge_5() {
 pub fn negate(self: Value) -> Value {
   dict.map(self.inner, fn(_, a) { dict.map(a, fn(_, q) { 0 - q }) })
     |> Value
+}
+
+/// Get a subset of the assets restricted to the given policies.
+pub fn restricted_to(self: Value, mask: List<PolicyId>) -> Value {
+  list.foldr(
+    policies(self),
+    zero,
+    fn(policy_id, value) {
+      if list.has(mask, policy_id) {
+        dict.foldr(
+          tokens(self, policy_id),
+          value,
+          fn(asset_name, quantity, value) {
+            add(value, policy_id, asset_name, quantity)
+          },
+        )
+      } else {
+        value
+      }
+    },
+  )
+}
+
+test restricted_to_1() {
+  let self = from_lovelace(42) |> add("foo", "", 1)
+  restricted_to(self, []) == zero
+}
+
+test restricted_to_2() {
+  let self = from_lovelace(42) |> add("foo", "", 1)
+  restricted_to(self, [ada_policy_id]) == from_lovelace(42)
+}
+
+test restricted_to_3() {
+  let self = from_lovelace(42) |> add("foo", "", 1) |> add("bar", "", 1)
+  restricted_to(self, ["foo", "bar"]) == without_lovelace(self)
+}
+
+test restricted_to_4() {
+  let self = from_lovelace(42) |> add("foo", "bar", 1) |> add("foo", "baz", 1)
+  restricted_to(self, ["foo"]) == without_lovelace(self)
+}
+
+test restricted_to_5() {
+  let self = from_lovelace(42) |> add("foo", "bar", 1) |> add("foo", "baz", 1)
+  restricted_to(self, [ada_policy_id, "foo"]) == self
 }
 
 /// Get a `Value` excluding Ada.

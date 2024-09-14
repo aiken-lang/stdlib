@@ -893,6 +893,25 @@ test flat_map_2() {
   flat_map([1, 2, 3], fn(a) { [a, a] }) == [1, 1, 2, 2, 3, 3]
 }
 
+/// Perform an action for each element of a list.
+///
+/// ```aiken
+/// list.for_each(labels, do: fn(lbl) { trace lbl Void })
+/// ```
+fn for_each(self: List<a>, do: fn(a) -> Void) -> Void {
+  foldr(self, Void, fn(x, _) { do(x) })
+}
+
+test for_each_1() {
+  for_each(
+    [@"hello", @"world"],
+    do: fn(lbl) {
+      trace lbl
+      Void
+    },
+  )
+}
+
 /// List [`map`](#map) but provides the position (0-based) of the elements while iterating.
 ///
 /// ```aiken

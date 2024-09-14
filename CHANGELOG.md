@@ -1,6 +1,29 @@
 # Changelog
 
-## v2.0.0 - UNRELEASED
+## v2.1.0 - 2024-09-14
+
+### Added
+
+- [`aiken/collection/list.{for_each}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#for_each): for performing many side-effects.
+- [`aiken/collection/dict.{pop}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#pop): for accessing and removing a value from a dictionnary in a single op.
+- [`aiken/primitive/bytearray.{starts_with}`](https://aiken-lang.github.io/stdlib/aiken/primitive/bytearray.html#starts_with): for matching bytearray prefixes.
+- [`aiken/primitive/math/rational.{pow}`](https://aiken-lang.github.io/stdlib/aiken/primitive/math/rational.html#pow): for computing (int) powers of rational numbers.
+- [`cardano/assets.{match}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#match): efficiently compare two value-like.
+- [`cardano/assets.{restricted_to}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#restricted_to): extracting value subsets from parent value.
+- [`cardano/address/credential.{compare}`](https://aiken-lang.github.io/stdlib/cardano/address/credential.html#compare): for ordering credentials.
+- [`cardano/governance/voter.{compare}`](https://aiken-lang.github.io/stdlib/cardano/governacen/voter.html#compare): for ordering voters.
+- [`cardano/transaction/output_reference.{compare}`](https://aiken-lang.github.io/stdlib/cardano/transaction/output_reference.html#compare): for ordering output references.
+- [`cardano/transaction/script_purpose.{compare}`](https://aiken-lang.github.io/stdlib/cardano/transaction/script_purpose.html#compare): for ordering script purpose.
+
+### Changed
+
+- N/A
+
+### Removed
+
+- N/A
+
+## v2.0.0 - 2024-09-01
 
 > [!NOTE]
 > Significant performance improvements (mostly on CPU) across all boards mostly due to the integration of Plutus V3.
