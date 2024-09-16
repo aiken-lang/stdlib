@@ -40,6 +40,8 @@ pub opaque type Scalar {
 pub fn new(n: Int) -> Option<Scalar> {
   if n >= 0 && n < field_prime {
     Some(Scalar(n))
+  } else if n >= field_prime {
+    Some(Scalar(n % field_prime))
   } else {
     None
   }
@@ -48,9 +50,15 @@ pub fn new(n: Int) -> Option<Scalar> {
 test new_1() {
   and {
     new(-1) == None,
-    new(field_prime) == None,
+    new(field_prime) == Some(zero),
     new(834884848) == Some(Scalar(834884848)),
   }
+}
+
+test new_2() {
+  new(field_prime + 398234892374892374928374) == Some(
+    Scalar(398234892374892374928374),
+  )
 }
 
 /// Constructs a new `Scalar` element from a Big-Endian (most-significant bits first) `ByteArray`.
