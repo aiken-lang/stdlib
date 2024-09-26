@@ -581,7 +581,7 @@ test map_2() {
 /// use aiken/primitive/bytearray
 ///
 /// let compare_un_b_data = fn(l, r) {
-///   bytearray.compare(l |> builtin.un_b_datar |> builtin.un_b_data)
+///   bytearray.compare(l |> builtin.un_b_data, |> builtin.un_b_data)
 /// }
 ///
 /// let result =
