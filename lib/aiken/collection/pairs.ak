@@ -581,21 +581,21 @@ test map_2() {
 /// use aiken/primitive/bytearray
 ///
 /// let compare_un_b_data = fn(l, r) {
-///   bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
+///   bytearray.compare(l |> builtin.un_b_datar |> builtin.un_b_data)
 /// }
 ///
 /// let result =
 ///   []
-///     |> pairs.merge(key: "foo" |> builtin.b_data, value: 1, compare: compare_un_b_data, merging: builtin.add_integer)
-///     |> pairs.merge(key: "bar" |> builtin.b_data, value: 2, compare: compare_un_b_data, merging: builtin.add_integer)
-///     |> pairs.merge(key: "foo" |> builtin.b_data, value: 3, compare: compare_un_b_data, merging: builtin.add_integer)
+///     |> pairs.merge_by_ascending_key(key: "foo" |> builtin.b_data, value: 1, compare: compare_un_b_data, merging: builtin.add_integer)
+///     |> pairs.merge_by_ascending_key(key: "bar" |> builtin.b_data, value: 2, compare: compare_un_b_data, merging: builtin.add_integer)
+///     |> pairs.merge_by_ascending_key(key: "foo" |> builtin.b_data, value: 3, compare: compare_un_b_data, merging: builtin.add_integer)
 ///
 /// result == [Pair("bar" |> builtin.b_data, 2), Pair("foo" |> builtin.b_data, 4)]
 /// ```
 ///
-/// Notice that the key is of type `Data`. The function works with any key type, not just ByteArray.
-/// Unlike `dict.from_pairs() |> dict.union_with() |> dict.to_pairs()`
-pub fn merge(
+/// Notice that the key is of type `Data`. The function works with any key type, not just `ByteArray`,
+/// so it's not the same as `dict.from_pairs() |> dict.union_with() |> dict.to_pairs()`
+pub fn merge_by_ascending_key(
   self: Pairs<key, value>,
   key k: key,
   value v: value,
@@ -615,12 +615,12 @@ pub fn merge(
           [Pair(k, merging(v, v2)), ..rest]
 
         Greater ->
-          [Pair(k2, v2), ..merge(rest, k, v, compare, merging)]
+          [Pair(k2, v2), ..merge_by_ascending_key(rest, k, v, compare, merging)]
       }
   }
 }
 
-test merge_1() {
+test merge_by_ascending_key_1() {
   let compare_un_b_data =
     fn(l, r) {
       bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
@@ -628,13 +628,23 @@ test merge_1() {
 
   let m =
     []
-      |> merge("foo" |> builtin.b_data, 42, compare_un_b_data, builtin.add_integer)
-      |> merge("foo" |> builtin.b_data, 14, compare_un_b_data, builtin.add_integer)
+      |> merge_by_ascending_key(
+          "foo" |> builtin.b_data,
+          42,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> merge_by_ascending_key(
+          "foo" |> builtin.b_data,
+          14,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
 
   m == [Pair("foo" |> builtin.b_data, 56)]
 }
 
-test merge_2() {
+test merge_by_ascending_key_2() {
   let compare_un_b_data =
     fn(l, r) {
       bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
@@ -642,9 +652,19 @@ test merge_2() {
 
   let m =
     []
-      |> merge("foo" |> builtin.b_data, 42, compare_un_b_data, builtin.add_integer)
-      |> merge("bar" |> builtin.b_data, 14, compare_un_b_data, builtin.add_integer)
-      |> merge(
+      |> merge_by_ascending_key(
+          "foo" |> builtin.b_data,
+          42,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> merge_by_ascending_key(
+          "bar" |> builtin.b_data,
+          14,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> merge_by_ascending_key(
           "baz" |> builtin.b_data,
           1337,
           compare_un_b_data,
@@ -658,7 +678,7 @@ test merge_2() {
   ]
 }
 
-test merge_3() {
+test merge_by_ascending_key_3() {
   let compare_un_b_data =
     fn(l, r) {
       bytearray.compare(l |> builtin.un_b_data, r |> builtin.un_b_data)
@@ -666,9 +686,24 @@ test merge_3() {
 
   let result =
     []
-      |> merge("foo" |> builtin.b_data, 1, compare_un_b_data, builtin.add_integer)
-      |> merge("bar" |> builtin.b_data, 2, compare_un_b_data, builtin.add_integer)
-      |> merge("foo" |> builtin.b_data, 3, compare_un_b_data, builtin.add_integer)
+      |> merge_by_ascending_key(
+          "foo" |> builtin.b_data,
+          1,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> merge_by_ascending_key(
+          "bar" |> builtin.b_data,
+          2,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
+      |> merge_by_ascending_key(
+          "foo" |> builtin.b_data,
+          3,
+          compare_un_b_data,
+          builtin.add_integer,
+        )
 
   result == [Pair("bar" |> builtin.b_data, 2), Pair("foo" |> builtin.b_data, 4)]
 }
