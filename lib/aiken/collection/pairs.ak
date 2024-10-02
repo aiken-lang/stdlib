@@ -26,8 +26,7 @@ use aiken/primitive/bytearray
 /// ```
 pub fn get_all(self: Pairs<key, value>, key k: key) -> List<value> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [Pair(k2, v), ..rest] ->
       if k == k2 {
         [v, ..get_all(rest, k)]
@@ -152,8 +151,7 @@ test get_last_5() {
 /// ```
 pub fn find_all(self: Pairs<key, value>, v: value) -> List<key> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [Pair(k2, v2), ..rest] ->
       if v == v2 {
         [k2, ..find_all(rest, v)]
@@ -300,10 +298,8 @@ test has_key_5() {
 /// ```
 pub fn keys(self: Pairs<key, value>) -> List<key> {
   when self is {
-    [] ->
-      []
-    [Pair(k, _), ..rest] ->
-      [k, ..keys(rest)]
+    [] -> []
+    [Pair(k, _), ..rest] -> [k, ..keys(rest)]
   }
 }
 
@@ -329,10 +325,8 @@ test keys_3() {
 /// ```
 pub fn values(self: Pairs<key, value>) -> List<value> {
   when self is {
-    [] ->
-      []
-    [Pair(_, v), ..rest] ->
-      [v, ..values(rest)]
+    [] -> []
+    [Pair(_, v), ..rest] -> [v, ..values(rest)]
   }
 }
 
@@ -364,8 +358,7 @@ test values_4() {
 /// ```
 pub fn delete_all(self: Pairs<key, value>, key k: key) -> Pairs<key, value> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [Pair(k2, v2), ..rest] ->
       if k == k2 {
         delete_all(rest, k)
@@ -384,14 +377,12 @@ test delete_all_2() {
 }
 
 test delete_all_3() {
-  let fixture =
-    [Pair("a", 14)]
+  let fixture = [Pair("a", 14)]
   delete_all(fixture, "b") == fixture
 }
 
 test delete_all_4() {
-  let fixture =
-    [Pair("a", 1), Pair("b", 2), Pair("a", 3)]
+  let fixture = [Pair("a", 1), Pair("b", 2), Pair("a", 3)]
   delete_all(fixture, "a") == [Pair("b", 2)]
 }
 
@@ -406,8 +397,7 @@ test delete_all_4() {
 /// ```
 pub fn delete_first(self: Pairs<key, value>, key k: key) -> Pairs<key, value> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [Pair(k2, v2), ..rest] ->
       if k == k2 {
         rest
@@ -426,14 +416,12 @@ test delete_first_2() {
 }
 
 test delete_first_3() {
-  let fixture =
-    [Pair("a", 14)]
+  let fixture = [Pair("a", 14)]
   delete_first(fixture, "b") == fixture
 }
 
 test delete_first_4() {
-  let fixture =
-    [Pair("a", 1), Pair("b", 2), Pair("a", 3)]
+  let fixture = [Pair("a", 1), Pair("b", 2), Pair("a", 3)]
   delete_first(fixture, "a") == [Pair("b", 2), Pair("a", 3)]
 }
 
@@ -448,8 +436,7 @@ test delete_first_4() {
 /// ```
 pub fn delete_last(self: Pairs<key, value>, key k: key) -> Pairs<key, value> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [Pair(k2, v2), ..rest] ->
       if k == k2 {
         let tail = delete_last(rest, k)
@@ -473,14 +460,12 @@ test delete_last_2() {
 }
 
 test delete_last_3() {
-  let fixture =
-    [Pair("a", 14)]
+  let fixture = [Pair("a", 14)]
   delete_last(fixture, "b") == fixture
 }
 
 test delete_last_4() {
-  let fixture =
-    [Pair("a", 1), Pair("b", 2), Pair("a", 3)]
+  let fixture = [Pair("a", 1), Pair("b", 2), Pair("a", 3)]
   delete_last(fixture, "a") == [Pair("a", 1), Pair("b", 2)]
 }
 
@@ -505,8 +490,7 @@ pub fn insert_by_ascending_key(
   compare: fn(key, key) -> Ordering,
 ) -> Pairs<key, value> {
   when self is {
-    [] ->
-      [Pair(k, v)]
+    [] -> [Pair(k, v)]
     [Pair(k2, v2), ..rest] ->
       if compare(k, k2) == Less {
         [Pair(k, v), ..self]
@@ -551,23 +535,19 @@ pub fn map(
   with: fn(key, value) -> result,
 ) -> Pairs<key, result> {
   when self is {
-    [] ->
-      []
-    [Pair(k, v), ..rest] ->
-      [Pair(k, with(k, v)), ..map(rest, with)]
+    [] -> []
+    [Pair(k, v), ..rest] -> [Pair(k, with(k, v)), ..map(rest, with)]
   }
 }
 
 test map_1() {
-  let fixture =
-    [Pair("a", 1), Pair("b", 2)]
+  let fixture = [Pair("a", 1), Pair("b", 2)]
 
   map(fixture, with: fn(k, _) { k }) == [Pair("a", "a"), Pair("b", "b")]
 }
 
 test map_2() {
-  let fixture =
-    [Pair("a", 1), Pair("b", 2)]
+  let fixture = [Pair("a", 1), Pair("b", 2)]
 
   map(fixture, with: fn(_, v) { v + 1 }) == [Pair("a", 2), Pair("b", 3)]
 }
@@ -593,8 +573,7 @@ pub fn repsert_by_ascending_key(
   compare: fn(key, key) -> Ordering,
 ) -> Pairs<key, value> {
   when self is {
-    [] ->
-      [Pair(k, v)]
+    [] -> [Pair(k, v)]
     [Pair(k2, v2), ..rest] ->
       if compare(k, k2) == Less {
         [Pair(k, v), ..self]
@@ -700,8 +679,7 @@ test foldr_2() {
 }
 
 test foldr_3() {
-  let fixture =
-    [Pair(1, 100), Pair(2, 200), Pair(3, 300)]
+  let fixture = [Pair(1, 100), Pair(2, 200), Pair(3, 300)]
 
   foldr(fixture, 0, fn(k, v, result) { k * v + result }) == 1400
 }

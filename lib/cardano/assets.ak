@@ -830,8 +830,7 @@ pub fn flatten_with(
         fn(asset_name, quantity, xs) {
           when with(policy_id, asset_name, quantity) is {
             None -> xs
-            Some(x) ->
-              [x, ..xs]
+            Some(x) -> [x, ..xs]
           }
         },
       )

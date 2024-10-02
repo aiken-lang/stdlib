@@ -159,8 +159,7 @@ pub fn from_pairs(self: Pairs<ByteArray, value>) -> Dict<key, value> {
 
 fn do_from_pairs(xs: Pairs<ByteArray, value>) -> Pairs<ByteArray, value> {
   when xs is {
-    [] ->
-      []
+    [] -> []
     [Pair(k, v), ..rest] -> do_insert(do_from_pairs(rest), k, v)
   }
 }
@@ -429,10 +428,8 @@ pub fn keys(self: Dict<key, value>) -> List<ByteArray> {
 
 fn do_keys(self: Pairs<ByteArray, value>) -> List<ByteArray> {
   when self is {
-    [] ->
-      []
-    [Pair(k, _), ..rest] ->
-      [k, ..do_keys(rest)]
+    [] -> []
+    [Pair(k, _), ..rest] -> [k, ..do_keys(rest)]
   }
 }
 
@@ -508,10 +505,8 @@ pub fn values(self: Dict<key, value>) -> List<value> {
 
 fn do_values(self: Pairs<key, value>) -> List<value> {
   when self is {
-    [] ->
-      []
-    [Pair(_, v), ..rest] ->
-      [v, ..do_values(rest)]
+    [] -> []
+    [Pair(_, v), ..rest] -> [v, ..do_values(rest)]
   }
 }
 
@@ -550,8 +545,7 @@ fn do_delete(
   key k: ByteArray,
 ) -> Pairs<ByteArray, value> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [Pair(k2, v2), ..rest] ->
       if builtin.less_than_equals_bytearray(k, k2) {
         if k == k2 {
@@ -641,8 +635,7 @@ fn do_filter(
   with: fn(ByteArray, value) -> Bool,
 ) -> Pairs<ByteArray, value> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [Pair(k, v), ..rest] ->
       if with(k, v) {
         [Pair(k, v), ..do_filter(rest, with)]
@@ -696,8 +689,7 @@ fn do_insert(
   value v: value,
 ) -> Pairs<ByteArray, value> {
   when self is {
-    [] ->
-      [Pair(k, v)]
+    [] -> [Pair(k, v)]
     [Pair(k2, v2), ..rest] ->
       if builtin.less_than_bytearray(k, k2) {
         [Pair(k, v), ..self]
@@ -829,10 +821,8 @@ fn do_map(
   with: fn(ByteArray, a) -> b,
 ) -> Pairs<ByteArray, b> {
   when self is {
-    [] ->
-      []
-    [Pair(k, v), ..rest] ->
-      [Pair(k, with(k, v)), ..do_map(rest, with)]
+    [] -> []
+    [Pair(k, v), ..rest] -> [Pair(k, with(k, v)), ..do_map(rest, with)]
   }
 }
 
@@ -1045,16 +1035,14 @@ fn do_insert_with(
   with: fn(ByteArray, value, value) -> Option<value>,
 ) -> Pairs<ByteArray, value> {
   when self is {
-    [] ->
-      [Pair(k, v)]
+    [] -> [Pair(k, v)]
     [Pair(k2, v2), ..rest] ->
       if builtin.less_than_bytearray(k, k2) {
         [Pair(k, v), ..self]
       } else {
         if k == k2 {
           when with(k, v, v2) is {
-            Some(combined) ->
-              [Pair(k, combined), ..rest]
+            Some(combined) -> [Pair(k, combined), ..rest]
             None -> rest
           }
         } else {

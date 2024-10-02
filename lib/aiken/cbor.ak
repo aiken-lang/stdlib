@@ -129,14 +129,12 @@ test diagnostic_9() {
 }
 
 test diagnostic_10() {
-  let xs: List<(Int, Int)> =
-    []
+  let xs: List<(Int, Int)> = []
   diagnostic(xs) == @"[]"
 }
 
 test diagnostic_10_alt() {
-  let xs: Pairs<Int, Int> =
-    []
+  let xs: Pairs<Int, Int> = []
   diagnostic(xs) == @"{}"
 }
 

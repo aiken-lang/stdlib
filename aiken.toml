@@ -1,6 +1,6 @@
 name = "aiken-lang/stdlib"
 version = "main"
-compiler = "v1.1.2"
+compiler = "v1.1.4"
 plutus = "v3"
 description = "The Aiken Standard Library"
 
@@ -13,5 +13,3 @@ platform = "github"
 name = "aiken-lang/fuzz"
 version = "v2"
 source = "github"
-
-[config]
