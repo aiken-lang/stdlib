@@ -202,7 +202,7 @@ pub fn find_script_outputs(
 /// transaction.placeholder.id ==
 ///   #"0000000000000000000000000000000000000000000000000000000000000000"
 ///
-/// transaction.placeholder.validity_range == interval.everything()
+/// transaction.placeholder.validity_range == interval.everything
 /// ```
 pub const placeholder: Transaction =
   Transaction {
