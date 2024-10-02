@@ -1203,6 +1203,94 @@ pub fn foldl(self: List<a>, zero: b, with: fn(a, b) -> b) -> b {
   }
 }
 
+type Fold2<a, b, result> =
+  fn(a, b) -> result
+
+pub fn foldl2(
+  self: List<elem>,
+  zero_a: a,
+  zero_b: b,
+  with: fn(elem, a, b, Fold2<a, b, result>) -> result,
+  return: Fold2<a, b, result>,
+) -> result {
+  do_foldl2(self, with, return)(zero_a, zero_b)
+}
+
+fn do_foldl2(
+  self: List<elem>,
+  with: fn(elem, a, b, Fold2<a, b, result>) -> result,
+  return: Fold2<a, b, result>,
+) -> Fold2<a, b, result> {
+  when self is {
+    [] -> return
+    [x, ..xs] -> do_foldl2(xs, with, fn(a, b) { with(x, a, b, return) })
+  }
+}
+
+test foldl2_optimized() {
+  let
+    len,
+    sum,
+  <-
+    foldl2(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      0,
+      0,
+      fn(n, len, sum, return) { return(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
+test foldl2_classic() {
+  let (len, sum) =
+    foldl(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      (0, 0),
+      fn(n, (len, sum)) { (len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
+type Foo {
+  Foo(Int, Int)
+}
+
+test foldl2_pair() {
+  let Pair(len, sum) =
+    foldl(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      Pair(0, 0),
+      fn(n, Pair(len, sum)) { Pair(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
+test foldl2_foo() {
+  let Foo(len, sum) =
+    foldl(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      Foo(0, 0),
+      fn(n, Foo(len, sum)) { Foo(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
+}
+
 test foldl_1() {
   foldl([], 0, fn(_, _) { 1 }) == 0
 }
