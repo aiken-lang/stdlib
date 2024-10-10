@@ -48,10 +48,10 @@ test from_int_big_endian_4() fail {
 /// > size is _too large_, the array is right-padded with zeroes.
 ///
 /// ```aiken
-/// bytearray.from_int_big_endian(1_000_000, 3) == #"0f4240"
-/// bytearray.from_int_big_endian(1_000_000, 5) == #"00000f4240"
-/// bytearray.from_int_big_endian(0, 8) == #"0000000000000000"
-/// bytearray.from_int_big_endian(1_000_000, 1) => 💥
+/// bytearray.from_int_little_endian(1_000_000, 3) == #"40420f"
+/// bytearray.from_int_little_endian(1_000_000, 5) == #"40420f0000"
+/// bytearray.from_int_little_endian(0, 8) == #"0000000000000000"
+/// bytearray.from_int_little_endian(1_000_000, 1) => 💥
 /// ```
 pub fn from_int_little_endian(self: Int, size: Int) -> ByteArray {
   builtin.integer_to_bytearray(False, size, self)
