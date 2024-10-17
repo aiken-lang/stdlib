@@ -48,10 +48,10 @@ pub fn deserialise(bytes: ByteArray) -> Option<Data> {
   let peek =
     fn(offset: Int, callback: fn(Byte) -> Decoder<Data>) -> Decoder<Data> {
       fn(cursor) {
-        if cursor >= length {
+        if 0 >= cursor {
           deserialise_failure
         } else {
-          callback(bytearray.at(bytes, cursor))(cursor + offset)
+          callback(bytearray.at(bytes, length - cursor))(cursor - offset)
         }
       }
     }
@@ -59,20 +59,25 @@ pub fn deserialise(bytes: ByteArray) -> Option<Data> {
   let take =
     fn(n: Int, callback: fn(ByteArray) -> Decoder<Data>) -> Decoder<Data> {
       fn(cursor) {
-        if cursor >= length {
+        if 0 >= cursor {
           deserialise_failure
         } else {
-          callback(builtin.slice_bytearray(cursor, n, bytes))(cursor + n)
+          callback(builtin.slice_bytearray(length - cursor, n, bytes))(
+            cursor - n,
+          )
         }
       }
     }
 
-  let Pair(result, consumed) = decode_data(peek, take)(0)
-
-  if consumed != length {
+  if length == 0 {
     None
   } else {
-    Some(result)
+    let Pair(result, consumed) = decode_data(peek, take)(length)
+    if consumed != 0 {
+      None
+    } else {
+      Some(result)
+    }
   }
 }
 
@@ -161,7 +166,6 @@ fn decode_data(peek: Peek<Data>, take: Take<Data>) -> Decoder<Data> {
         } else {
           tag - 121
         }
-
       if next == token_begin_list {
         let fields <- decode_indefinite(peek, take, decode_data)
         return(builtin.constr_data(ix, fields))
@@ -238,11 +242,10 @@ fn decode_chunks(
   take: Take<Data>,
   and_then: fn(ByteArray) -> Decoder<Data>,
 ) -> Decoder<Data> {
-  let next <- peek(0)
+  let next <- peek(1)
   if next == token_break {
-    fn(cursor) { and_then("")(cursor + 1) }
+    and_then("")
   } else {
-    let next <- peek(1)
     let chunk <- decode_bytes(peek, take, next - 64)
     let chunks <- decode_chunks(peek, take)
     and_then(builtin.append_bytearray(chunk, chunks))
@@ -275,12 +278,12 @@ fn decode_indefinite(
   decode_one: fn(Peek<Data>, Take<Data>) -> Decoder<a>,
   and_then: fn(List<a>) -> Decoder<Data>,
 ) -> Decoder<Data> {
-  let next <- peek(0)
+  let next <- peek(1)
   if next == token_break {
-    fn(cursor) { and_then([])(cursor + 1) }
+    and_then([])
   } else {
     fn(cursor) {
-      let Pair(elem, cursor) = decode_one(peek, take)(cursor)
+      let Pair(elem, cursor) = decode_one(peek, take)(cursor + 1)
       {
         let elems <- decode_indefinite(peek, take, decode_one)
         and_then([elem, ..elems])
