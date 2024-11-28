@@ -86,6 +86,12 @@ fn check_ascending_list(xs: Pairs<ByteArray, value>) {
   }
 }
 
+/// Like ['from_ascending_pairs'](#from_ascending_pairs), but this function does not perform the sanity check to
+/// verify if the given list is sorted, i.e., it does not halt the program execution in case the list isn't sorted.
+pub fn unsafe_from_ascending_pairs(xs: Pairs<ByteArray, value>) -> Dict<key, value> {
+  Dict { inner: xs }
+}
+
 /// Like [`from_ascending_pairs`](#from_ascending_pairs) but fails if **any**
 /// value doesn't satisfy the predicate.
 ///
