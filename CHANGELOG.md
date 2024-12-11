@@ -6,6 +6,7 @@
 
 - [`aiken/cbor.{deserialise}`](https://aiken-lang.github.io/stdlib/aiken/cbor.html#deserialise): to recover `Data` from CBOR bytes.
 - [`aiken/collection/pairs.{insert_with_by_ascending_key}`](https://aiken-lang.github.io/stdlib/aiken/collection/pairs.html#insert_with_by_ascending_key): for inserting in pairs while specifying how to combine values on key conflict.
+- Added `aiken/fuzz` and `cardano/fuzz` to stdlib, adds ScaledFuzzers and requires Aiken v1.1.8.
 
 ## v2.1.0 - 2024-09-14
 
