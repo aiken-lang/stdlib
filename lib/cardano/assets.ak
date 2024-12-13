@@ -60,7 +60,7 @@ pub fn from_asset(
 }
 
 /// Promote an arbitrary list of assets into a `Value`. This function fails
-/// (i.e. halt the program execution) if:
+/// (i.e. halts the program execution) if:
 ///
 /// - there's any duplicate amongst `PolicyId`;
 /// - there's any duplicate amongst `AssetName`;

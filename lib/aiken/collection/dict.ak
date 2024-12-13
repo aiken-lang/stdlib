@@ -51,7 +51,7 @@ const fixture_1 =
     |> insert(bar, 14)
 
 /// Like ['from_pairs'](#from_pairs), but from an already sorted list by ascending
-/// keys. This function fails (i.e. halt the program execution) if the list isn't
+/// keys. This function fails (i.e. halts the program execution) if the list isn't
 /// sorted.
 ///
 /// ```aiken
