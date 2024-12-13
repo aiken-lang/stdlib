@@ -497,7 +497,7 @@ test size_3() {
 ///     |> dict.insert("c", 1337)
 ///     |> dict.values()
 ///
-/// result == [1337, 42]
+///  result == [14, 42, 1337]
 /// ```
 pub fn values(self: Dict<key, value>) -> List<value> {
   do_values(self.inner)
