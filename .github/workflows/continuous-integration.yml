@@ -33,7 +33,7 @@ jobs:
       - name: 🧰 Install Aiken
         uses: aiken-lang/setup-aiken@v1
         with:
-          version: v1.1.4
+          version: v1.1.9
 
       - name: 📝 Run fmt
         run: aiken fmt --check
