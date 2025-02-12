@@ -25,15 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🧰 Setup Pages
-        uses: actions/configure-pages@v2
+        uses: actions/configure-pages@v5
 
       - name: 🧰 Install Aiken
         uses: aiken-lang/setup-aiken@v1
         with:
-          version: v1.1.9
+          version: v1.1.11
 
       - name: 📝 Run fmt
         run: aiken fmt --check
@@ -47,7 +47,7 @@ jobs:
         run: aiken docs -o docs
 
       - name: 📦 Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v4
         with:
           path: "docs/"
 
@@ -61,4 +61,4 @@ jobs:
     steps:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
