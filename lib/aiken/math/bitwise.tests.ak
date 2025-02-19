@@ -1,4 +1,6 @@
-use aiken/math/bitwise.{add, pad_for_addition, pad_for_multiply, subtract}
+use aiken/math/bitwise.{
+  add, multiply, pad_for_addition, pad_for_multiply, subtract,
+}
 
 test equal_pad_for_addition() {
   let a: ByteArray = #"acab"
@@ -110,4 +112,12 @@ test unequal_pad_for_multiply2() {
     new_a == #"00000000000000000000cafe",
     new_b == #"000000000000acabbeefface",
   }
+}
+
+test simple_multiply1() {
+  multiply(#"0000ffff", #"0000ffff") == #"fffe0001"
+}
+
+test multiply_communitive() {
+  multiply(#"0000acab", #"0000cafe") == multiply(#"0000cafe", #"0000acab")
 }
