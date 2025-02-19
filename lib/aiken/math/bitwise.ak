@@ -25,7 +25,7 @@ pub fn pad_for_addition(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
   }
 }
 
-/// Add two ByteArrays together, a + b, using bitwise operations. The function 
+/// Add two ByteArrays, a + b, using bitwise operations. The function 
 /// assumes fixed-width (modular) arithmetic. If arbitrary precision is required
 /// use `pad_for_addition`.
 ///
@@ -48,5 +48,22 @@ pub fn add(a: ByteArray, b: ByteArray) -> ByteArray {
       builtin.and_bytearray(True, a, b) |> builtin.shift_bytearray(1)
     let sum_without_carry: ByteArray = builtin.xor_bytearray(True, a, b)
     add(sum_without_carry, carry)
+  }
+}
+
+/// Subtracts two ByteArrays, a - b, using bitwise operations.
+///
+/// ```aiken
+/// bitwise.subtract(#"77a9", #"cafe") == #"acab"
+/// ```
+pub fn subtract(a: ByteArray, b: ByteArray) -> ByteArray {
+  if builtin.count_set_bits(b) == 0 {
+    a
+  } else {
+    let borrow: ByteArray =
+      builtin.and_bytearray(True, builtin.complement_bytearray(a), b)
+        |> builtin.shift_bytearray(1)
+    let diff_without_borrow: ByteArray = builtin.xor_bytearray(True, a, b)
+    subtract(diff_without_borrow, borrow)
   }
 }
