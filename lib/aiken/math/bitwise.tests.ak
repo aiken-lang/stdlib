@@ -1,39 +1,39 @@
-use aiken/math/bitwise.{add, pad_addition}
+use aiken/math/bitwise.{add, pad_for_addition}
 
-test equal_pad_addition() {
+test equal_pad_for_addition() {
   let a: ByteArray = #"acab"
   let b: ByteArray = #"cafe"
-  let (new_a, new_b) = pad_addition(a, b)
+  let (new_a, new_b) = pad_for_addition(a, b)
   and {
     new_a == #"00acab",
     new_b == #"00cafe",
   }
 }
 
-test unequal_pad_addition1() {
+test unequal_pad_for_addition1() {
   let a: ByteArray = #"acabbeefface"
   let b: ByteArray = #"cafe"
-  let (new_a, new_b) = pad_addition(a, b)
+  let (new_a, new_b) = pad_for_addition(a, b)
   and {
     new_a == #"00acabbeefface",
     new_b == #"0000000000cafe",
   }
 }
 
-test unequal_pad_addition2() {
+test unequal_pad_for_addition2() {
   let b: ByteArray = #"acabbeefface"
   let a: ByteArray = #"cafe"
-  let (new_a, new_b) = pad_addition(a, b)
+  let (new_a, new_b) = pad_for_addition(a, b)
   and {
     new_a == #"0000000000cafe",
     new_b == #"00acabbeefface",
   }
 }
 
-test pad_for_addition() {
+test pad_for_addition_works() {
   let b: ByteArray = #"acab"
   let a: ByteArray = #"cafe"
-  let (new_a, new_b) = pad_addition(a, b)
+  let (new_a, new_b) = pad_for_addition(a, b)
   and {
     add(a, b) == #"77a9",
     add(new_a, new_b) == #"0177a9",
