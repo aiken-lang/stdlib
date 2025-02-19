@@ -1,127 +1,258 @@
 use aiken/builtin
 
-/// Addition will at most add a single byte to a bytearray. This will prepad the
-/// bytearrays to the correct length for addition and it will correct for mismatched
-/// lengths.
-///
-/// ```aiken
-/// bitwise.pad_for_addition(#"acab", #"cafe") == (#"00acab", #"00cafe")
-/// ```
-pub fn pad_for_addition(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
-  let length_a: Int = builtin.length_of_bytearray(a)
-  let length_b: Int = builtin.length_of_bytearray(b)
-  if length_a >= length_b {
-    let diff: Int = length_a - length_b
-    (
-      builtin.cons_bytearray(0, a),
-      builtin.append_bytearray(builtin.replicate_byte(diff + 1, 0), b),
+pub opaque type Intermediary<t> {
+  inner: Int,
+}
+
+pub const zero_intermediary = Intermediary { inner: 0 }
+
+pub const one_intermediary = Intermediary { inner: 1 }
+
+pub opaque type Scalar {
+  inner: Int,
+}
+
+pub fn from_scalar(scalar: Scalar) -> Intermediary<t> {
+  Intermediary { inner: scalar.inner }
+}
+
+pub fn add_bits(scalar: Int, big_endian: Bool) {
+  fn(intermediate: Intermediary<t>, bytes: ByteArray) -> Intermediary<t> {
+    builtin.bytearray_to_integer(big_endian, bytes)
+      |> builtin.add_integer(intermediate.inner)
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn add_int(scalar: Int) {
+  fn(intermediate: Intermediary<t>, int: Int) -> Intermediary<t> {
+    intermediate.inner + int
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn add_intermediary(scalar: Int) {
+  fn(intermediate: Intermediary<t>, other: Intermediary<t>) -> Intermediary<t> {
+    intermediate.inner + other.inner
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn sub_bits(scalar: Int, big_endian: Bool) {
+  fn(intermediate: Intermediary<t>, bytes: ByteArray) -> Intermediary<t> {
+    builtin.bytearray_to_integer(big_endian, bytes)
+      |> builtin.subtract_integer(intermediate.inner)
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn sub_int(scalar: Int) {
+  fn(intermediate: Intermediary<t>, int: Int) -> Intermediary<t> {
+    intermediate.inner - int
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn sub_intermediary(scalar: Int) {
+  fn(intermediate: Intermediary<t>, other: Intermediary<t>) -> Intermediary<t> {
+    intermediate.inner - other.inner
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn mul_bits(scalar: Int, big_endian: Bool) {
+  fn(intermediate: Intermediary<t>, bytes: ByteArray) -> Intermediary<t> {
+    builtin.bytearray_to_integer(big_endian, bytes)
+      |> builtin.multiply_integer(intermediate.inner)
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn mul_int(scalar: Int) {
+  fn(intermediate: Intermediary<t>, int: Int) -> Intermediary<t> {
+    intermediate.inner * int
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn mul_intermediary(scalar: Int) {
+  fn(intermediate: Intermediary<t>, other: Intermediary<t>) -> Intermediary<t> {
+    intermediate.inner * other.inner
+      |> builtin.mod_integer(scalar)
+      |> Intermediary
+  }
+}
+
+pub fn scale(self: Intermediary<t>, e: Int, scalar: Int) -> Intermediary<t> {
+  if e < 0 {
+    zero_intermediary
+  } else if e == 0 {
+    one_intermediary
+  } else if e % 2 == 0 {
+    scale(mul_intermediary(scalar)(self, self), e / 2, scalar)
+  } else {
+    mul_intermediary(scalar)(
+      self,
+      scale(mul_intermediary(scalar)(self, self), ( e - 1 ) / 2, scalar),
     )
-  } else {
-    let diff: Int = length_b - length_a
-    (
-      builtin.append_bytearray(builtin.replicate_byte(diff + 1, 0), a),
-      builtin.cons_bytearray(0, b),
-    )
   }
 }
 
-/// Add two ByteArrays, a + b, using bitwise operations. The function 
-/// assumes fixed-width (modular) arithmetic. If arbitrary precision is required
-/// use `pad_for_addition`.
-///
-/// -- pad inputs for arbitrary precision
-///
-/// ```aiken
-/// bitwise.add(#"00acab", #"00cafe") == #"0177A9"
-/// ```
-///
-/// -- otherwise
-///
-/// ```aiken
-/// bitwise.add(#"acab", #"cafe") == #"77A9"
-/// ```
-pub fn add(a: ByteArray, b: ByteArray) -> ByteArray {
-  if builtin.count_set_bits(b) == 0 {
-    a
-  } else {
-    let carry: ByteArray =
-      builtin.and_bytearray(True, a, b) |> builtin.shift_bytearray(1)
-    let sum_without_carry: ByteArray = builtin.xor_bytearray(True, a, b)
-    add(sum_without_carry, carry)
+/// A faster version of `scale` for the case where the exponent is a power of two.
+/// That is, the exponent `e = 2^k` for some non-negative integer `k`. Which is used alot in zk-SNARKs.
+pub fn scale2(scalar: Int) {
+  fn(self: Intermediary<t>, k: Int) -> Intermediary<t> {
+    if k == 0 {
+      self
+    } else {
+      do_scale2(mul_intermediary(scalar)(self, self), k - 1, scalar)
+    }
   }
 }
 
-/// Subtracts two ByteArrays, a - b, using bitwise operations.
-///
-/// ```aiken
-/// bitwise.subtract(#"77a9", #"cafe") == #"acab"
-/// ```
-pub fn subtract(a: ByteArray, b: ByteArray) -> ByteArray {
-  if builtin.count_set_bits(b) == 0 {
-    a
+fn do_scale2(self: Intermediary<t>, k: Int, scalar) -> Intermediary<t> {
+  if k == 0 {
+    self
   } else {
-    let borrow: ByteArray =
-      builtin.and_bytearray(True, builtin.complement_bytearray(a), b)
-        |> builtin.shift_bytearray(1)
-    let diff_without_borrow: ByteArray = builtin.xor_bytearray(True, a, b)
-    subtract(diff_without_borrow, borrow)
+    do_scale2(mul_intermediary(scalar)(self, self), k - 1, scalar)
   }
 }
 
-/// Multiplication will at most add N bytes to a bytearray for a bytearray of size N.
-/// This will prepad the bytearrays to the correct length for multiplication and it 
-/// will correct for mismatched lengths.
-///
-/// ```aiken
-/// bitwise.pad_for_multiply(#"acab", #"cafe") == (#"0000acab", #"0000cafe")
-/// ```
-pub fn pad_for_multiply(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
-  let length_a: Int = builtin.length_of_bytearray(a)
-  let length_b: Int = builtin.length_of_bytearray(b)
-  if length_a >= length_b {
-    let diff: Int = length_a - length_b
-    (
-      builtin.append_bytearray(builtin.replicate_byte(length_a, 0), a),
-      builtin.append_bytearray(builtin.replicate_byte(diff + length_a, 0), b),
-    )
-  } else {
-    let diff: Int = length_b - length_a
-    (
-      builtin.append_bytearray(builtin.replicate_byte(diff + length_b, 0), a),
-      builtin.append_bytearray(builtin.replicate_byte(length_b, 0), b),
-    )
+pub fn neg(scalar: Int) {
+  fn(intermediate: Intermediary<t>) -> Intermediary<t> {
+    scalar - intermediate.inner
+      |> Intermediary
   }
 }
 
-pub fn multiply(a: ByteArray, b: ByteArray) -> ByteArray {
-  let length_a: Int = builtin.length_of_bytearray(a)
-  let zero: ByteArray = builtin.replicate_byte(length_a, 0)
-  let one: ByteArray =
-    builtin.append_bytearray(builtin.replicate_byte(length_a, 0), #"01")
-  do_multiply(a, b, zero, one)
+pub opaque type Hash256 {
+  inner: ByteArray,
 }
 
-fn do_multiply(
-  a: ByteArray,
-  b: ByteArray,
-  acc: ByteArray,
-  one: ByteArray,
-) -> ByteArray {
-  if builtin.count_set_bits(b) == 0 {
-    acc
-  } else {
-    let bit_set = builtin.and_bytearray(True, b, #"00000001")
-    let new_acc =
-      if builtin.count_set_bits(bit_set) > 0 {
-        add(acc, a)
-      } else {
-        acc
-      }
+pub const hash256_field =
+  builtin.replicate_byte(32, 0)
+    |> builtin.cons_bytearray(1, _)
+    |> builtin.bytearray_to_integer(True, _)
 
-    let new_a = builtin.shift_bytearray(a, 1)
-    // left shift: multiply a by 2
-    let new_b = builtin.shift_bytearray(b, -1)
-    // right shift: divide b by 2
-    do_multiply(new_a, new_b, new_acc, one)
-  }
+pub const hash224_field =
+  builtin.replicate_byte(28, 0)
+    |> builtin.cons_bytearray(1, _)
+    |> builtin.bytearray_to_integer(True, _)
+
+/// The prime number defining the scalar field of the BLS12-381 curve.
+pub const bls381_prime_field =
+  52435875175126190479447740508185965837690552500527637822603658699938581184513
+
+pub fn to_bits256(intermediate: Intermediary<Hash256>) -> ByteArray {
+  intermediate.inner
+    |> builtin.integer_to_bytearray(True, 32, _)
+}
+
+pub fn to_int256(intermediate: Intermediary<Hash256>) -> Int {
+  intermediate.inner
+}
+
+pub fn bits256_to_intermediary(bytes: ByteArray) -> Intermediary<Hash256> {
+  bytes
+    |> builtin.bytearray_to_integer(True, _)
+    |> builtin.mod_integer(hash256_field)
+    |> Intermediary
+}
+
+pub fn int256_to_intermediary(int: Int) -> Intermediary<Hash256> {
+  int % hash256_field
+    |> Intermediary
+}
+
+pub fn add_bits256(
+  intermediate: Intermediary<Hash256>,
+  bytes: ByteArray,
+) -> Intermediary<Hash256> {
+  let add_bits = add_bits(hash256_field, True)
+
+  add_bits(intermediate, bytes)
+}
+
+pub fn add_int256(
+  intermediate: Intermediary<Hash256>,
+  int: Int,
+) -> Intermediary<Hash256> {
+  let add_int = add_int(hash256_field)
+
+  add_int(intermediate, int)
+}
+
+pub fn sub_int256(
+  intermediate: Intermediary<Hash256>,
+  int: Int,
+) -> Intermediary<Hash256> {
+  let sub_int = sub_int(hash256_field)
+
+  sub_int(intermediate, int)
+}
+
+pub fn sub_bits256(
+  intermediate: Intermediary<Hash256>,
+  bytes: ByteArray,
+) -> Intermediary<Hash256> {
+  let sub_bits = sub_bits(hash256_field, True)
+
+  sub_bits(intermediate, bytes)
+}
+
+pub fn mul_bits256(
+  intermediate: Intermediary<Hash256>,
+  bytes: ByteArray,
+) -> Intermediary<Hash256> {
+  let mul_bits = mul_bits(hash256_field, True)
+
+  mul_bits(intermediate, bytes)
+}
+
+pub fn mul_int256(
+  intermediate: Intermediary<Hash256>,
+  int: Int,
+) -> Intermediary<Hash256> {
+  let mul_int = mul_int(hash256_field)
+
+  mul_int(intermediate, int)
+}
+
+pub fn neg_256(intermediate: Intermediary<Hash256>) -> Intermediary<Hash256> {
+  let neg = neg(hash256_field)
+
+  neg(intermediate)
+}
+
+pub opaque type Hash224 {
+  inner: ByteArray,
+}
+
+pub fn to_bits224(intermediate: Intermediary<Hash224>) -> ByteArray {
+  intermediate.inner
+    |> builtin.integer_to_bytearray(True, 28, _)
+}
+
+pub fn to_int224(intermediate: Intermediary<Hash224>) -> Int {
+  intermediate.inner
+}
+
+pub fn bits224_to_intermediary(bytes: ByteArray) -> Intermediary<Hash224> {
+  bytes
+    |> builtin.bytearray_to_integer(True, _)
+    |> builtin.mod_integer(hash224_field)
+    |> Intermediary
+}
+
+pub fn int224_to_intermediary(int: Int) -> Intermediary<Hash224> {
+  int % hash256_field
+    |> Intermediary
 }
