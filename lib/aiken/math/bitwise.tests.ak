@@ -1,10 +1,43 @@
-use aiken/builtin
-use aiken/math/bitwise.{add}
+use aiken/math/bitwise.{add, pad_addition}
 
-test one_plus_one() {
-  let one = builtin.integer_to_bytearray(True, 0, 1)
-  let two = builtin.integer_to_bytearray(True, 0, 2)
-  add(one, one) == two
+test equal_pad_addition() {
+  let a: ByteArray = #"acab"
+  let b: ByteArray = #"cafe"
+  let (new_a, new_b) = pad_addition(a, b)
+  and {
+    new_a == #"00acab",
+    new_b == #"00cafe",
+  }
+}
+
+test unequal_pad_addition1() {
+  let a: ByteArray = #"acabbeefface"
+  let b: ByteArray = #"cafe"
+  let (new_a, new_b) = pad_addition(a, b)
+  and {
+    new_a == #"00acabbeefface",
+    new_b == #"0000000000cafe",
+  }
+}
+
+test unequal_pad_addition2() {
+  let b: ByteArray = #"acabbeefface"
+  let a: ByteArray = #"cafe"
+  let (new_a, new_b) = pad_addition(a, b)
+  and {
+    new_a == #"0000000000cafe",
+    new_b == #"00acabbeefface",
+  }
+}
+
+test pad_for_addition() {
+  let b: ByteArray = #"acab"
+  let a: ByteArray = #"cafe"
+  let (new_a, new_b) = pad_addition(a, b)
+  and {
+    add(a, b) == #"77a9",
+    add(new_a, new_b) == #"0177a9",
+  }
 }
 
 test emptiness_is_empty() {
