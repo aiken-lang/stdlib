@@ -5,9 +5,9 @@ use aiken/builtin
 /// lengths.
 ///
 /// ```aiken
-/// bitwise.pad_addition(#"acab", #"cafe") == (#"00acab", #"00cafe")
+/// bitwise.pad_for_addition(#"acab", #"cafe") == (#"00acab", #"00cafe")
 /// ```
-pub fn pad_addition(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
+pub fn pad_for_addition(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
   let length_a: Int = builtin.length_of_bytearray(a)
   let length_b: Int = builtin.length_of_bytearray(b)
   if length_a >= length_b {
@@ -25,14 +25,17 @@ pub fn pad_addition(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
   }
 }
 
-/// Add two ByteArrays together using bitwise operations. The function assumes
-/// fixed-width (modular) arithmetic.
+/// Add two ByteArrays together, a + b, using bitwise operations. The function 
+/// assumes fixed-width (modular) arithmetic. If arbitrary precision is required
+/// use `pad_for_addition`.
 ///
 /// -- pad inputs for arbitrary precision
 ///
 /// ```aiken
 /// bitwise.add(#"00acab", #"00cafe") == #"0177A9"
 /// ```
+///
+/// -- otherwise
 ///
 /// ```aiken
 /// bitwise.add(#"acab", #"cafe") == #"77A9"
