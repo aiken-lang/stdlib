@@ -1,4 +1,4 @@
-use aiken/math/bitwise.{add, pad_for_addition, subtract}
+use aiken/math/bitwise.{add, pad_for_addition, pad_for_multiply, subtract}
 
 test equal_pad_for_addition() {
   let a: ByteArray = #"acab"
@@ -80,4 +80,34 @@ test subtract_is_not_communitive() fail {
 
 test subtract_identity() {
   subtract(#"10", #"00") == #"10"
+}
+
+test equal_pad_for_multiply() {
+  let a: ByteArray = #"acab"
+  let b: ByteArray = #"cafe"
+  let (new_a, new_b) = pad_for_multiply(a, b)
+  and {
+    new_a == #"0000acab",
+    new_b == #"0000cafe",
+  }
+}
+
+test unequal_pad_for_multiply1() {
+  let a: ByteArray = #"acabbeefface"
+  let b: ByteArray = #"cafe"
+  let (new_a, new_b) = pad_for_multiply(a, b)
+  and {
+    new_a == #"000000000000acabbeefface",
+    new_b == #"00000000000000000000cafe",
+  }
+}
+
+test unequal_pad_for_multiply2() {
+  let b: ByteArray = #"acabbeefface"
+  let a: ByteArray = #"cafe"
+  let (new_a, new_b) = pad_for_multiply(a, b)
+  and {
+    new_a == #"00000000000000000000cafe",
+    new_b == #"000000000000acabbeefface",
+  }
 }

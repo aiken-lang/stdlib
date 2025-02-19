@@ -67,3 +67,28 @@ pub fn subtract(a: ByteArray, b: ByteArray) -> ByteArray {
     subtract(diff_without_borrow, borrow)
   }
 }
+
+/// Multiplication will at most add N bytes to a bytearray for a bytearray of size N.
+/// This will prepad the bytearrays to the correct length for multiplication and it 
+/// will correct for mismatched lengths.
+///
+/// ```aiken
+/// bitwise.pad_for_multiply(#"acab", #"cafe") == (#"0000acab", #"0000cafe")
+/// ```
+pub fn pad_for_multiply(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
+  let length_a: Int = builtin.length_of_bytearray(a)
+  let length_b: Int = builtin.length_of_bytearray(b)
+  if length_a >= length_b {
+    let diff: Int = length_a - length_b
+    (
+      builtin.append_bytearray(builtin.replicate_byte(length_a, 0), a),
+      builtin.append_bytearray(builtin.replicate_byte(diff + length_a, 0), b),
+    )
+  } else {
+    let diff: Int = length_b - length_a
+    (
+      builtin.append_bytearray(builtin.replicate_byte(diff + length_b, 0), a),
+      builtin.append_bytearray(builtin.replicate_byte(length_b, 0), b),
+    )
+  }
+}
