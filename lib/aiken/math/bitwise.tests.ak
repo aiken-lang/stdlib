@@ -1,4 +1,4 @@
-use aiken/math/bitwise.{add, pad_for_addition}
+use aiken/math/bitwise.{add, pad_for_addition, subtract}
 
 test equal_pad_for_addition() {
   let a: ByteArray = #"acab"
@@ -30,7 +30,7 @@ test unequal_pad_for_addition2() {
   }
 }
 
-test pad_for_addition_works() {
+test pad_for_addition_does_works() {
   let b: ByteArray = #"acab"
   let a: ByteArray = #"cafe"
   let (new_a, new_b) = pad_for_addition(a, b)
@@ -44,20 +44,40 @@ test emptiness_is_empty() {
   add(#"", #"") == #""
 }
 
-test not_equal_length_does_not_work() fail {
+test adding_not_equal_length_does_not_work() fail {
   add(#"00", #"acab") == #"acab"
 }
 
-test communitive() {
-  add(#"acab", #"0000") == add(#"0000", #"acab")
+test add_communitive() {
+  add(#"acab", #"cafe") == add(#"cafe", #"acab")
 }
 
-test associativity() {
+test add_associativity() {
   ( add(#"0101", #"0202") |> add(#"0303") ) == (
     add(#"0202", #"0303") |> add(#"0101")
   )
 }
 
-test identity() {
+test add_identity() {
   add(#"00", #"01") == #"01"
+}
+
+test subtracting_does_work1() {
+  subtract(#"0177a9", #"00cafe") == #"00acab"
+}
+
+test subtracting_does_work2() {
+  subtract(#"77a9", #"cafe") == #"acab"
+}
+
+test subtracting_not_equal_length_does_not_work() fail {
+  subtract(#"0177a9", #"cafe") == #"acab"
+}
+
+test subtract_is_not_communitive() fail {
+  subtract(#"acab", #"cafe") == add(#"cafe", #"acab")
+}
+
+test subtract_identity() {
+  subtract(#"10", #"00") == #"10"
 }
