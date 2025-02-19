@@ -92,3 +92,36 @@ pub fn pad_for_multiply(a: ByteArray, b: ByteArray) -> (ByteArray, ByteArray) {
     )
   }
 }
+
+pub fn multiply(a: ByteArray, b: ByteArray) -> ByteArray {
+  let length_a: Int = builtin.length_of_bytearray(a)
+  let zero: ByteArray = builtin.replicate_byte(length_a, 0)
+  let one: ByteArray =
+    builtin.append_bytearray(builtin.replicate_byte(length_a, 0), #"01")
+  do_multiply(a, b, zero, one)
+}
+
+fn do_multiply(
+  a: ByteArray,
+  b: ByteArray,
+  acc: ByteArray,
+  one: ByteArray,
+) -> ByteArray {
+  if builtin.count_set_bits(b) == 0 {
+    acc
+  } else {
+    let bit_set = builtin.and_bytearray(True, b, #"00000001")
+    let new_acc =
+      if builtin.count_set_bits(bit_set) > 0 {
+        add(acc, a)
+      } else {
+        acc
+      }
+
+    let new_a = builtin.shift_bytearray(a, 1)
+    // left shift: multiply a by 2
+    let new_b = builtin.shift_bytearray(b, -1)
+    // right shift: divide b by 2
+    do_multiply(new_a, new_b, new_acc, one)
+  }
+}
