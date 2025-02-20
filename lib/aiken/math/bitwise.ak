@@ -316,3 +316,27 @@ const neg224 = neg(hash224_field)
 pub fn neg_224(intermediate: Intermediary<Hash224>) -> Intermediary<Hash224> {
   neg224(intermediate)
 }
+
+pub fn and_bytes(
+  left: ByteArray,
+  right: ByteArray,
+  extend_shorter: Bool,
+) -> ByteArray {
+  builtin.and_bytearray(extend_shorter, left, right)
+}
+
+pub fn or_bytes(
+  left: ByteArray,
+  right: ByteArray,
+  extend_shorter: Bool,
+) -> ByteArray {
+  builtin.or_bytearray(extend_shorter, left, right)
+}
+
+pub fn xor_bytes(
+  left: ByteArray,
+  right: ByteArray,
+  extend_shorter: Bool,
+) -> ByteArray {
+  builtin.xor_bytearray(extend_shorter, left, right)
+}
