@@ -751,6 +751,24 @@ pub fn insert_with(
   }
 }
 
+pub fn insert_with_alt(
+  self: Dict<key, value>,
+  key k: ByteArray,
+  value v: value,
+  with: fn(ByteArray, value, value) ->
+    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
+      Pairs<ByteArray, value>,
+) -> Dict<key, value> {
+  Dict {
+    inner: do_insert_with_alt(
+      self.inner,
+      k,
+      v,
+      fn(k, v1, v2) { with(k, v2, v1) },
+    ),
+  }
+}
+
 test insert_with_1() {
   let sum =
     fn(_k, a, b) { Some(a + b) }
@@ -759,6 +777,19 @@ test insert_with_1() {
     empty
       |> insert_with(key: "foo", value: 1, with: sum)
       |> insert_with(key: "bar", value: 2, with: sum)
+      |> to_pairs()
+
+  result == [Pair("bar", 2), Pair("foo", 1)]
+}
+
+test insert_with_alt_1() {
+  let sum =
+    fn(_k, a, b) { fn(som, _non) { som(a + b) } }
+
+  let result =
+    empty
+      |> insert_with_alt(key: "foo", value: 1, with: sum)
+      |> insert_with_alt(key: "bar", value: 2, with: sum)
       |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
@@ -1016,6 +1047,16 @@ pub fn union_with(
   Dict { inner: do_union_with(left.inner, right.inner, with) }
 }
 
+pub fn union_with_alt(
+  left: Dict<key, value>,
+  right: Dict<key, value>,
+  with: fn(ByteArray, value, value) ->
+    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
+      Pairs<ByteArray, value>,
+) -> Dict<key, value> {
+  Dict { inner: do_union_with_alt(left.inner, right.inner, with) }
+}
+
 fn do_union_with(
   left: Pairs<ByteArray, value>,
   right: Pairs<ByteArray, value>,
@@ -1025,6 +1066,20 @@ fn do_union_with(
     [] -> right
     [Pair(k, v), ..rest] ->
       do_union_with(rest, do_insert_with(right, k, v, with), with)
+  }
+}
+
+fn do_union_with_alt(
+  left: Pairs<ByteArray, value>,
+  right: Pairs<ByteArray, value>,
+  with: fn(ByteArray, value, value) ->
+    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
+      Pairs<ByteArray, value>,
+) -> Pairs<ByteArray, value> {
+  when left is {
+    [] -> right
+    [Pair(k, v), ..rest] ->
+      do_union_with_alt(rest, do_insert_with_alt(right, k, v, with), with)
   }
 }
 
@@ -1047,6 +1102,32 @@ fn do_insert_with(
           }
         } else {
           [Pair(k2, v2), ..do_insert_with(rest, k, v, with)]
+        }
+      }
+  }
+}
+
+fn do_insert_with_alt(
+  self: Pairs<ByteArray, value>,
+  key k: ByteArray,
+  value v: value,
+  with: fn(ByteArray, value, value) ->
+    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
+      Pairs<ByteArray, value>,
+) -> Pairs<ByteArray, value> {
+  when self is {
+    [] -> [Pair(k, v)]
+    [Pair(k2, v2), ..rest] ->
+      if builtin.less_than_bytearray(k, k2) {
+        [Pair(k, v), ..self]
+      } else {
+        if k == k2 {
+          with(k, v, v2)(
+            fn(combined) { [Pair(k, combined), ..rest] },
+            fn() { rest },
+          )
+        } else {
+          [Pair(k2, v2), ..do_insert_with_alt(rest, k, v, with)]
         }
       }
   }
