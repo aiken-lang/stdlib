@@ -172,64 +172,64 @@ pub fn int256_to_intermediary(int: Int) -> Intermediary<Hash256> {
     |> Intermediary
 }
 
+const add_bit256 = add_bits(hash256_field, True)
+
 pub fn add_bits256(
   intermediate: Intermediary<Hash256>,
   bytes: ByteArray,
 ) -> Intermediary<Hash256> {
-  let add_bits = add_bits(hash256_field, True)
-
-  add_bits(intermediate, bytes)
+  add_bit256(intermediate, bytes)
 }
+
+const add_i256 = add_int(hash256_field)
 
 pub fn add_int256(
   intermediate: Intermediary<Hash256>,
   int: Int,
 ) -> Intermediary<Hash256> {
-  let add_int = add_int(hash256_field)
-
-  add_int(intermediate, int)
+  add_i256(intermediate, int)
 }
+
+const sub_i256 = sub_int(hash256_field)
 
 pub fn sub_int256(
   intermediate: Intermediary<Hash256>,
   int: Int,
 ) -> Intermediary<Hash256> {
-  let sub_int = sub_int(hash256_field)
-
-  sub_int(intermediate, int)
+  sub_i256(intermediate, int)
 }
+
+const sub_bit256 = sub_bits(hash256_field, True)
 
 pub fn sub_bits256(
   intermediate: Intermediary<Hash256>,
   bytes: ByteArray,
 ) -> Intermediary<Hash256> {
-  let sub_bits = sub_bits(hash256_field, True)
-
-  sub_bits(intermediate, bytes)
+  sub_bit256(intermediate, bytes)
 }
+
+const mul_bit256 = mul_bits(hash256_field, True)
 
 pub fn mul_bits256(
   intermediate: Intermediary<Hash256>,
   bytes: ByteArray,
 ) -> Intermediary<Hash256> {
-  let mul_bits = mul_bits(hash256_field, True)
-
-  mul_bits(intermediate, bytes)
+  mul_bit256(intermediate, bytes)
 }
+
+const mul_i256 = mul_int(hash256_field)
 
 pub fn mul_int256(
   intermediate: Intermediary<Hash256>,
   int: Int,
 ) -> Intermediary<Hash256> {
-  let mul_int = mul_int(hash256_field)
-
-  mul_int(intermediate, int)
+  mul_i256(intermediate, int)
 }
 
-pub fn neg_256(intermediate: Intermediary<Hash256>) -> Intermediary<Hash256> {
-  let neg = neg(hash256_field)
+const neg256 = neg(hash256_field)
 
-  neg(intermediate)
+pub fn neg_256(intermediate: Intermediary<Hash256>) -> Intermediary<Hash256> {
+  neg256(intermediate)
 }
 
 pub opaque type Hash224 {
@@ -255,4 +255,64 @@ pub fn bits224_to_intermediary(bytes: ByteArray) -> Intermediary<Hash224> {
 pub fn int224_to_intermediary(int: Int) -> Intermediary<Hash224> {
   int % hash256_field
     |> Intermediary
+}
+
+const add_bit224 = add_bits(hash224_field, True)
+
+pub fn add_bits224(
+  intermediate: Intermediary<Hash224>,
+  bytes: ByteArray,
+) -> Intermediary<Hash224> {
+  add_bit224(intermediate, bytes)
+}
+
+const add_i224 = add_int(hash224_field)
+
+pub fn add_int224(
+  intermediate: Intermediary<Hash224>,
+  int: Int,
+) -> Intermediary<Hash224> {
+  add_i224(intermediate, int)
+}
+
+const sub_i224 = sub_int(hash224_field)
+
+pub fn sub_int224(
+  intermediate: Intermediary<Hash224>,
+  int: Int,
+) -> Intermediary<Hash224> {
+  sub_i224(intermediate, int)
+}
+
+const sub_bit224 = sub_bits(hash224_field, True)
+
+pub fn sub_bits224(
+  intermediate: Intermediary<Hash224>,
+  bytes: ByteArray,
+) -> Intermediary<Hash224> {
+  sub_bit224(intermediate, bytes)
+}
+
+const mul_bit224 = mul_bits(hash224_field, True)
+
+pub fn mul_bits224(
+  intermediate: Intermediary<Hash224>,
+  bytes: ByteArray,
+) -> Intermediary<Hash224> {
+  mul_bit224(intermediate, bytes)
+}
+
+const mul_i224 = mul_int(hash224_field)
+
+pub fn mul_int224(
+  intermediate: Intermediary<Hash224>,
+  int: Int,
+) -> Intermediary<Hash224> {
+  mul_i224(intermediate, int)
+}
+
+const neg224 = neg(hash224_field)
+
+pub fn neg_224(intermediate: Intermediary<Hash224>) -> Intermediary<Hash224> {
+  neg224(intermediate)
 }
