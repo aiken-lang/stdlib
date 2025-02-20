@@ -77,7 +77,7 @@ pub fn from_asset_list(xs: Pairs<PolicyId, Pairs<AssetName, Int>>) -> Value {
           expect Pair(p, [_, ..] as x) = inner
           x
             |> from_ascending_pairs_with(fn(v) { v != 0 })
-            |> dict.insert_with(
+            |> dict.insert_with_alt(
                 acc,
                 p,
                 _,
@@ -556,29 +556,34 @@ pub fn add(
   } else {
     let helper =
       fn(_, left, _right) {
-        let inner_result =
-          dict.insert_with(
-            left,
-            asset_name,
-            quantity,
-            fn(_k, ql, qr) {
-              let q = ql + qr
-              if q == 0 {
-                None
-              } else {
-                Some(q)
-              }
-            },
-          )
-        if dict.is_empty(inner_result) {
-          None
-        } else {
-          Some(inner_result)
+        fn(som, non) {
+          let inner_result =
+            dict.insert_with_alt(
+              left,
+              asset_name,
+              quantity,
+              fn(_k, ql, qr) {
+                fn(som, non) {
+                  let q = ql + qr
+                  if q == 0 {
+                    non()
+                  } else {
+                    som(q)
+                  }
+                }
+              },
+            )
+
+          if dict.is_empty(inner_result) {
+            non()
+          } else {
+            som(inner_result)
+          }
         }
       }
 
     Value(
-      dict.insert_with(
+      dict.insert_with_alt(
         self.inner,
         policy_id,
         dict.from_ascending_pairs([Pair(asset_name, quantity)]),
@@ -630,27 +635,31 @@ test add_5() {
 /// Combine two `Value` together.
 pub fn merge(left v0: Value, right v1: Value) -> Value {
   Value(
-    dict.union_with(
+    dict.union_with_alt(
       v0.inner,
       v1.inner,
       fn(_, a0, a1) {
-        let result =
-          dict.union_with(
-            a0,
-            a1,
-            fn(_, q0, q1) {
-              let q = q0 + q1
-              if q == 0 {
-                None
-              } else {
-                Some(q)
-              }
-            },
-          )
-        if dict.is_empty(result) {
-          None
-        } else {
-          Some(result)
+        fn(som, non) {
+          let result =
+            dict.union_with_alt(
+              a0,
+              a1,
+              fn(_, q0, q1) {
+                fn(som, non) {
+                  let q = q0 + q1
+                  if q == 0 {
+                    non()
+                  } else {
+                    som(q)
+                  }
+                }
+              },
+            )
+          if dict.is_empty(result) {
+            non()
+          } else {
+            som(result)
+          }
         }
       },
     ),
