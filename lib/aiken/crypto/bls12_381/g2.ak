@@ -17,27 +17,33 @@ use aiken/crypto/bls12_381/scalar.{Scalar}
 /// This constant represents a fixed base point on the elliptic curve.
 /// Note that flat encoded plutus does not allow for the direct usage of BLS12-381 points.
 /// More explicit, any points in plutus data or scripts must be decompressed before usage onchain.
-pub const generator: G2Element =
-  #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
+pub const generator: ByteArray =
+  #"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
 
 test generator_1() {
-  builtin.bls12_381_g2_scalar_mul(scalar.field_prime, generator) == #<Bls12_381, G2>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  builtin.bls12_381_g2_scalar_mul(
+    scalar.field_prime,
+    builtin.bls12_381_g2_uncompress(generator),
+  ) == #<Bls12_381, G2>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 }
 
 /// Represents the additive identity (zero) in the G2 group.
 /// Note that flat encoded plutus does not allow for the direct usage of BLS12-381 points.
 /// More explicit, any points in plutus data or scripts must be decompressed before usage onchain.
-pub const zero: G2Element =
-  #<Bls12_381, G2>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+pub const zero: ByteArray =
+  #"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
 test zero_1() {
   and {
-    zero == builtin.bls12_381_g2_scalar_mul(scalar.field_prime, generator),
-    zero == builtin.bls12_381_g2_scalar_mul(
+    builtin.bls12_381_g2_uncompress(zero) == builtin.bls12_381_g2_scalar_mul(
+      scalar.field_prime,
+      builtin.bls12_381_g2_uncompress(generator),
+    ),
+    builtin.bls12_381_g2_uncompress(zero) == builtin.bls12_381_g2_scalar_mul(
       scalar.field_prime,
       #<Bls12_381, G2>"9964a9ac2ee28a4dab595ff0970d446373bf46701c5d0b29ce8e1ba995d811a1c7b193c928269192c64ba1fbe4b1940207c251e086b452b920bc72e3cebab46ce672b9b088ca620a471d3b888d9737f6abd165319aa457dbf8835e3d34196051",
     ),
-    zero == builtin.bls12_381_g2_scalar_mul(
+    builtin.bls12_381_g2_uncompress(zero) == builtin.bls12_381_g2_scalar_mul(
       scalar.field_prime,
       #<Bls12_381, G2>"a900e25cb53cf1eeb1a82c0c83292937c49c97966351273767a204256a7ef6e95aa391404387075d361e7b13ccd694db03aa73ee0e1bd2c3dd735582b99fdf71696de72e4eda18ae99ea45995f1c9605aa0057008ee9a4da604b5716fb4a345b",
     ),
@@ -74,7 +80,7 @@ pub fn decompress(bytes) {
 test decompress_1() {
   let g2 =
     #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
-  generator == g2
+  decompress(generator) == g2
 }
 
 pub fn equal(left, right) {
@@ -83,8 +89,11 @@ pub fn equal(left, right) {
 
 test equal_1() {
   equal(
-    generator,
-    #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8",
+    decompress(generator),
+    builtin.bls12_381_g2_scalar_mul(
+      scalar.field_prime + 1,
+      decompress(generator),
+    ),
   )
 }
 
@@ -93,13 +102,20 @@ pub fn add(left, right) {
   builtin.bls12_381_g2_add(left, right)
 }
 
+test add_1() {
+  decompress(generator) == add(decompress(generator), decompress(zero))
+}
+
 /// Subtracts one point in the G2 group from another.
 pub fn sub(left, right) {
   builtin.bls12_381_g2_add(left, builtin.bls12_381_g2_neg(right))
 }
 
 test sub_1() {
-  generator == sub(add(generator, generator), generator)
+  decompress(generator) == sub(
+    add(decompress(generator), decompress(generator)),
+    decompress(generator),
+  )
 }
 
 /// Exponentiates a point in the G2 group with a `scalar`.
@@ -110,7 +126,10 @@ pub fn scale(point, e: Scalar) {
 
 test scale_1() {
   expect Some(x) = scalar.new(2)
-  builtin.bls12_381_g2_add(generator, generator) == scale(generator, x)
+  add(decompress(generator), decompress(generator)) == scale(
+    decompress(generator),
+    x,
+  )
 }
 
 /// Hashes arbitrary data to a point in the G2 group.
