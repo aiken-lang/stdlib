@@ -161,7 +161,8 @@ pub fn from_pairs(self: Pairs<ByteArray, value>) -> Dict<key, value> {
 fn do_from_pairs(xs: Pairs<ByteArray, value>) -> Pairs<ByteArray, value> {
   when xs is {
     [] -> []
-    [Pair(k, v), ..rest] -> do_insert(do_from_pairs(rest), k, v)
+    [Pair(k, v), ..rest] ->
+      do_insert_with(do_from_pairs(rest), k, v, union.keep_left())
   }
 }
 
@@ -729,14 +730,13 @@ test insert_2() {
 /// to the merge function, and the new value is passed as the third argument.
 ///
 /// ```aiken
-/// let sum =
-///   fn (_k, a, b) { Some(a + b) }
+/// use aiken/collection/dict/union
 ///
 /// let result =
 ///   dict.empty
-///     |> dict.insert_with(key: "a", value: 1, with: sum)
-///     |> dict.insert_with(key: "b", value: 2, with: sum)
-///     |> dict.insert_with(key: "a", value: 3, with: sum)
+///     |> dict.insert_with(key: "a", value: 1, with: union.sum())
+///     |> dict.insert_with(key: "b", value: 2, with: union.sum())
+///     |> dict.insert_with(key: "a", value: 3, with: union.sum())
 ///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 4), Pair("b", 2)]
@@ -745,21 +745,10 @@ pub fn insert_with(
   self: Dict<key, value>,
   key k: ByteArray,
   value v: value,
-  with: fn(ByteArray, value, value) -> Option<value>,
-) -> Dict<key, value> {
-  Dict {
-    inner: do_insert_with(self.inner, k, v, fn(k, v1, v2) { with(k, v2, v1) }),
-  }
-}
-
-pub fn insert_with_alt(
-  self: Dict<key, value>,
-  key k: ByteArray,
-  value v: value,
   with: UnionStrategy<ByteArray, value>,
 ) -> Dict<key, value> {
   Dict {
-    inner: do_insert_with_alt(
+    inner: do_insert_with(
       self.inner,
       k,
       v,
@@ -769,37 +758,21 @@ pub fn insert_with_alt(
 }
 
 test insert_with_1() {
-  let sum =
-    fn(_k, a, b) { Some(a + b) }
-
   let result =
     empty
-      |> insert_with(key: "foo", value: 1, with: sum)
-      |> insert_with(key: "bar", value: 2, with: sum)
-      |> to_pairs()
-
-  result == [Pair("bar", 2), Pair("foo", 1)]
-}
-
-test insert_with_alt_1() {
-  let result =
-    empty
-      |> insert_with_alt(key: "foo", value: 1, with: union.sum())
-      |> insert_with_alt(key: "bar", value: 2, with: union.sum())
+      |> insert_with(key: "foo", value: 1, with: union.sum())
+      |> insert_with(key: "bar", value: 2, with: union.sum())
       |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
 }
 
 test insert_with_2() {
-  let sum =
-    fn(_k, a, b) { Some(a + b) }
-
   let result =
     empty
-      |> insert_with(key: "foo", value: 1, with: sum)
-      |> insert_with(key: "bar", value: 2, with: sum)
-      |> insert_with(key: "foo", value: 3, with: sum)
+      |> insert_with(key: "foo", value: 1, with: union.sum())
+      |> insert_with(key: "bar", value: 2, with: union.sum())
+      |> insert_with(key: "foo", value: 3, with: union.sum())
       |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 4)]
@@ -807,11 +780,11 @@ test insert_with_2() {
 
 test insert_with_3() {
   let with =
-    fn(k, a, _b) {
+    fn(k, a, _b, keep, discard) {
       if k == "foo" {
-        Some(a)
+        keep(a)
       } else {
-        None
+        discard()
       }
     }
 
@@ -1038,23 +1011,15 @@ test union_4() {
 pub fn union_with(
   left: Dict<key, value>,
   right: Dict<key, value>,
-  with: fn(ByteArray, value, value) -> Option<value>,
-) -> Dict<key, value> {
-  Dict { inner: do_union_with(left.inner, right.inner, with) }
-}
-
-pub fn union_with_alt(
-  left: Dict<key, value>,
-  right: Dict<key, value>,
   with: UnionStrategy<ByteArray, value>,
 ) -> Dict<key, value> {
-  Dict { inner: do_union_with_alt(left.inner, right.inner, with) }
+  Dict { inner: do_union_with(left.inner, right.inner, with) }
 }
 
 fn do_union_with(
   left: Pairs<ByteArray, value>,
   right: Pairs<ByteArray, value>,
-  with: fn(ByteArray, value, value) -> Option<value>,
+  with: UnionStrategy<ByteArray, value>,
 ) -> Pairs<ByteArray, value> {
   when left is {
     [] -> right
@@ -1063,43 +1028,7 @@ fn do_union_with(
   }
 }
 
-fn do_union_with_alt(
-  left: Pairs<ByteArray, value>,
-  right: Pairs<ByteArray, value>,
-  with: UnionStrategy<ByteArray, value>,
-) -> Pairs<ByteArray, value> {
-  when left is {
-    [] -> right
-    [Pair(k, v), ..rest] ->
-      do_union_with_alt(rest, do_insert_with_alt(right, k, v, with), with)
-  }
-}
-
 fn do_insert_with(
-  self: Pairs<ByteArray, value>,
-  key k: ByteArray,
-  value v: value,
-  with: fn(ByteArray, value, value) -> Option<value>,
-) -> Pairs<ByteArray, value> {
-  when self is {
-    [] -> [Pair(k, v)]
-    [Pair(k2, v2), ..rest] ->
-      if builtin.less_than_bytearray(k, k2) {
-        [Pair(k, v), ..self]
-      } else {
-        if k == k2 {
-          when with(k, v, v2) is {
-            Some(combined) -> [Pair(k, combined), ..rest]
-            None -> rest
-          }
-        } else {
-          [Pair(k2, v2), ..do_insert_with(rest, k, v, with)]
-        }
-      }
-  }
-}
-
-fn do_insert_with_alt(
   self: Pairs<ByteArray, value>,
   key k: ByteArray,
   value v: value,
@@ -1120,7 +1049,7 @@ fn do_insert_with_alt(
             fn() { rest },
           )
         } else {
-          [Pair(k2, v2), ..do_insert_with_alt(rest, k, v, with)]
+          [Pair(k2, v2), ..do_insert_with(rest, k, v, with)]
         }
       }
   }
@@ -1136,7 +1065,7 @@ test union_with_1() {
       |> insert(bar, 42)
       |> insert(foo, 1337)
 
-  let result = union_with(left, right, with: fn(_, l, r) { Some(l + r) })
+  let result = union_with(left, right, with: union.sum())
 
   result == from_pairs([Pair(foo, 1351), Pair(bar, 42)])
 }
