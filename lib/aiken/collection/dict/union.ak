@@ -3,7 +3,7 @@ pub type UnionStrategy<key, value> =
   fn(key, value, value, KeepValue<key, value>, DiscardValue<key, value>) ->
     Pairs<key, value>
 
-/// A callback to keep a combined valueat a given key
+/// A callback to keep a combined value at a given key
 pub type KeepValue<key, value> =
   fn(value) -> Pairs<key, value>
 
