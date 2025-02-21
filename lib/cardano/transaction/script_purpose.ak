@@ -32,9 +32,9 @@ pub fn compare(left: ScriptPurpose, right: ScriptPurpose) -> Ordering {
         _ -> Less
       }
 
-    Publish(left, _) ->
+    Publish { at: left, .. } ->
       when right is {
-        Publish(right, _) -> int.compare(left, right)
+        Publish { at: right, .. } -> int.compare(left, right)
         Spend(_) | Mint(_) | Withdraw(_) -> Greater
         _ -> Less
       }
@@ -42,13 +42,13 @@ pub fn compare(left: ScriptPurpose, right: ScriptPurpose) -> Ordering {
     Vote(left) ->
       when right is {
         Vote(right) -> voter.compare(left, right)
-        Propose(..) -> Less
+        Propose { .. } -> Less
         _ -> Greater
       }
 
-    Propose(left, _) ->
+    Propose { at: left, .. } ->
       when right is {
-        Propose(right, _) -> int.compare(left, right)
+        Propose { at: right, .. } -> int.compare(left, right)
         _ -> Greater
       }
   }
