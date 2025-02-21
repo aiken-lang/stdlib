@@ -13,6 +13,7 @@
 //// > [`dict.from_ascending_list`](#from_ascending_list).
 
 use aiken/builtin
+use aiken/collection/dict/union.{UnionStrategy}
 
 /// An opaque `Dict`. The type is opaque because the module maintains some
 /// invariant, namely: there's only one occurrence of a given key in the dictionary.
@@ -755,16 +756,14 @@ pub fn insert_with_alt(
   self: Dict<key, value>,
   key k: ByteArray,
   value v: value,
-  with: fn(ByteArray, value, value) ->
-    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
-      Pairs<ByteArray, value>,
+  with: UnionStrategy<ByteArray, value>,
 ) -> Dict<key, value> {
   Dict {
     inner: do_insert_with_alt(
       self.inner,
       k,
       v,
-      fn(k, v1, v2) { with(k, v2, v1) },
+      fn(k, v1, v2, some, none) { with(k, v2, v1, some, none) },
     ),
   }
 }
@@ -783,13 +782,10 @@ test insert_with_1() {
 }
 
 test insert_with_alt_1() {
-  let sum =
-    fn(_k, a, b) { fn(som, _non) { som(a + b) } }
-
   let result =
     empty
-      |> insert_with_alt(key: "foo", value: 1, with: sum)
-      |> insert_with_alt(key: "bar", value: 2, with: sum)
+      |> insert_with_alt(key: "foo", value: 1, with: union.sum())
+      |> insert_with_alt(key: "bar", value: 2, with: union.sum())
       |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
@@ -1050,9 +1046,7 @@ pub fn union_with(
 pub fn union_with_alt(
   left: Dict<key, value>,
   right: Dict<key, value>,
-  with: fn(ByteArray, value, value) ->
-    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
-      Pairs<ByteArray, value>,
+  with: UnionStrategy<ByteArray, value>,
 ) -> Dict<key, value> {
   Dict { inner: do_union_with_alt(left.inner, right.inner, with) }
 }
@@ -1072,9 +1066,7 @@ fn do_union_with(
 fn do_union_with_alt(
   left: Pairs<ByteArray, value>,
   right: Pairs<ByteArray, value>,
-  with: fn(ByteArray, value, value) ->
-    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
-      Pairs<ByteArray, value>,
+  with: UnionStrategy<ByteArray, value>,
 ) -> Pairs<ByteArray, value> {
   when left is {
     [] -> right
@@ -1111,9 +1103,7 @@ fn do_insert_with_alt(
   self: Pairs<ByteArray, value>,
   key k: ByteArray,
   value v: value,
-  with: fn(ByteArray, value, value) ->
-    fn(fn(value) -> Pairs<ByteArray, value>, fn() -> Pairs<ByteArray, value>) ->
-      Pairs<ByteArray, value>,
+  with: UnionStrategy<ByteArray, value>,
 ) -> Pairs<ByteArray, value> {
   when self is {
     [] -> [Pair(k, v)]
@@ -1122,7 +1112,10 @@ fn do_insert_with_alt(
         [Pair(k, v), ..self]
       } else {
         if k == k2 {
-          with(k, v, v2)(
+          with(
+            k,
+            v,
+            v2,
             fn(combined) { [Pair(k, combined), ..rest] },
             fn() { rest },
           )
