@@ -1,5 +1,6 @@
 use aiken/builtin
 use aiken/collection/dict.{Dict, from_ascending_pairs_with}
+use aiken/collection/dict/union
 use aiken/collection/list
 use aiken/crypto.{Blake2b_224, Hash, Script}
 use aiken/option
@@ -77,14 +78,7 @@ pub fn from_asset_list(xs: Pairs<PolicyId, Pairs<AssetName, Int>>) -> Value {
           expect Pair(p, [_, ..] as x) = inner
           x
             |> from_ascending_pairs_with(fn(v) { v != 0 })
-            |> dict.insert_with_alt(
-                acc,
-                p,
-                _,
-                fn(_, _, _) {
-                  fail @"Duplicate policy in the asset list."
-                },
-              )
+            |> dict.insert_with_alt(acc, p, _, union.expect_no_duplicate())
         },
       )
     |> Value
@@ -555,30 +549,19 @@ pub fn add(
     self
   } else {
     let helper =
-      fn(_, left, _right) {
-        fn(som, non) {
-          let inner_result =
-            dict.insert_with_alt(
-              left,
-              asset_name,
-              quantity,
-              fn(_k, ql, qr) {
-                fn(som, non) {
-                  let q = ql + qr
-                  if q == 0 {
-                    non()
-                  } else {
-                    som(q)
-                  }
-                }
-              },
-            )
+      fn(_, left, _right, keep, discard) {
+        let inner_result =
+          dict.insert_with_alt(
+            left,
+            asset_name,
+            quantity,
+            union.sum_if_non_zero(),
+          )
 
-          if dict.is_empty(inner_result) {
-            non()
-          } else {
-            som(inner_result)
-          }
+        if dict.is_empty(inner_result) {
+          discard()
+        } else {
+          keep(inner_result)
         }
       }
 
@@ -638,28 +621,12 @@ pub fn merge(left v0: Value, right v1: Value) -> Value {
     dict.union_with_alt(
       v0.inner,
       v1.inner,
-      fn(_, a0, a1) {
-        fn(som, non) {
-          let result =
-            dict.union_with_alt(
-              a0,
-              a1,
-              fn(_, q0, q1) {
-                fn(som, non) {
-                  let q = q0 + q1
-                  if q == 0 {
-                    non()
-                  } else {
-                    som(q)
-                  }
-                }
-              },
-            )
-          if dict.is_empty(result) {
-            non()
-          } else {
-            som(result)
-          }
+      fn(_, a0, a1, keep, discard) {
+        let result = dict.union_with_alt(a0, a1, union.sum_if_non_zero())
+        if dict.is_empty(result) {
+          discard()
+        } else {
+          keep(result)
         }
       },
     ),
