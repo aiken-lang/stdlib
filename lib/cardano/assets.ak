@@ -78,7 +78,7 @@ pub fn from_asset_list(xs: Pairs<PolicyId, Pairs<AssetName, Int>>) -> Value {
           expect Pair(p, [_, ..] as x) = inner
           x
             |> from_ascending_pairs_with(fn(v) { v != 0 })
-            |> dict.insert_with_alt(acc, p, _, union.expect_no_duplicate())
+            |> dict.insert_with(acc, p, _, union.expect_no_duplicate())
         },
       )
     |> Value
@@ -551,12 +551,7 @@ pub fn add(
     let helper =
       fn(_, left, _right, keep, discard) {
         let inner_result =
-          dict.insert_with_alt(
-            left,
-            asset_name,
-            quantity,
-            union.sum_if_non_zero(),
-          )
+          dict.insert_with(left, asset_name, quantity, union.sum_if_non_zero())
 
         if dict.is_empty(inner_result) {
           discard()
@@ -566,7 +561,7 @@ pub fn add(
       }
 
     Value(
-      dict.insert_with_alt(
+      dict.insert_with(
         self.inner,
         policy_id,
         dict.from_ascending_pairs([Pair(asset_name, quantity)]),
@@ -618,11 +613,11 @@ test add_5() {
 /// Combine two `Value` together.
 pub fn merge(left v0: Value, right v1: Value) -> Value {
   Value(
-    dict.union_with_alt(
+    dict.union_with(
       v0.inner,
       v1.inner,
       fn(_, a0, a1, keep, discard) {
-        let result = dict.union_with_alt(a0, a1, union.sum_if_non_zero())
+        let result = dict.union_with(a0, a1, union.sum_if_non_zero())
         if dict.is_empty(result) {
           discard()
         } else {
