@@ -11,6 +11,7 @@
 //// This module ensures that all operations respect the properties of the BLS12-381 curve and the mathematical structure of the G1 group.
 
 use aiken/builtin
+use aiken/crypto/bitwise.{State}
 use aiken/crypto/bls12_381/scalar.{Scalar}
 
 /// The compressed generator of the G1 group of the BLS12-381 curve.
@@ -95,12 +96,12 @@ test sub_1() {
 
 /// Exponentiates a point in the G1 group with a `scalar`.
 /// This operation is equivalent to the repeated addition of the point with itself `e` times.
-pub fn scale(point, e: Scalar) {
+pub fn scale(point, e: State<Scalar>) {
   builtin.bls12_381_g1_scalar_mul(scalar.to_int(e), point)
 }
 
 test scale_1() {
-  expect Some(x) = scalar.new(2)
+  let x = scalar.from_int(2)
   builtin.bls12_381_g1_add(generator, generator) == scale(generator, x)
 }
 
