@@ -1,4 +1,4 @@
-use aiken/math/bitwise.{add_bits256, bits256_to_intermediary, to_bits256}
+use aiken/crypto/int256.{add_bytes, from_bytes, to_bytes}
 
 test equal_pad_for_addition() {
   let a: ByteArray = #"acab"
@@ -6,9 +6,9 @@ test equal_pad_for_addition() {
 
   let x =
     a
-      |> bits256_to_intermediary
-      |> add_bits256(b)
-      |> to_bits256
+      |> from_bytes
+      |> add_bytes(b)
+      |> to_bytes
 
   x == #"00000000000000000000000000000000000000000000000000000000000177a9"
 }
@@ -19,9 +19,9 @@ test unequal_pad_for_addition() {
 
   let x =
     a
-      |> bits256_to_intermediary
-      |> add_bits256(b)
-      |> to_bits256
+      |> from_bytes
+      |> add_bytes(b)
+      |> to_bytes
 
   x == #"0000000000000000000000000000000000000000000000000000acabbef0c5cc"
 }
