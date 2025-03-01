@@ -1,10 +1,10 @@
 use aiken/builtin
 use aiken/collection/dict.{Dict, from_ascending_pairs_with}
-use aiken/collection/dict/union as dict_union
+use aiken/collection/dict/strategy as dict_strategy
 use aiken/collection/list
 use aiken/crypto.{Blake2b_224, Hash, Script}
 use aiken/option
-use cardano/assets/union
+use cardano/assets/strategy.{FlattenStrategy}
 
 /// Lovelace is now a type wrapper for Int.
 pub type Lovelace =
@@ -79,7 +79,7 @@ pub fn from_asset_list(xs: Pairs<PolicyId, Pairs<AssetName, Int>>) -> Value {
           expect Pair(p, [_, ..] as x) = inner
           x
             |> from_ascending_pairs_with(fn(v) { v != 0 })
-            |> dict.insert_with(acc, p, _, dict_union.expect_no_duplicate())
+            |> dict.insert_with(acc, p, _, dict_strategy.expect_no_duplicate())
         },
       )
     |> Value
@@ -556,7 +556,7 @@ pub fn add(
             left,
             asset_name,
             quantity,
-            dict_union.sum_if_non_zero(),
+            dict_strategy.sum_if_non_zero(),
           )
 
         if dict.is_empty(inner_result) {
@@ -623,7 +623,7 @@ pub fn merge(left v0: Value, right v1: Value) -> Value {
       v0.inner,
       v1.inner,
       fn(_, a0, a1, keep, discard) {
-        let result = dict.union_with(a0, a1, dict_union.sum_if_non_zero())
+        let result = dict.union_with(a0, a1, dict_strategy.sum_if_non_zero())
         if dict.is_empty(result) {
           discard()
         } else {
@@ -793,10 +793,7 @@ pub fn flatten(self: Value) -> List<(PolicyId, AssetName, Int)> {
 /// Flatten a `Value` as a list of results, possibly discarding some along the way.
 ///
 /// When the transform function returns `None`, the result is discarded altogether.
-pub fn flatten_with(
-  self: Value,
-  with: union.UnionStrategy<result>,
-) -> List<result> {
+pub fn flatten_with(self: Value, with: FlattenStrategy<result>) -> List<result> {
   dict.foldr(
     self.inner,
     [],
@@ -819,7 +816,7 @@ pub fn flatten_with(
 }
 
 test flatten_with_1() {
-  flatten_with(zero, union.triple()) == []
+  flatten_with(zero, strategy.triple()) == []
 }
 
 test flatten_with_2() {

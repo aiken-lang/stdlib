@@ -13,7 +13,7 @@
 //// > [`dict.from_ascending_list`](#from_ascending_list).
 
 use aiken/builtin
-use aiken/collection/dict/union.{UnionStrategy}
+use aiken/collection/dict/strategy.{UnionStrategy}
 
 /// An opaque `Dict`. The type is opaque because the module maintains some
 /// invariant, namely: there's only one occurrence of a given key in the dictionary.
@@ -162,7 +162,7 @@ fn do_from_pairs(xs: Pairs<ByteArray, value>) -> Pairs<ByteArray, value> {
   when xs is {
     [] -> []
     [Pair(k, v), ..rest] ->
-      do_insert_with(do_from_pairs(rest), k, v, union.keep_left())
+      do_insert_with(do_from_pairs(rest), k, v, strategy.keep_left())
   }
 }
 
@@ -734,9 +734,9 @@ test insert_2() {
 ///
 /// let result =
 ///   dict.empty
-///     |> dict.insert_with(key: "a", value: 1, with: union.sum())
-///     |> dict.insert_with(key: "b", value: 2, with: union.sum())
-///     |> dict.insert_with(key: "a", value: 3, with: union.sum())
+///     |> dict.insert_with(key: "a", value: 1, with: strategy.sum())
+///     |> dict.insert_with(key: "b", value: 2, with: strategy.sum())
+///     |> dict.insert_with(key: "a", value: 3, with: strategy.sum())
 ///     |> dict.to_pairs()
 ///
 /// result == [Pair("a", 4), Pair("b", 2)]
@@ -760,8 +760,8 @@ pub fn insert_with(
 test insert_with_1() {
   let result =
     empty
-      |> insert_with(key: "foo", value: 1, with: union.sum())
-      |> insert_with(key: "bar", value: 2, with: union.sum())
+      |> insert_with(key: "foo", value: 1, with: strategy.sum())
+      |> insert_with(key: "bar", value: 2, with: strategy.sum())
       |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 1)]
@@ -770,9 +770,9 @@ test insert_with_1() {
 test insert_with_2() {
   let result =
     empty
-      |> insert_with(key: "foo", value: 1, with: union.sum())
-      |> insert_with(key: "bar", value: 2, with: union.sum())
-      |> insert_with(key: "foo", value: 3, with: union.sum())
+      |> insert_with(key: "foo", value: 1, with: strategy.sum())
+      |> insert_with(key: "bar", value: 2, with: strategy.sum())
+      |> insert_with(key: "foo", value: 3, with: strategy.sum())
       |> to_pairs()
 
   result == [Pair("bar", 2), Pair("foo", 4)]
@@ -1065,7 +1065,7 @@ test union_with_1() {
       |> insert(bar, 42)
       |> insert(foo, 1337)
 
-  let result = union_with(left, right, with: union.sum())
+  let result = union_with(left, right, with: strategy.sum())
 
   result == from_pairs([Pair(foo, 1351), Pair(bar, 42)])
 }

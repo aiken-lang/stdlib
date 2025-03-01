@@ -1,5 +1,21 @@
 # Changelog
 
+## v3.0.0 - UNRELEASED
+
+### Added
+
+- [`aiken/collection/list.{foldl2}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#foldl2): to left-fold over lists while accumulating two separate results. This is reasonably faster than constructing a list of pairs.
+
+- [`aiken/collection/list.{foldr2}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#foldr2): to right-fold over lists while accumulating two separate results. This is reasonably faster than constructing a list of pairs.
+
+### Changed
+
+- <sup>⚠️ BREAKING-CHANGE ⚠️</sup> [`aiken/collection/dict.{insert_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#insert_with), [`aiken/collection/dict.{union_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#union_with) and [`cardano/assets.{flatten_with}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#flatten_with) have a reworked API using two callbacks instead of a single callback returning `Option`. These gives them better performances, alongside a few other functions using them internally. To ease the construction of the callbacks, new modules with callback strategies have been created:
+    - [`aiken/collection/dict/strategy`](https://aiken-lang.github.io/stdlib/aiken/collection/dict/strategy.html)
+    - [`cardano/assets/strategy`](https://aiken-lang.github.io/stdlib/cardano/assets/strategy.html)
+
+
+
 ## v2.2.0 - 2024-12-13
 
 ### Added

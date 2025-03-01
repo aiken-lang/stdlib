@@ -1,7 +1,7 @@
 use aiken/crypto.{Blake2b_224, Hash, Script}
 
-/// A strategy for combining two values in a dictionnary that belong to the same key.
-pub type UnionStrategy<result> =
+/// A strategy for flattening an asset list.
+pub type FlattenStrategy<result> =
   fn(
     Hash<Blake2b_224, Script>,
     ByteArray,
@@ -19,8 +19,16 @@ pub type KeepResult<result> =
 pub type DiscardResult<result> =
   fn() -> List<result>
 
-/// Combine values by keeping them in a 3-tuple.
-pub fn triple() -> UnionStrategy<(Hash<Blake2b_224, Script>, ByteArray, Int)> {
+// ### Flatten strategies
+
+/// Keep all assets, combining them as a 3-tuple.
+///
+/// ```aiken
+/// fn(policy_id, asset_name, quantity, keep, _discard) {
+///   keep((policy_id, asset_name, quantity))
+/// }
+/// ```
+pub fn triple() -> FlattenStrategy<(Hash<Blake2b_224, Script>, ByteArray, Int)> {
   fn(policy_id, asset_name, quantity, keep, _discard) {
     keep((policy_id, asset_name, quantity))
   }
