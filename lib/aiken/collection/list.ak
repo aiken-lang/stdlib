@@ -1203,9 +1203,30 @@ pub fn foldl(self: List<a>, zero: b, with: fn(a, b) -> b) -> b {
   }
 }
 
-type Fold2<a, b, result> =
+/// A function callback to accumulate two returned values at once. See also [`foldl2`](#foldl2) and [`foldr2`](#foldr2) about usage.
+pub type Fold2<a, b, result> =
   fn(a, b) -> result
 
+/// Reduce a list from left to right, while accumulating two results. This is
+/// faster (albeit equivalent) than accumulating both results in a `Pair` or tuple.
+///
+/// > [!TIP]
+/// > Using [`backpassing`](https://aiken-lang.org/language-tour/functions#backpassing-) to ease readability is a good idea.
+///
+/// ```aiken
+/// let len, sum <-
+///    foldl2(
+///      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+///      0,
+///      0,
+///      fn(n, len, sum, return) { return(len + 1, sum + n) },
+///    )
+///
+/// and {
+///   len == 10,
+///   sum == 55,
+/// }
+/// ```
 pub fn foldl2(
   self: List<elem>,
   zero_a: a,
@@ -1213,17 +1234,12 @@ pub fn foldl2(
   with: fn(elem, a, b, Fold2<a, b, result>) -> result,
   return: Fold2<a, b, result>,
 ) -> result {
-  do_foldl2(self, with, return)(zero_a, zero_b)
-}
-
-fn do_foldl2(
-  self: List<elem>,
-  with: fn(elem, a, b, Fold2<a, b, result>) -> result,
-  return: Fold2<a, b, result>,
-) -> Fold2<a, b, result> {
   when self is {
-    [] -> return
-    [x, ..xs] -> do_foldl2(xs, with, fn(a, b) { with(x, a, b, return) })
+    [] -> return(zero_a, zero_b)
+    [x, ..xs] -> {
+      let a, b <- with(x, zero_a, zero_b)
+      foldl2(xs, a, b, with, return)
+    }
   }
 }
 
@@ -1336,6 +1352,65 @@ test foldr_2() {
 
 test foldr_3() {
   foldr([1, 2, 3, 4], [], fn(x, xs) { [x, ..xs] }) == [1, 2, 3, 4]
+}
+
+/// Reduce a list from right to left, while accumulating two results. This is
+/// faster (albeit equivalent) than accumulating both results in a `Pair` or tuple.
+///
+/// > [!TIP]
+/// > Using [`backpassing`](https://aiken-lang.org/language-tour/functions#backpassing-) to ease readability is a good idea.
+///
+/// ```aiken
+/// let len, sum <-
+///    foldr2(
+///      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+///      0,
+///      0,
+///      fn(n, len, sum, return) { return(len + 1, sum + n) },
+///    )
+///
+/// and {
+///   len == 10,
+///   sum == 55,
+/// }
+/// ```
+pub fn foldr2(
+  self: List<elem>,
+  zero_a: a,
+  zero_b: b,
+  with: fn(elem, a, b, Fold2<a, b, result>) -> result,
+  return: Fold2<a, b, result>,
+) -> result {
+  do_foldr2(self, with, return)(zero_a, zero_b)
+}
+
+fn do_foldr2(
+  self: List<elem>,
+  with: fn(elem, a, b, Fold2<a, b, result>) -> result,
+  return: Fold2<a, b, result>,
+) -> Fold2<a, b, result> {
+  when self is {
+    [] -> return
+    [x, ..xs] -> do_foldr2(xs, with, fn(a, b) { with(x, a, b, return) })
+  }
+}
+
+test foldr2_optimized() {
+  let
+    len,
+    sum,
+  <-
+    foldr2(
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      0,
+      0,
+      fn(n, len, sum, return) { return(len + 1, sum + n) },
+    )
+
+  and {
+    len == 10,
+    sum == 55,
+  }
 }
 
 /// Like [`foldr`](#foldr), but also provides the position (0-based) of the elements when iterating.
