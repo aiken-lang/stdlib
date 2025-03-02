@@ -100,7 +100,7 @@ pub fn scale(
 }
 
 /// A faster version of `scale` for the case where the exponent is a power of two.
-/// That is, the exponent `e = 2^k` for some non-negative integer `k`. Which is used alot in zk-SNARKs.
+/// That is, the exponent $e = 2^k$ for some non-negative integer $k$. Which is used a lot in zk-SNARKs.
 pub fn scale2(self: State<t>, k: Int, mul: fn(State<t>, State<t>) -> State<t>) {
   if k < 0 {
     zero

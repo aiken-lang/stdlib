@@ -1,4 +1,6 @@
-use aiken/crypto/int256.{add_bytes, from_bytes, to_bytes}
+use aiken/crypto/int256.{
+  add_bytes, from_bytearray_big_endian, to_bytearray_big_endian,
+}
 
 test equal_pad_for_addition() {
   let a: ByteArray = #"acab"
@@ -6,9 +8,9 @@ test equal_pad_for_addition() {
 
   let x =
     a
-      |> from_bytes
+      |> from_bytearray_big_endian
       |> add_bytes(b)
-      |> to_bytes
+      |> to_bytearray_big_endian
 
   x == #"00000000000000000000000000000000000000000000000000000000000177a9"
 }
@@ -19,9 +21,9 @@ test unequal_pad_for_addition() {
 
   let x =
     a
-      |> from_bytes
+      |> from_bytearray_big_endian
       |> add_bytes(b)
-      |> to_bytes
+      |> to_bytearray_big_endian
 
   x == #"0000000000000000000000000000000000000000000000000000acabbef0c5cc"
 }
