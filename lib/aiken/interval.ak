@@ -592,6 +592,74 @@ test is_hereafter_10() {
   )
 }
 
+/// Check whether the interval ends on or before the point.
+///
+/// ```aiken
+/// interval.is_herebefore(interval.before(10), 15) == True
+/// interval.is_herebefore(interval.before(10), 10) == True
+/// interval.is_herebefore(interval.before(10), 5) == False
+/// interval.is_herebefore(interval.between(10, 20), 30) == True
+/// interval.is_herebefore(interval.between(10, 20), 5) == False
+pub fn is_herebefore(self: Interval<Int>, point: Int) -> Bool {
+  when self.upper_bound.bound_type is {
+    Finite(hi) -> hi <= point
+    PositiveInfinity -> False
+    NegativeInfinity -> True
+  }
+}
+
+test is_herebefore_1() {
+  is_herebefore(before(10), 15)
+}
+
+test is_herebefore_2() {
+  is_herebefore(before(10), 10)
+}
+
+test is_herebefore_3() {
+  !is_herebefore(before(10), 5)
+}
+
+test is_herebefore_4() {
+  is_herebefore(between(10, 20), 30)
+}
+
+test is_herebefore_5() {
+  !is_herebefore(between(10, 20), 5)
+}
+
+test is_herebefore_6() {
+  is_herebefore(entirely_before(10), 10)
+}
+
+test is_herebefore_7() {
+  !is_herebefore(after(10), 15)
+}
+
+test is_herebefore_8() {
+  !is_herebefore(after(10), 5)
+}
+
+test is_herebefore_9() {
+  !is_herebefore(entirely_after(10), 5)
+}
+
+test is_herebefore_10() {
+  is_herebefore(
+    Interval {
+      lower_bound: IntervalBound {
+        bound_type: NegativeInfinity,
+        is_inclusive: True,
+      },
+      upper_bound: IntervalBound {
+        bound_type: NegativeInfinity,
+        is_inclusive: False,
+      },
+    },
+    1,
+  )
+}
+
 // ## Combining
 
 /// Computes the smallest interval containing the two given intervals, if any
