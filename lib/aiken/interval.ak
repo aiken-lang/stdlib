@@ -394,7 +394,8 @@ pub fn is_entirely_after(self: Interval<Int>, point: Int) -> Bool {
       } else {
         point <= low
       }
-    _ -> False
+    NegativeInfinity -> False
+    PositiveInfinity -> True
   }
 }
 
@@ -434,6 +435,22 @@ test is_entirely_after_9() {
   !is_entirely_after(entirely_before(10), 5)
 }
 
+test is_entirely_after_10() {
+  is_entirely_after(
+    Interval {
+      lower_bound: IntervalBound {
+        bound_type: PositiveInfinity,
+        is_inclusive: True,
+      },
+      upper_bound: IntervalBound {
+        bound_type: PositiveInfinity,
+        is_inclusive: False,
+      },
+    },
+    1,
+  )
+}
+
 /// Check whether the interval is entirely before the point "a"
 ///
 /// ```aiken
@@ -450,7 +467,8 @@ pub fn is_entirely_before(self: Interval<Int>, point: Int) -> Bool {
       } else {
         hi <= point
       }
-    _ -> False
+    PositiveInfinity -> False
+    NegativeInfinity -> True
   }
 }
 
@@ -488,6 +506,22 @@ test is_entirely_before_8() {
 
 test is_entirely_before_9() {
   !is_entirely_before(entirely_after(10), 5)
+}
+
+test is_entirely_before_10() {
+  is_entirely_before(
+    Interval {
+      lower_bound: IntervalBound {
+        bound_type: NegativeInfinity,
+        is_inclusive: True,
+      },
+      upper_bound: IntervalBound {
+        bound_type: NegativeInfinity,
+        is_inclusive: False,
+      },
+    },
+    1,
+  )
 }
 
 // ## Combining
