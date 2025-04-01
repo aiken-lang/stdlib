@@ -1,9 +1,10 @@
 use aiken/builtin
 use aiken/crypto/bitwise.{one, zero}
 use aiken/crypto/int224.{
-  add, add_bytes, add_int, from_bytes, from_bytes_little_endian, from_int,
-  hash224_field, mul, mul_bytes, mul_int, neg, scale, scale2, sub, sub_bytes,
-  sub_int, to_bytes, to_bytes_little_endian, to_int,
+  add, add_bytes, add_int, field, from_bytearray_big_endian,
+  from_bytearray_little_endian, from_int, mul, mul_bytes, mul_int, neg, scale,
+  scale2, sub, sub_bytes, sub_int, to_bytearray_big_endian,
+  to_bytearray_little_endian, to_int,
 }
 
 test equal_pad_for_addition() {
@@ -12,9 +13,9 @@ test equal_pad_for_addition() {
 
   let x =
     a
-      |> from_bytes
+      |> from_bytearray_big_endian
       |> add_bytes(b)
-      |> to_bytes
+      |> to_bytearray_bigg_endian
 
   x == #"000000000000000000000000000000000000000000000000000177a9"
 }
@@ -25,9 +26,9 @@ test unequal_pad_for_addition() {
 
   let x =
     a
-      |> from_bytes
+      |> from_bytearray_big_endian
       |> add_bytes(b)
-      |> to_bytes
+      |> to_bytearray_big_endian
 
   x == #"00000000000000000000000000000000000000000000acabbef0c5cc"
 }
@@ -36,18 +37,18 @@ test unequal_pad_for_addition() {
 
 test from_int_1() {
   and {
-    ( from_int(-1) |> to_int ) == hash224_field - 1,
-    ( from_int(hash224_field) |> to_int ) == 0,
+    ( from_int(-1) |> to_int ) == field - 1,
+    ( from_int(field) |> to_int ) == 0,
     ( from_int(834884848) |> to_int ) == 834884848,
   }
 }
 
 test from_bytes_big_endian_1() {
-  ( from_bytes(#"ffff00") |> to_int ) == 16776960
+  ( from_bytearray_big_endian(#"ffff00") |> to_int ) == 16776960
 }
 
 test from_bytes_little_endian_1() {
-  ( from_bytes_little_endian(#"ffff00") |> to_int ) == 65535
+  ( from_bytearray_little_endian(#"ffff00") |> to_int ) == 65535
 }
 
 // ## Tests for modifying Hash224 elements
@@ -62,7 +63,7 @@ test scale_1() {
     ( x |> scale(2) |> to_int ) == 697032709419983104,
     ( x |> scale(3) |> to_int ) == 581942047655130761945608192,
     (
-      from_int(hash224_field - 5)
+      from_int(field - 5)
         |> scale(200)
         |> to_int
     ) != 0,
@@ -84,7 +85,7 @@ test scale2_1() {
 
 test add_1() {
   let x = from_int(834884848)
-  let y = from_int(hash224_field - 1)
+  let y = from_int(field - 1)
   let z = from_int(3)
 
   and {
@@ -95,7 +96,7 @@ test add_1() {
 }
 
 test add_overflow_1() {
-  let a = from_int(hash224_field - 1)
+  let a = from_int(field - 1)
   let b = from_int(1)
 
   ( add(a, b) |> to_int ) == 0
@@ -106,15 +107,15 @@ test mul_1() {
   and {
     mul(x, x) == from_int(697032709419983104),
     mul(zero, x) == zero,
-    mul(from_int(hash224_field - 1), from_int(2)) == from_int(hash224_field - 2),
+    mul(from_int(field - 1), from_int(2)) == from_int(field - 2),
   }
 }
 
 test neg_1() {
   and {
-    neg(from_int(834884848)) == from_int(hash224_field - 834884848),
+    neg(from_int(834884848)) == from_int(field - 834884848),
     neg(zero) == zero,
-    neg(one) == from_int(hash224_field - 1),
+    neg(one) == from_int(field - 1),
   }
 }
 
@@ -123,7 +124,7 @@ test sub_1() {
 
   and {
     (sub(x, x) == zero)?,
-    (sub(zero, from_int(5)) == from_int(hash224_field - 5))?,
+    (sub(zero, from_int(5)) == from_int(field - 5))?,
   }
 }
 
@@ -134,12 +135,15 @@ test to_int_1() {
 }
 
 test to_bytes_1() {
-  ( to_bytes(from_int(16777215)) |> builtin.slice_bytearray(25, 28, _) ) == #"ffffff"
+  (
+    to_bytearray_big_endian(from_int(16777215))
+      |> builtin.slice_bytearray(25, 28, _)
+  ) == #"ffffff"
 }
 
 test to_bytes_little_endian_1() {
   let value = 16777215
-  let bytes = to_bytes_little_endian(from_int(value))
+  let bytes = to_bytearray_little_endian(from_int(value))
   and {
     ( bytes |> builtin.slice_bytearray(0, 3, _) ) == #"ffffff",
     ( bytes |> builtin.bytearray_to_integer(False, _) ) == value,
@@ -188,11 +192,11 @@ test sub_underflow_1() {
   let a = from_int(0)
   let b = from_int(1)
 
-  ( sub(a, b) |> to_int ) == hash224_field - 1
+  ( sub(a, b) |> to_int ) == field - 1
 }
 
 test overflow_handling() {
-  let max = from_int(hash224_field - 1)
+  let max = from_int(field - 1)
   and {
     (add_int(max, 1) == zero)?,
     (( add_int(max, 2) |> to_int ) == 1)?,
@@ -203,7 +207,7 @@ test wraparound_behavior() {
   let x = from_int(10)
   let y = from_int(15)
   and {
-    ( sub(x, y) |> to_int ) == hash224_field - 5,
+    ( sub(x, y) |> to_int ) == field - 5,
     (add(sub(x, y), y) == x)?,
   }
 }
@@ -213,109 +217,130 @@ test from_bytes_tests() {
   let b = #"cafe"
 
   and {
-    ( from_bytes(a) |> to_int ) == 0xacabbeefface,
-    ( from_bytes(b) |> to_int ) == 0xcafe,
-    ( from_bytes_little_endian(a) |> to_int ) == 0xcefaefbeabac,
-    ( from_bytes_little_endian(b) |> to_int ) == 0xfeca,
+    ( from_bytearray_big_endian(a) |> to_int ) == 0xacabbeefface,
+    ( from_bytearray_big_endian(b) |> to_int ) == 0xcafe,
+    ( from_bytearray_little_endian(a) |> to_int ) == 0xcefaefbeabac,
+    ( from_bytearray_little_endian(b) |> to_int ) == 0xfeca,
   }
 }
 
 test add_tests() {
-  let a = from_bytes(#"acab")
-  let b = from_bytes(#"cafe")
+  let a = from_bytearray_big_endian(#"acab")
+  let b = from_bytearray_big_endian(#"cafe")
 
   and {
-    ( add(a, b) |> to_bytes |> builtin.slice_bytearray(25, 28, _) ) == #"0177a9",
-    add(from_int(0), from_bytes(#"01")) == from_bytes(#"01"),
+    (
+      add(a, b) |> to_bytearray_big_endian |> builtin.slice_bytearray(25, 28, _)
+    ) == #"0177a9",
+    add(from_int(0), from_bytearray_big_endian(#"01")) == from_bytearray_big_endian(
+      #"01",
+    ),
   }
 }
 
 test add_communitive() {
-  let a = from_bytes(#"acab")
-  let b = from_bytes(#"cafe")
+  let a = from_bytearray_big_endian(#"acab")
+  let b = from_bytearray_big_endian(#"cafe")
 
   add(a, b) == add(b, a)
 }
 
 test add_associativity() {
-  let a = from_bytes(#"0101")
-  let b = from_bytes(#"0202")
-  let c = from_bytes(#"0303")
+  let a = from_bytearray_big_endian(#"0101")
+  let b = from_bytearray_big_endian(#"0202")
+  let c = from_bytearray_big_endian(#"0303")
 
   add(add(a, b), c) == add(a, add(b, c))
 }
 
 test add_identity() {
-  let a = from_bytes(#"01")
+  let a = from_bytearray_big_endian(#"01")
 
   add(zero, a) == a
 }
 
 test add_bytes_tests() {
   let a = from_int(0)
-  let b = from_bytes(#"acab")
+  let b = from_bytearray_big_endian(#"acab")
 
   and {
-    ( add_bytes(a, #"cafe") |> to_bytes |> builtin.slice_bytearray(26, 28, _) ) == #"cafe",
-    ( add_bytes(b, #"cafe") |> to_bytes |> builtin.slice_bytearray(25, 28, _) ) == #"0177a9",
+    (
+      add_bytes(a, #"cafe")
+        |> to_bytearray_big_endian
+        |> builtin.slice_bytearray(26, 28, _)
+    ) == #"cafe",
+    (
+      add_bytes(b, #"cafe")
+        |> to_bytearray_big_endian
+        |> builtin.slice_bytearray(25, 28, _)
+    ) == #"0177a9",
   }
 }
 
 test sub_tests() {
-  let a = from_bytes(#"0177a9")
-  let b = from_bytes(#"cafe")
+  let a = from_bytearray_big_endian(#"0177a9")
+  let b = from_bytearray_big_endian(#"cafe")
 
   and {
-    ( sub(a, b) |> to_bytes |> builtin.slice_bytearray(26, 28, _) ) == #"acab",
     (
-      sub(from_bytes(#"77a9"), from_bytes(#"cafe"))
-        |> to_bytes
+      sub(a, b) |> to_bytearray_big_endian |> builtin.slice_bytearray(26, 28, _)
+    ) == #"acab",
+    (
+      sub(
+        from_bytearray_big_endian(#"77a9"),
+        from_bytearray_big_endian(#"cafe"),
+      )
+        |> to_bytearray_big_endian
         |> builtin.slice_bytearray(26, 28, _)
     ) == #"acab",
   }
 }
 
 test sub_identity() {
-  let a = from_bytes(#"10")
+  let a = from_bytearray_big_endian(#"10")
 
   sub(a, zero) == a
 }
 
 test mul_tests() {
-  let a = from_bytes(#"ffff")
-  let b = from_bytes(#"ffff")
+  let a = from_bytearray_big_endian(#"ffff")
+  let b = from_bytearray_big_endian(#"ffff")
 
-  ( mul(a, b) |> to_bytes |> builtin.slice_bytearray(24, 28, _) ) == #"fffe0001"
+  ( mul(a, b) |> to_bytearray_big_endian |> builtin.slice_bytearray(24, 28, _) ) == #"fffe0001"
 }
 
 test mul_communitive() {
-  let a = from_bytes(#"acab")
-  let b = from_bytes(#"cafe")
+  let a = from_bytearray_big_endian(#"acab")
+  let b = from_bytearray_big_endian(#"cafe")
 
   mul(a, b) == mul(b, a)
 }
 
 test mul_associativity() {
-  let a = from_bytes(#"33")
-  let b = from_bytes(#"44")
-  let c = from_bytes(#"55")
+  let a = from_bytearray_big_endian(#"33")
+  let b = from_bytearray_big_endian(#"44")
+  let c = from_bytearray_big_endian(#"55")
 
   mul(mul(a, b), c) == mul(a, mul(b, c))
 }
 
 test mul_identity() {
-  let a = from_bytes(#"acab")
+  let a = from_bytearray_big_endian(#"acab")
 
   mul(one, a) == a
 }
 
 test mul_bytes_tests() {
   let a = from_int(0)
-  let b = from_bytes(#"0002")
+  let b = from_bytearray_big_endian(#"0002")
 
   and {
     mul_bytes(a, #"cafe") == zero,
-    ( mul_bytes(b, #"0003") |> to_bytes |> builtin.slice_bytearray(26, 28, _) ) == #"0006",
+    (
+      mul_bytes(b, #"0003")
+        |> to_bytearray_big_endian
+        |> builtin.slice_bytearray(26, 28, _)
+    ) == #"0006",
   }
 }
 
@@ -324,7 +349,7 @@ test bytes_conversion_roundtrip() {
 
   and {
     (
-      to_bytes(from_bytes(original))
+      to_bytearray_big_endian(from_bytearray_big_endian(original))
         |> builtin.slice_bytearray(
             28 - builtin.length_of_bytearray(original),
             28,
@@ -332,7 +357,7 @@ test bytes_conversion_roundtrip() {
           )
     ) == original,
     (
-      to_bytes_little_endian(from_bytes_little_endian(original))
+      to_bytearray_little_endian(from_bytearray_little_endian(original))
         |> builtin.slice_bytearray(0, builtin.length_of_bytearray(original), _)
     ) == original,
   }
@@ -348,7 +373,7 @@ test operation_with_zero() {
 }
 
 test operation_with_large_numbers() {
-  let almost_field_size = from_int(hash224_field - 1)
+  let almost_field_size = from_int(field - 1)
   let large_num = from_int(0xffffffffffffffffffffff)
 
   and {
