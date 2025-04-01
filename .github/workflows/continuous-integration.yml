@@ -31,9 +31,9 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: 🧰 Install Aiken
-        uses: aiken-lang/setup-aiken@v1
+        uses: aiken-lang/setup-aiken@v1.0.3
         with:
-          version: v1.1.11
+          version: v1.1.15
 
       - name: 📝 Run fmt
         run: aiken fmt --check

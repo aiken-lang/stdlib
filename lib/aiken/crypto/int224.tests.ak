@@ -15,7 +15,7 @@ test equal_pad_for_addition() {
     a
       |> from_bytearray_big_endian
       |> add_bytes(b)
-      |> to_bytearray_bigg_endian
+      |> to_bytearray_big_endian
 
   x == #"000000000000000000000000000000000000000000000000000177a9"
 }
