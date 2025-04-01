@@ -1,3 +1,5 @@
+//// @hidden
+
 use aiken/builtin
 
 pub opaque type State<t> {
@@ -11,7 +13,7 @@ pub const one = State { inner: 1 }
 pub fn add_bits(field: Int, big_endian: Bool) {
   fn(state: State<t>, bytes: ByteArray) -> State<t> {
     builtin.bytearray_to_integer(big_endian, bytes)
-      |> builtin.add_integer(state.inner)
+      |> builtin.add_integer(state.inner, _)
       |> builtin.mod_integer(field)
       |> State
   }
@@ -36,7 +38,7 @@ pub fn add_state(field: Int) {
 pub fn sub_bits(field: Int, big_endian: Bool) {
   fn(state: State<t>, bytes: ByteArray) -> State<t> {
     builtin.bytearray_to_integer(big_endian, bytes)
-      |> builtin.subtract_integer(state.inner)
+      |> builtin.subtract_integer(state.inner, _)
       |> builtin.mod_integer(field)
       |> State
   }
@@ -61,7 +63,7 @@ pub fn sub_state(field: Int) {
 pub fn mul_bits(field: Int, big_endian: Bool) {
   fn(state: State<t>, bytes: ByteArray) -> State<t> {
     builtin.bytearray_to_integer(big_endian, bytes)
-      |> builtin.multiply_integer(state.inner)
+      |> builtin.multiply_integer(state.inner, _)
       |> builtin.mod_integer(field)
       |> State
   }
