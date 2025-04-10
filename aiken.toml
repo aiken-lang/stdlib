@@ -1,6 +1,6 @@
 name = "aiken-lang/stdlib"
 version = "main"
-compiler = "v1.1.11"
+compiler = "v1.1.15"
 plutus = "v3"
 description = "The Aiken Standard Library"
 

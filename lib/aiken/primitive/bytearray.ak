@@ -666,3 +666,15 @@ test starts_with_5() {
 test starts_with_6() {
   !starts_with("foo", "foo_")
 }
+
+pub fn and_bytes(left: ByteArray, right: ByteArray, pad_end: Bool) -> ByteArray {
+  builtin.and_bytearray(pad_end, left, right)
+}
+
+pub fn or_bytes(left: ByteArray, right: ByteArray, pad_end: Bool) -> ByteArray {
+  builtin.or_bytearray(pad_end, left, right)
+}
+
+pub fn xor_bytes(left: ByteArray, right: ByteArray, pad_end: Bool) -> ByteArray {
+  builtin.xor_bytearray(pad_end, left, right)
+}
