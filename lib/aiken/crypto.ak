@@ -59,13 +59,12 @@ pub type Hash<alg, a> =
 ///
 /// - [`Credential`](../cardano/address.html#Credential)
 /// - [`PolicyId`](../cardano/assets.html#PolicyId)
-///
-/// Note: there's no function to calculate blake2b-224 hash digests on-chain.
 pub opaque type Blake2b_224 {
   Blake2b_224
 }
 
 /// Compute the blake2b-224 hash digest (28 bytes) of some data.
+/// Minimum Plutus Version: 3
 pub fn blake2b_224(bytes: ByteArray) -> Hash<Blake2b_224, a> {
   builtin.blake2b_224(bytes)
 }
