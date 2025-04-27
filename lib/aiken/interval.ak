@@ -11,7 +11,62 @@
 //// From within a script, it isn't possible to know when exactly the script is
 //// executed, but we can reason about the interval bounds to validate pieces of
 //// logic.
+////
+//// ## Example
+////
+//// Let's consider an example and assume an auction with a bidding period over
+//// an interval $biddingPeriod = [start_{bid}, end_{bid})$.
+////
+//// - Bidders for the auction must be whitelisted by an administrator before the
+//// bidding period starts.
+////
+//// - Once the bidding period is over, the auction winner may collect its due by
+//// paying the agreed price.
+////
+//// This scenario identifies three periods:
+////
+//// ```
+////    pre-bidding            bidding            post-bidding
+//// -----------------[-----------------------)----------------->
+////              start_bid                end_bid
+//// ```
+////
+//// If we call $validityRange = [start_{tx}, end_{tx})$ the validity interval
+//// of transactions during each period, we must then have:
+////
+//// > [!TIP]
+//// > In Plutus V3, transaction validity ranges are always semi-open intervals, open in their upper bound.
+////
+//// 1. Pre-bidding: $end_{tx} \lt start_{bid}$
+////
+////    ```aiken
+////    validity_range |> interval.is_entirely_before(start_bid)
+////    ```
+////
+//// 2. Bidding: $validityRange \subseteq biddingPeriod$
+////
+////    ```aiken
+////    bidding_period |> interval.includes(validity_range)
+////    ```
+////
+////    or alternatively $start_{tx} \geq start_{bid}$ and $end_{tx} \lt end_{bid}$:
+////
+////    ```aiken
+////    and {
+////      bidding_period |> interval.contains(start_tx),
+////      bidding_period |> interval.contains(end_tx),
+////    }
+////    ```
+////
+//// 3. Post-bidding: $start_{tx} \gt end_{bid}$
+////
+////    ```aiken
+////    validity_range |> interval.is_entirely_after(end_bid)
+////    ```
 
+use aiken/primitive/string
+
+///
 /// A type to represent intervals of values. Interval are inhabited by an
 /// integer value representing  have a finite lower-bound and/or upper-bound.
 ///
@@ -57,7 +112,7 @@ pub type IntervalBoundType {
 
 // ## Constructing
 
-/// Create an interval that includes all values greater than the given bound. i.e [lower_bound, +INF)
+/// Create an interval that includes all values greater than the given bound. i.e $[lower_bound, +∞]$
 ///
 /// ```aiken
 /// interval.after(10) == Interval {
@@ -78,7 +133,7 @@ pub fn after(lower_bound: Int) -> Interval {
   }
 }
 
-/// Create an interval that includes all values after (and not including) the given bound. i.e (lower_bound, +INF)
+/// Create an interval that includes all values after (and not including) the given bound. i.e $(lower_bound, +∞]$
 ///
 /// ```aiken
 /// interval.entirely_after(10) == Interval {
@@ -99,7 +154,7 @@ pub fn entirely_after(lower_bound: Int) -> Interval {
   }
 }
 
-/// Create an interval that includes all values before (and including) the given bound. i.e (-INF, upper_bound]
+/// Create an interval that includes all values before (and including) the given bound. i.e $(-∞, upper_bound]$
 ///
 /// ```aiken
 /// interval.before(100) == Interval {
@@ -120,7 +175,7 @@ pub fn before(upper_bound: Int) -> Interval {
   }
 }
 
-/// Create an interval that includes all values before (and not including) the given bound. i.e (-INF, upper_bound)
+/// Create an interval that includes all values before (and not including) the given bound. i.e $(-∞, upper_bound)$
 ///
 /// ```aiken
 /// interval.entirely_before(10) == Interval {
@@ -141,7 +196,7 @@ pub fn entirely_before(upper_bound: Int) -> Interval {
   }
 }
 
-/// Create an interval that includes all values between two bounds, including the bounds. i.e. [lower_bound, upper_bound]
+/// Create an interval that includes all values between two bounds, including the bounds. i.e. $[lower_bound, upper_bound]$
 ///
 /// ```aiken
 /// interval.between(10, 100) == Interval {
@@ -162,7 +217,7 @@ pub fn between(lower_bound: Int, upper_bound: Int) -> Interval {
   }
 }
 
-/// Create an interval that includes all values between two bounds, excluding the bounds. i.e. (lower_bound, upper_bound)
+/// Create an interval that includes all values between two bounds, excluding the bounds. i.e. $(lower_bound, upper_bound)$
 ///
 /// ```aiken
 /// interval.entirely_between(10, 100) == Interval {
@@ -201,7 +256,7 @@ pub const empty: Interval =
     },
   }
 
-/// Create an interval that contains every possible values. i.e. (-INF, +INF)
+/// Create an interval that contains every possible values. i.e. $(-∞, +∞)$
 ///
 /// ```aiken
 /// interval.contains(everything, 0) == True
@@ -352,13 +407,10 @@ test contains_12() {
 /// iv1 != iv2
 /// ```
 pub fn is_empty(self: Interval) -> Bool {
-  let ordering =
-    compare_bound_type(self.lower_bound.bound_type, self.upper_bound.bound_type)
-
-  when ordering is {
-    Greater -> True
-    Equal -> !(self.lower_bound.is_inclusive && self.upper_bound.is_inclusive)
-    Less -> {
+  compare_bound_type(
+    self.lower_bound.bound_type,
+    self.upper_bound.bound_type,
+    fn() {
       let is_open_interval =
         !self.lower_bound.is_inclusive && !self.upper_bound.is_inclusive
       if is_open_interval {
@@ -370,8 +422,10 @@ pub fn is_empty(self: Interval) -> Bool {
       } else {
         False
       }
-    }
-  }
+    },
+    fn(_) { !(self.lower_bound.is_inclusive && self.upper_bound.is_inclusive) },
+    fn() { True },
+  )
 }
 
 /// Check whether the interval is entirely after a given point.
@@ -448,7 +502,7 @@ test is_entirely_after_10() {
   )
 }
 
-/// Check whether the interval is entirely before the point "a"
+/// Check whether the interval is entirely before a given point.
 ///
 /// ```aiken
 /// interval.is_entirely_before(interval.before(10), 15) == True
@@ -522,142 +576,39 @@ test is_entirely_before_10() {
   )
 }
 
-/// Check whether the interval starts on or after the point.
-///
-/// ```aiken
-/// interval.is_hereafter(interval.after(10), 5) == True
-/// interval.is_hereafter(interval.after(10), 10) == True
-/// interval.is_hereafter(interval.after(10), 15) == False
-/// interval.is_hereafter(interval.between(10, 20), 30) == False
-/// interval.is_hereafter(interval.between(10, 20), 5) == True
-/// ```
-pub fn is_hereafter(self: Interval, point: Int) -> Bool {
-  when self.lower_bound.bound_type is {
-    Finite(lo) -> point <= lo
-    NegativeInfinity -> False
-    PositiveInfinity -> True
+/// Obtain a human-readable string representation of the interval. Useful for debugging.
+pub fn to_string(self: Interval) -> String {
+  let lower_bracket =
+    if self.lower_bound.is_inclusive {
+      @"["
+    } else {
+      @"("
+    }
+
+  let lower_bound = bound_type_to_string(self.lower_bound.bound_type)
+
+  let upper_bound = bound_type_to_string(self.upper_bound.bound_type)
+
+  let upper_bracket =
+    if self.upper_bound.is_inclusive {
+      @"]"
+    } else {
+      @")"
+    }
+
+  lower_bracket
+    |> string.concat(lower_bound)
+    |> string.concat(@", ")
+    |> string.concat(upper_bound)
+    |> string.concat(upper_bracket)
+}
+
+fn bound_type_to_string(self: IntervalBoundType) -> String {
+  when self is {
+    NegativeInfinity -> @"-∞"
+    Finite(i) -> string.from_int(i)
+    PositiveInfinity -> @"+∞"
   }
-}
-
-test is_hereafter_1() {
-  is_hereafter(after(10), 5)
-}
-
-test is_hereafter_2() {
-  is_hereafter(after(10), 10)
-}
-
-test is_hereafter_3() {
-  !is_hereafter(after(10), 15)
-}
-
-test is_hereafter_4() {
-  !is_hereafter(between(10, 20), 30)
-}
-
-test is_hereafter_5() {
-  is_hereafter(between(10, 20), 5)
-}
-
-test is_hereafter_6() {
-  is_hereafter(entirely_after(10), 10)
-}
-
-test is_hereafter_7() {
-  !is_hereafter(before(10), 5)
-}
-
-test is_hereafter_8() {
-  !is_hereafter(before(10), 15)
-}
-
-test is_hereafter_9() {
-  !is_hereafter(entirely_before(10), 5)
-}
-
-test is_hereafter_10() {
-  is_hereafter(
-    Interval {
-      lower_bound: IntervalBound {
-        bound_type: PositiveInfinity,
-        is_inclusive: True,
-      },
-      upper_bound: IntervalBound {
-        bound_type: PositiveInfinity,
-        is_inclusive: False,
-      },
-    },
-    1,
-  )
-}
-
-/// Check whether the interval ends on or before the point.
-///
-/// ```aiken
-/// interval.is_herebefore(interval.before(10), 15) == True
-/// interval.is_herebefore(interval.before(10), 10) == True
-/// interval.is_herebefore(interval.before(10), 5) == False
-/// interval.is_herebefore(interval.between(10, 20), 30) == True
-/// interval.is_herebefore(interval.between(10, 20), 5) == False
-/// ```
-pub fn is_herebefore(self: Interval, point: Int) -> Bool {
-  when self.upper_bound.bound_type is {
-    Finite(hi) -> hi <= point
-    PositiveInfinity -> False
-    NegativeInfinity -> True
-  }
-}
-
-test is_herebefore_1() {
-  is_herebefore(before(10), 15)
-}
-
-test is_herebefore_2() {
-  is_herebefore(before(10), 10)
-}
-
-test is_herebefore_3() {
-  !is_herebefore(before(10), 5)
-}
-
-test is_herebefore_4() {
-  is_herebefore(between(10, 20), 30)
-}
-
-test is_herebefore_5() {
-  !is_herebefore(between(10, 20), 5)
-}
-
-test is_herebefore_6() {
-  is_herebefore(entirely_before(10), 10)
-}
-
-test is_herebefore_7() {
-  !is_herebefore(after(10), 15)
-}
-
-test is_herebefore_8() {
-  !is_herebefore(after(10), 5)
-}
-
-test is_herebefore_9() {
-  !is_herebefore(entirely_after(10), 5)
-}
-
-test is_herebefore_10() {
-  is_herebefore(
-    Interval {
-      lower_bound: IntervalBound {
-        bound_type: NegativeInfinity,
-        is_inclusive: True,
-      },
-      upper_bound: IntervalBound {
-        bound_type: NegativeInfinity,
-        is_inclusive: False,
-      },
-    },
-    1,
-  )
 }
 
 // ## Combining
@@ -665,16 +616,16 @@ test is_herebefore_10() {
 /// Computes the smallest interval containing the two given intervals, if any
 ///
 /// ```aiken
-/// let iv1 = between(0, 10)
-/// let iv2 = between(2, 14)
+/// let iv1 = between(0, 10) // [0, 10]
+/// let iv2 = between(2, 14) // [2, 14]
 /// hull(iv1, iv2) == between(0, 14)
 ///
-/// let iv1 = between(5, 10)
-/// let iv2 = before(0)
+/// let iv1 = between(5, 10) // [5, 10]
+/// let iv2 = before(0) // [ْ-∞, 0]
 /// hull(iv1, iv2) == before(10)
 ///
-/// let iv1 = entirely_after(0)
-/// let iv2 = between(10, 42)
+/// let iv1 = entirely_after(0) // (0, +∞]
+/// let iv2 = between(10, 42)  // [10, 42]
 /// hull(iv1, iv2) = entirely_after(0)
 /// ```
 pub fn hull(iv1: Interval, iv2: Interval) -> Interval {
@@ -702,19 +653,107 @@ test hull_3() {
   hull(iv1, iv2) == entirely_after(0)
 }
 
-/// Computes the largest interval contains in the two given intervals, if any.
+/// Checks whether the second interval is fully included in the first.
 ///
 /// ```aiken
-/// let iv1 = interval.between(0, 10)
-/// let iv2 = interval.between(2, 14)
+/// between(-5, 5)  // [-5, 5]
+///   |> includes(between(0, 2)) // [0, 2]
+///
+/// between(-5, 5)  // [-5, 5]
+///   |> includes(entirely_between(-5, 5)) // (-5, 5)
+///
+/// after(0) // [0, +∞]
+///   |> includes(after(1)) // [1, +∞]
+///
+/// before(-1) // (-∞, -1]
+///   |> includes(entirely_before(-1)) // [-∞, -1)
+/// ```
+pub fn includes(self: Interval, other: Interval) -> Bool {
+  and {
+    !is_empty(self),
+    or {
+      is_empty(other),
+      and {
+        compare_bound_type(
+          other.lower_bound.bound_type,
+          self.lower_bound.bound_type,
+          fn() { False },
+          fn(_) {
+            self.lower_bound.is_inclusive || !other.lower_bound.is_inclusive
+          },
+          fn() { True },
+        ),
+        compare_bound_type(
+          other.upper_bound.bound_type,
+          self.upper_bound.bound_type,
+          fn() { True },
+          fn(_) {
+            self.upper_bound.is_inclusive || !other.upper_bound.is_inclusive
+          },
+          fn() { False },
+        ),
+      },
+    },
+  }
+}
+
+test includes_1() {
+  between(-5, 5) |> includes(between(-5, 5))
+}
+
+test includes_2() {
+  between(-5, 5) |> includes(between(0, 2))
+}
+
+test includes_3() {
+  between(-5, 5) |> includes(entirely_between(-5, 5))
+}
+
+test includes_4() {
+  !(entirely_between(-5, 5) |> includes(between(-5, 5)))
+}
+
+test includes_5() {
+  and {
+    after(0) |> includes(after(1)),
+    entirely_after(0) |> includes(entirely_after(1)),
+  }
+}
+
+test includes_6() {
+  and {
+    after(0) |> includes(after(1)),
+    entirely_after(0) |> includes(after(1)),
+  }
+}
+
+test includes_7() {
+  and {
+    before(0) |> includes(before(-1)),
+    entirely_before(0) |> includes(before(-1)),
+  }
+}
+
+test includes_8() {
+  and {
+    !(before(-1) |> includes(before(0))),
+    !(entirely_before(-1) |> includes(before(0))),
+  }
+}
+
+/// Computes the largest interval contained in the two given intervals, if any.
+///
+/// ```aiken
+/// let iv1 = interval.between(0, 10) // [0, 10]
+/// let iv2 = interval.between(2, 14) // [2, 14]
 /// interval.intersection(iv1, iv2) == interval.between(2, 10)
 ///
-/// let iv1 = interval.entirely_before(10)
-/// let iv2 = interval.entirely_after(0)
+/// let iv1 = interval.entirely_before(10) // [-∞, 10)
+/// let iv2 = interval.entirely_after(0) // (0, +∞]
 /// interval.intersection(iv1, iv2) == interval.entirely_between(0, 10)
 ///
-/// let iv1 = interval.between(0, 1)
-/// let iv2 = interval.between(2, 3)
+/// let iv1 = interval.between(0, 1) // [0, 1]
+/// let iv2 = interval.between(2, 3) // [2, 3]
 /// interval.intersection(iv1, iv2) |> interval.is_empty
 /// ```
 pub fn intersection(iv1: Interval, iv2: Interval) -> Interval {
@@ -762,7 +801,8 @@ test intersection_6() {
   intersection(iv1, iv2) == entirely_between(0, 10)
 }
 
-/// Return the highest bound of the two.
+/// Return the highest bound of the two. For equal `IntervalBoundType`,
+/// an inclusive `IntervalBound` is considered higher.
 ///
 /// ```aiken
 /// let ib1 = IntervalBound { bound_type: Finite(0), is_inclusive: False }
@@ -771,14 +811,33 @@ test intersection_6() {
 /// interval.max(ib1, ib2) == ib2
 /// ```
 pub fn max(left: IntervalBound, right: IntervalBound) -> IntervalBound {
-  when compare_bound(left, right) is {
-    Less -> right
-    Equal -> left
-    Greater -> left
-  }
+  compare_bound_type(
+    left.bound_type,
+    right.bound_type,
+    fn() { right },
+    fn(is_negative) {
+      if left.is_inclusive == right.is_inclusive {
+        left
+      } else if is_negative {
+        if left.is_inclusive {
+          right
+        } else {
+          left
+        }
+      } else {
+        if left.is_inclusive {
+          left
+        } else {
+          right
+        }
+      }
+    },
+    fn() { left },
+  )
 }
 
-/// Return the smallest bound of the two.
+/// Return the smallest bound of the two. For equal `IntervalBoundType`,
+/// an inclusive `IntervalBound` is considered smaller.
 ///
 /// ```aiken
 /// let ib1 = IntervalBound { bound_type: Finite(0), is_inclusive: False }
@@ -787,54 +846,60 @@ pub fn max(left: IntervalBound, right: IntervalBound) -> IntervalBound {
 /// interval.min(ib1, ib2) == ib1
 /// ```
 pub fn min(left: IntervalBound, right: IntervalBound) -> IntervalBound {
-  when compare_bound(left, right) is {
-    Less -> left
-    Equal -> left
-    Greater -> right
-  }
-}
-
-fn compare_bound(left: IntervalBound, right: IntervalBound) -> Ordering {
-  when compare_bound_type(left.bound_type, right.bound_type) is {
-    Less -> Less
-    Greater -> Greater
-    Equal ->
+  compare_bound_type(
+    left.bound_type,
+    right.bound_type,
+    fn() { left },
+    fn(is_negative) {
       if left.is_inclusive == right.is_inclusive {
-        Equal
-      } else if left.is_inclusive {
-        Greater
+        left
+      } else if is_negative {
+        if left.is_inclusive {
+          left
+        } else {
+          right
+        }
       } else {
-        Less
+        if left.is_inclusive {
+          right
+        } else {
+          left
+        }
       }
-  }
+    },
+    fn() { right },
+  )
 }
 
 fn compare_bound_type(
   left: IntervalBoundType,
   right: IntervalBoundType,
-) -> Ordering {
+  less: fn() -> a,
+  equal: fn(Bool) -> a,
+  greater: fn() -> a,
+) -> a {
   when left is {
     NegativeInfinity ->
       when right is {
-        NegativeInfinity -> Equal
-        _ -> Less
+        NegativeInfinity -> equal(True)
+        _ -> less()
       }
     PositiveInfinity ->
       when right is {
-        PositiveInfinity -> Equal
-        _ -> Greater
+        PositiveInfinity -> equal(False)
+        _ -> greater()
       }
     Finite(left) ->
       when right is {
-        NegativeInfinity -> Greater
-        PositiveInfinity -> Less
+        NegativeInfinity -> greater()
+        PositiveInfinity -> less()
         Finite(right) ->
           if left < right {
-            Less
+            less()
           } else if left == right {
-            Equal
+            equal(left < 0)
           } else {
-            Greater
+            greater()
           }
       }
   }

@@ -8,6 +8,10 @@
 
 - [`aiken/collection/list.{foldr2}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#foldr2): to right-fold over lists while accumulating two separate results. This is reasonably faster than constructing a list of pairs.
 
+- [`aiken/interval.{to_string}`](https://aiken-lang.github.io/stdlib/aiken/interval.html#to_string): to obtain a human-readable representations of intervals.
+
+- [`aiken/interval.{includes}`](https://aiken-lang.github.io/stdlib/aiken/interval.html#includes): to test whether an interval is included in another.
+
 ### Changed
 
 - <sup>⚠️ BREAKING-CHANGE ⚠️</sup> [`aiken/collection/dict.{insert_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#insert_with), [`aiken/collection/dict.{union_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#union_with) and [`cardano/assets.{flatten_with}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#flatten_with) have a reworked API using two callbacks instead of a single callback returning `Option`. These gives them better performances, alongside a few other functions using them internally. To ease the construction of the callbacks, new modules with callback strategies have been created:
