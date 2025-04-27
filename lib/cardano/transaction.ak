@@ -79,7 +79,7 @@ pub type Transaction {
 
 /// An interval of POSIX time, measured in **number of milliseconds** since 1970-01-01T00:00:00Z.
 pub type ValidityRange =
-  Interval<Int>
+  Interval
 
 /// An `Input` made of an output reference and, the resolved value associated with that output.
 pub type Input {

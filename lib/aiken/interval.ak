@@ -12,17 +12,14 @@
 //// executed, but we can reason about the interval bounds to validate pieces of
 //// logic.
 
-// TODO: Replace 'Int' with a generic 'a' once we have comparable traits.
-
-/// A type to represent intervals of values. Interval are inhabited by a type
-/// `a` which is useful for non-infinite intervals that have a finite
-/// lower-bound and/or upper-bound.
+/// A type to represent intervals of values. Interval are inhabited by an
+/// integer value representing  have a finite lower-bound and/or upper-bound.
 ///
 /// This allows to represent all kind of mathematical intervals:
 ///
 /// ```aiken
 /// // [1; 10]
-/// let i0: Interval<Int> = Interval
+/// let i0: Interval = Interval
 ///   { lower_bound:
 ///       IntervalBound { bound_type: Finite(1), is_inclusive: True }
 ///   , upper_bound:
@@ -32,30 +29,29 @@
 ///
 /// ```aiken
 /// // (20; infinity)
-/// let i1: Interval<Int> = Interval
+/// let i1: Interval = Interval
 ///   { lower_bound:
 ///       IntervalBound { bound_type: Finite(20), is_inclusive: False }
 ///   , upper_bound:
 ///       IntervalBound { bound_type: PositiveInfinity, is_inclusive: False }
 ///   }
 /// ```
-pub type Interval<a> {
-  lower_bound: IntervalBound<a>,
-  upper_bound: IntervalBound<a>,
+pub type Interval {
+  lower_bound: IntervalBound,
+  upper_bound: IntervalBound,
 }
 
 /// An interval bound, either inclusive or exclusive.
-pub type IntervalBound<a> {
-  bound_type: IntervalBoundType<a>,
+pub type IntervalBound {
+  bound_type: IntervalBoundType,
   is_inclusive: Bool,
 }
 
-/// A type of interval bound. Where finite, a value of type `a` must be
-/// provided. `a` will typically be an `Int`, representing a number of seconds or
-/// milliseconds.
-pub type IntervalBoundType<a> {
+/// A type of interval bound. The value for the `Finite` case typically
+/// represents a number of seconds or milliseconds.
+pub type IntervalBoundType {
   NegativeInfinity
-  Finite(a)
+  Finite(Int)
   PositiveInfinity
 }
 
@@ -69,7 +65,7 @@ pub type IntervalBoundType<a> {
 ///   upper_bound: IntervalBound { bound_type: PositiveInfinity, is_inclusive: True },
 /// }
 /// ```
-pub fn after(lower_bound: a) -> Interval<a> {
+pub fn after(lower_bound: Int) -> Interval {
   Interval {
     lower_bound: IntervalBound {
       bound_type: Finite(lower_bound),
@@ -90,7 +86,7 @@ pub fn after(lower_bound: a) -> Interval<a> {
 ///   upper_bound: IntervalBound { bound_type: PositiveInfinity, is_inclusive: True },
 /// }
 /// ```
-pub fn entirely_after(lower_bound: a) -> Interval<a> {
+pub fn entirely_after(lower_bound: Int) -> Interval {
   Interval {
     lower_bound: IntervalBound {
       bound_type: Finite(lower_bound),
@@ -111,7 +107,7 @@ pub fn entirely_after(lower_bound: a) -> Interval<a> {
 ///   upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: True },
 /// }
 /// ```
-pub fn before(upper_bound: a) -> Interval<a> {
+pub fn before(upper_bound: Int) -> Interval {
   Interval {
     lower_bound: IntervalBound {
       bound_type: NegativeInfinity,
@@ -132,7 +128,7 @@ pub fn before(upper_bound: a) -> Interval<a> {
 ///   upper_bound: IntervalBound { bound_type: Finite(10), is_inclusive: False },
 /// }
 /// ```
-pub fn entirely_before(upper_bound: a) -> Interval<a> {
+pub fn entirely_before(upper_bound: Int) -> Interval {
   Interval {
     lower_bound: IntervalBound {
       bound_type: NegativeInfinity,
@@ -153,7 +149,7 @@ pub fn entirely_before(upper_bound: a) -> Interval<a> {
 ///   upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: True },
 /// }
 /// ```
-pub fn between(lower_bound: a, upper_bound: a) -> Interval<a> {
+pub fn between(lower_bound: Int, upper_bound: Int) -> Interval {
   Interval {
     lower_bound: IntervalBound {
       bound_type: Finite(lower_bound),
@@ -174,7 +170,7 @@ pub fn between(lower_bound: a, upper_bound: a) -> Interval<a> {
 ///   upper_bound: IntervalBound { bound_type: Finite(100), is_inclusive: False },
 /// }
 /// ```
-pub fn entirely_between(lower_bound: a, upper_bound: a) -> Interval<a> {
+pub fn entirely_between(lower_bound: Int, upper_bound: Int) -> Interval {
   Interval {
     lower_bound: IntervalBound {
       bound_type: Finite(lower_bound),
@@ -193,7 +189,7 @@ pub fn entirely_between(lower_bound: a, upper_bound: a) -> Interval<a> {
 /// interval.contains(empty, 0) == False
 /// interval.contains(empty, 1000) == False
 /// ```
-pub const empty: Interval<a> =
+pub const empty: Interval =
   Interval {
     lower_bound: IntervalBound {
       bound_type: PositiveInfinity,
@@ -211,7 +207,7 @@ pub const empty: Interval<a> =
 /// interval.contains(everything, 0) == True
 /// interval.contains(everything, 1000) == True
 /// ```
-pub const everything: Interval<a> =
+pub const everything: Interval =
   Interval {
     lower_bound: IntervalBound {
       bound_type: NegativeInfinity,
@@ -245,7 +241,7 @@ pub const everything: Interval<a> =
 /// interval.contains(iv, 14) == True
 /// interval.contains(iv, 42) == False
 /// ```
-pub fn contains(self: Interval<Int>, elem: Int) -> Bool {
+pub fn contains(self: Interval, elem: Int) -> Bool {
   let is_greater_than_lower_bound =
     when self.lower_bound.bound_type is {
       NegativeInfinity -> True
@@ -355,7 +351,7 @@ test contains_12() {
 /// // Note: Two empty intervals are not necessarily equal.
 /// iv1 != iv2
 /// ```
-pub fn is_empty(self: Interval<Int>) -> Bool {
+pub fn is_empty(self: Interval) -> Bool {
   let ordering =
     compare_bound_type(self.lower_bound.bound_type, self.upper_bound.bound_type)
 
@@ -378,7 +374,7 @@ pub fn is_empty(self: Interval<Int>) -> Bool {
   }
 }
 
-/// Check whether the interval is entirely after the point "a"
+/// Check whether the interval is entirely after a given point.
 ///
 /// ```aiken
 /// interval.is_entirely_after(interval.after(10), 5) == True
@@ -386,7 +382,8 @@ pub fn is_empty(self: Interval<Int>) -> Bool {
 /// interval.is_entirely_after(interval.after(10), 15) == False
 /// interval.is_entirely_after(interval.between(10, 20), 30) == False
 /// interval.is_entirely_after(interval.between(10, 20), 5) == True
-pub fn is_entirely_after(self: Interval<Int>, point: Int) -> Bool {
+/// ```
+pub fn is_entirely_after(self: Interval, point: Int) -> Bool {
   when self.lower_bound.bound_type is {
     Finite(low) ->
       if self.lower_bound.is_inclusive {
@@ -459,7 +456,8 @@ test is_entirely_after_10() {
 /// interval.is_entirely_before(interval.before(10), 5) == False
 /// interval.is_entirely_before(interval.between(10, 20), 30) == True
 /// interval.is_entirely_before(interval.between(10, 20), 5) == False
-pub fn is_entirely_before(self: Interval<Int>, point: Int) -> Bool {
+/// ```
+pub fn is_entirely_before(self: Interval, point: Int) -> Bool {
   when self.upper_bound.bound_type is {
     Finite(hi) ->
       if self.upper_bound.is_inclusive {
@@ -532,7 +530,8 @@ test is_entirely_before_10() {
 /// interval.is_hereafter(interval.after(10), 15) == False
 /// interval.is_hereafter(interval.between(10, 20), 30) == False
 /// interval.is_hereafter(interval.between(10, 20), 5) == True
-pub fn is_hereafter(self: Interval<Int>, point: Int) -> Bool {
+/// ```
+pub fn is_hereafter(self: Interval, point: Int) -> Bool {
   when self.lower_bound.bound_type is {
     Finite(lo) -> point <= lo
     NegativeInfinity -> False
@@ -600,7 +599,8 @@ test is_hereafter_10() {
 /// interval.is_herebefore(interval.before(10), 5) == False
 /// interval.is_herebefore(interval.between(10, 20), 30) == True
 /// interval.is_herebefore(interval.between(10, 20), 5) == False
-pub fn is_herebefore(self: Interval<Int>, point: Int) -> Bool {
+/// ```
+pub fn is_herebefore(self: Interval, point: Int) -> Bool {
   when self.upper_bound.bound_type is {
     Finite(hi) -> hi <= point
     PositiveInfinity -> False
@@ -677,7 +677,7 @@ test is_herebefore_10() {
 /// let iv2 = between(10, 42)
 /// hull(iv1, iv2) = entirely_after(0)
 /// ```
-pub fn hull(iv1: Interval<Int>, iv2: Interval<Int>) -> Interval<Int> {
+pub fn hull(iv1: Interval, iv2: Interval) -> Interval {
   Interval {
     lower_bound: min(iv1.lower_bound, iv2.lower_bound),
     upper_bound: max(iv1.upper_bound, iv2.upper_bound),
@@ -717,7 +717,7 @@ test hull_3() {
 /// let iv2 = interval.between(2, 3)
 /// interval.intersection(iv1, iv2) |> interval.is_empty
 /// ```
-pub fn intersection(iv1: Interval<Int>, iv2: Interval<Int>) -> Interval<Int> {
+pub fn intersection(iv1: Interval, iv2: Interval) -> Interval {
   Interval {
     lower_bound: max(iv1.lower_bound, iv2.lower_bound),
     upper_bound: min(iv1.upper_bound, iv2.upper_bound),
@@ -770,10 +770,7 @@ test intersection_6() {
 ///
 /// interval.max(ib1, ib2) == ib2
 /// ```
-pub fn max(
-  left: IntervalBound<Int>,
-  right: IntervalBound<Int>,
-) -> IntervalBound<Int> {
+pub fn max(left: IntervalBound, right: IntervalBound) -> IntervalBound {
   when compare_bound(left, right) is {
     Less -> right
     Equal -> left
@@ -789,10 +786,7 @@ pub fn max(
 ///
 /// interval.min(ib1, ib2) == ib1
 /// ```
-pub fn min(
-  left: IntervalBound<Int>,
-  right: IntervalBound<Int>,
-) -> IntervalBound<Int> {
+pub fn min(left: IntervalBound, right: IntervalBound) -> IntervalBound {
   when compare_bound(left, right) is {
     Less -> left
     Equal -> left
@@ -800,10 +794,7 @@ pub fn min(
   }
 }
 
-fn compare_bound(
-  left: IntervalBound<Int>,
-  right: IntervalBound<Int>,
-) -> Ordering {
+fn compare_bound(left: IntervalBound, right: IntervalBound) -> Ordering {
   when compare_bound_type(left.bound_type, right.bound_type) is {
     Less -> Less
     Greater -> Greater
@@ -819,8 +810,8 @@ fn compare_bound(
 }
 
 fn compare_bound_type(
-  left: IntervalBoundType<Int>,
-  right: IntervalBoundType<Int>,
+  left: IntervalBoundType,
+  right: IntervalBoundType,
 ) -> Ordering {
   when left is {
     NegativeInfinity ->
