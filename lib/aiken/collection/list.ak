@@ -131,15 +131,21 @@ test any_3() {
 /// list.at([1, 2, 3], 42) == None
 /// ```
 pub fn at(self: List<a>, index: Int) -> Option<a> {
+  if index < 0 {
+    None
+  } else {
+    do_at(self, index)
+  }
+}
+
+fn do_at(self: List<a>, index: Int) -> Option<a> {
   when self is {
     [] -> None
     [x, ..xs] ->
       if index == 0 {
         Some(x)
-      } else if index < 0 {
-        None
       } else {
-        at(xs, index - 1)
+        do_at(xs, index - 1)
       }
   }
 }
