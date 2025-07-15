@@ -136,6 +136,8 @@ pub fn at(self: List<a>, index: Int) -> Option<a> {
     [x, ..xs] ->
       if index == 0 {
         Some(x)
+      } else if index < 0 {
+        None
       } else {
         at(xs, index - 1)
       }
