@@ -477,7 +477,7 @@ test foldl_4() {
 ///
 /// ```aiken
 /// bytearray.foldr(#"acab", 0, fn(byte, acc) { acc * 256 + byte }) == 43948
-/// bytearray.foldl(#[1, 2, 3], #"", flip(bytearray.push)) == #[1, 2, 3]
+/// bytearray.foldr(#[1, 2, 3], #"", flip(bytearray.push)) == #[1, 2, 3]
 /// ```
 pub fn foldr(
   self: ByteArray,
