@@ -104,6 +104,14 @@ test count_none() {
 /// list.at([1, 2, 3], 42) == None
 /// ```
 pub fn at(self: List<a>, index: Int) -> Option<a> {
+  if index < 0 {
+    None
+  } else {
+    do_at(self, index)
+  }
+}
+
+fn do_at(self: List<a>, index: Int) -> Option<a> {
   when self is {
     [] -> None
     [x, ..xs] ->
@@ -145,8 +153,7 @@ test at_5() {
 pub fn concat(left: List<a>, right: List<a>) -> List<a> {
   when left is {
     [] -> right
-    [x, ..xs] ->
-      [x, ..concat(xs, right)]
+    [x, ..xs] -> [x, ..concat(xs, right)]
   }
 }
 
@@ -170,8 +177,7 @@ test concat_3() {
 /// ```
 pub fn delete(self: List<a>, elem: a) -> List<a> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       if x == elem {
         xs
@@ -239,8 +245,7 @@ pub fn drop(self: List<a>, n: Int) -> List<a> {
     self
   } else {
     when self is {
-      [] ->
-        []
+      [] -> []
       [_x, ..xs] -> drop(xs, n - 1)
     }
   }
@@ -263,8 +268,7 @@ test drop_2() {
 /// ```
 pub fn drop_while(self: List<a>, predicate: fn(a) -> Bool) -> List<a> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       if predicate(x) {
         drop_while(xs, predicate)
@@ -279,20 +283,17 @@ test drop_while_1() {
 }
 
 test drop_while_2() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   drop_while(xs, fn(x) { x > 5 }) == [5, 4, 3, 2, 1]
 }
 
 test drop_while_3() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   drop_while(xs, fn(x) { x == 42 }) == xs
 }
 
 test drop_while_4() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   drop_while(xs, fn(x) { x < 42 }) == []
 }
 
@@ -305,8 +306,7 @@ test drop_while_4() {
 /// ```
 pub fn filter(self: List<a>, predicate: fn(a) -> Bool) -> List<a> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       if predicate(x) {
         [x, ..filter(xs, predicate)]
@@ -321,8 +321,7 @@ test filter_1() {
 }
 
 test filter_2() {
-  let xs =
-    [1, 2, 3, 4, 5, 6]
+  let xs = [1, 2, 3, 4, 5, 6]
   filter(xs, fn(x) { builtin.mod_integer(x, 2) == 0 }) == [2, 4, 6]
 }
 
@@ -356,13 +355,11 @@ test filter_3() {
 /// ```
 pub fn filter_map(self: List<a>, predicate: fn(a) -> Option<b>) -> List<b> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       when predicate(x) is {
         None -> filter_map(xs, predicate)
-        Some(y) ->
-          [y, ..filter_map(xs, predicate)]
+        Some(y) -> [y, ..filter_map(xs, predicate)]
       }
   }
 }
@@ -507,10 +504,8 @@ pub fn init(self: List<a>) -> Option<List<a>> {
 fn do_init(self: List<a>) -> List<a> {
   when self is {
     [] -> fail @"unreachable"
-    [_] ->
-      []
-    [x, ..xs] ->
-      [x, ..do_init(xs)]
+    [_] -> []
+    [x, ..xs] -> [x, ..do_init(xs)]
   }
 }
 
@@ -653,12 +648,9 @@ test indexed_foldr_1() {
 }
 
 test indexed_foldr_2() {
-  let letters =
-    ["a", "b", "c"]
+  let letters = ["a", "b", "c"]
   indexed_foldr(letters, [], fn(i, x, xs) { [(i, x), ..xs] }) == [
-    (0, "a"),
-    (1, "b"),
-    (2, "c"),
+    (0, "a"), (1, "b"), (2, "c"),
   ]
 }
 
@@ -677,10 +669,8 @@ fn do_indexed_map(
   with: fn(Int, a) -> result,
 ) -> List<result> {
   when self is {
-    [] ->
-      []
-    [x, ..xs] ->
-      [with(n, x), ..do_indexed_map(n + 1, xs, with)]
+    [] -> []
+    [x, ..xs] -> [with(n, x), ..do_indexed_map(n + 1, xs, with)]
   }
 }
 
@@ -776,10 +766,8 @@ test length_2() {
 /// ```
 pub fn map(self: List<a>, with: fn(a) -> result) -> List<result> {
   when self is {
-    [] ->
-      []
-    [x, ..xs] ->
-      [with(x), ..map(xs, with)]
+    [] -> []
+    [x, ..xs] -> [with(x), ..map(xs, with)]
   }
 }
 
@@ -804,14 +792,11 @@ pub fn map2(
   with: fn(a, b) -> result,
 ) -> List<result> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       when bs is {
-        [] ->
-          []
-        [y, ..ys] ->
-          [with(x, y), ..map2(xs, ys, with)]
+        [] -> []
+        [y, ..ys] -> [with(x, y), ..map2(xs, ys, with)]
       }
   }
 }
@@ -842,18 +827,14 @@ pub fn map3(
   with: fn(a, b, c) -> result,
 ) -> List<result> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       when bs is {
-        [] ->
-          []
+        [] -> []
         [y, ..ys] ->
           when cs is {
-            [] ->
-              []
-            [z, ..zs] ->
-              [with(x, y, z), ..map3(xs, ys, zs, with)]
+            [] -> []
+            [z, ..zs] -> [with(x, y, z), ..map3(xs, ys, zs, with)]
           }
       }
   }
@@ -970,20 +951,17 @@ test partition_1() {
 }
 
 test partition_2() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   partition(xs, fn(x) { x > 5 }) == ([10, 9, 8, 7, 6], [5, 4, 3, 2, 1])
 }
 
 test partition_3() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   partition(xs, fn(x) { x == 42 }) == ([], xs)
 }
 
 test partition_4() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   partition(xs, fn(x) { x < 42 }) == (xs, [])
 }
 
@@ -1057,16 +1035,14 @@ test slice_6() {
 /// ```
 pub fn sort(self: List<a>, compare: fn(a, a) -> Ordering) -> List<a> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] -> insert(sort(xs, compare), x, compare)
   }
 }
 
 fn insert(self: List<a>, e: a, compare: fn(a, a) -> Ordering) -> List<a> {
   when self is {
-    [] ->
-      [e]
+    [] -> [e]
     [x, ..xs] ->
       if compare(e, x) == Less {
         [e, ..self]
@@ -1077,20 +1053,17 @@ fn insert(self: List<a>, e: a, compare: fn(a, a) -> Ordering) -> List<a> {
 }
 
 test sort_1() {
-  let xs =
-    [6, 7, 5, 4, 1, 3, 9, 8, 0, 2]
+  let xs = [6, 7, 5, 4, 1, 3, 9, 8, 0, 2]
   sort(xs, int.compare) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
 
 test sort_2() {
-  let xs =
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  let xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
   sort(xs, int.compare) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
 
 test sort_3() {
-  let xs =
-    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+  let xs = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
   sort(xs, int.compare) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
 
@@ -1168,10 +1141,8 @@ pub fn take(self: List<a>, n: Int) -> List<a> {
     []
   } else {
     when self is {
-      [] ->
-        []
-      [x, ..xs] ->
-        [x, ..take(xs, n - 1)]
+      [] -> []
+      [x, ..xs] -> [x, ..take(xs, n - 1)]
     }
   }
 }
@@ -1192,8 +1163,7 @@ test take_2() {
 /// ```
 pub fn take_while(self: List<a>, predicate: fn(a) -> Bool) -> List<a> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       if predicate(x) {
         [x, ..take_while(xs, predicate)]
@@ -1208,20 +1178,17 @@ test take_while_1() {
 }
 
 test take_while_2() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   take_while(xs, fn(x) { x > 5 }) == [10, 9, 8, 7, 6]
 }
 
 test take_while_3() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   take_while(xs, fn(x) { x == 42 }) == []
 }
 
 test take_while_4() {
-  let xs =
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+  let xs = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
   take_while(xs, fn(x) { x < 42 }) == xs
 }
 
@@ -1232,10 +1199,8 @@ test take_while_4() {
 /// ```
 pub fn unique(self: List<a>) -> List<a> {
   when self is {
-    [] ->
-      []
-    [x, ..xs] ->
-      [x, ..unique(filter(xs, fn(y) { y != x }))]
+    [] -> []
+    [x, ..xs] -> [x, ..unique(filter(xs, fn(y) { y != x }))]
   }
 }
 
@@ -1244,8 +1209,7 @@ test unique_1() {
 }
 
 test unique_2() {
-  let xs =
-    [1, 2, 3, 1, 1, 3, 4, 1, 2, 3, 2, 4, 5, 6, 7, 8, 9, 10, 9]
+  let xs = [1, 2, 3, 1, 1, 3, 4, 1, 2, 3, 2, 4, 5, 6, 7, 8, 9, 10, 9]
   unique(xs) == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 }
 
@@ -1281,14 +1245,11 @@ test unzip_2() {
 /// ```
 pub fn zip(self: List<a>, bs: List<b>) -> List<(a, b)> {
   when self is {
-    [] ->
-      []
+    [] -> []
     [x, ..xs] ->
       when bs is {
-        [] ->
-          []
-        [y, ..ys] ->
-          [(x, y), ..zip(xs, ys)]
+        [] -> []
+        [y, ..ys] -> [(x, y), ..zip(xs, ys)]
       }
   }
 }

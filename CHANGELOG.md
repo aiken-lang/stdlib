@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.9.1 - 2025-07-17
+
+### Added
+
+N/A
+
+### Changed
+
+- Backport https://github.com/aiken-lang/stdlib/pull/116
+
+### Removed
+
+N/A
+
 ## v1.9.0 - 2024-05-24
 
 ### Added
