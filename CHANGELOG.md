@@ -4,6 +4,10 @@
 
 ### Added
 
+- Two new modules for efficient arithmetic operations in a constrained field:
+  - [`aiken/crypto/int224`](https://aiken-lang.github.io/stdlib/aiken/crypto/int224.html)
+  - [`aiken/crypto/int256`](https://aiken-lang.github.io/stdlib/aiken/crypto/int256.html)
+
 - [`aiken/collection/dict.{get_or_else}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#get_or_else): to lookup a value from a dict, with a fallback.
 
 - [`aiken/collection/list.{foldl2}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#foldl2): to left-fold over lists while accumulating two separate results. This is reasonably faster than constructing a list of pairs.
