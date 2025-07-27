@@ -128,8 +128,7 @@ pub type Redeemer =
 /// validator {
 ///   spend(datum, redeemer, my_output_reference, self) {
 ///     expect Some(input) =
-///       self.inputs
-///         |> transaction.find_input(my_output_reference)
+///       self.inputs |> transaction.find_input(my_output_reference)
 ///   }
 /// }
 /// ```
@@ -139,6 +138,29 @@ pub fn find_input(
 ) -> Option<Input> {
   inputs
     |> list.find(fn(input) { input.output_reference == output_reference })
+}
+
+/// Find the output corresponding to an output reference in a list of inputs.
+/// **Fails** when no matching output is found.
+///
+/// ```aiken
+/// validator {
+///   spend(datum, redeemer, my_output_reference, self) {
+///     let output =
+///       self.inputs |> transaction.resolve_input(my_output_reference)
+///   }
+/// }
+/// ```
+pub fn resolve_input(inputs: List<Input>, output_reference: OutputReference) -> Output {
+  when inputs is {
+    [] -> fail
+    [head, ..tail] ->
+      if head.output_reference == output_reference {
+        head.output
+      } else {
+        resolve_input(tail, output_reference)
+      }
+  }
 }
 
 /// Find a [`Datum`](#Datum) by its hash, if present. The function looks first for

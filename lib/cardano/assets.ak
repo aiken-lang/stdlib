@@ -790,9 +790,11 @@ pub fn flatten(self: Value) -> List<(PolicyId, AssetName, Int)> {
   )
 }
 
-/// Flatten a `Value` as a list of results, possibly discarding some along the way.
+/// Flatten a `Value` as a list of results, possibly discarding some along the way. In particular, we have:
 ///
-/// When the transform function returns `None`, the result is discarded altogether.
+/// ```aiken
+/// flatten(value) === flatten_with(value, strategy.triple())
+/// ```
 pub fn flatten_with(self: Value, with: FlattenStrategy<result>) -> List<result> {
   dict.foldr(
     self.inner,

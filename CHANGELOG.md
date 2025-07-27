@@ -25,6 +25,7 @@
 ### Added
 
 - [`aiken/cbor.{deserialise}`](https://aiken-lang.github.io/stdlib/aiken/cbor.html#deserialise): to recover `Data` from CBOR bytes.
+
 - [`aiken/collection/pairs.{insert_with_by_ascending_key}`](https://aiken-lang.github.io/stdlib/aiken/collection/pairs.html#insert_with_by_ascending_key): for inserting in pairs while specifying how to combine values on key conflict.
 
 ## v2.1.0 - 2024-09-14
