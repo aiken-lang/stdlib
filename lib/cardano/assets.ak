@@ -169,6 +169,308 @@ pub const zero: Value = Value { inner: dict.empty }
 
 // ## Inspecting
 
+/// Check whether a `Value` carries any NFT from the given policy. Other assets are tolerated.
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///    |> assets.add("bar", "asset#2", 14)
+///
+/// assets.has_any_nft(value, "foo") == True
+/// assets.has_any_nft(value, "bar") == False
+/// assets.has_any_nft(value, "baz") == False
+/// ```
+pub fn has_any_nft(self: Value, policy: PolicyId) -> Bool {
+  tokens(self, policy)
+    |> dict.foldr(False, fn(_, quantity, result) { result || quantity == 1 })
+}
+
+/// Check whether a `Value` carries any NFT from the given policy. Other assets (other than
+/// Ada) aren't tolerated. Said differently, the check succeeds if and only if
+/// the value contains no assets other than the expected NFT or Ada.
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///    |> assets.add("bar", "asset#2", 14)
+///
+/// assets.has_any_nft_strict(value, "foo") == False
+/// assets.has_any_nft_strict(value, "bar") == False
+/// assets.has_any_nft_strict(value, "baz") == False
+/// ```
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///
+/// assets.has_any_nft_strict(value, "foo") == True
+/// assets.has_any_nft_strict(value, "bar") == False
+/// ```
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///    |> assets.add("foo", "asset#2", 1)
+///
+/// assets.has_any_nft_strict(value, "foo") == False
+/// assets.has_any_nft_strict(value, "bar") == False
+/// ```
+pub fn has_any_nft_strict(self: Value, policy: PolicyId) -> Bool {
+  let check_inner =
+    fn(p, inner) {
+      and {
+        p == policy,
+        when inner |> dict.to_pairs is {
+          [Pair(_, 1)] -> True
+          _ -> False
+        },
+      }
+    }
+
+  when self.inner |> dict.to_pairs is {
+    [Pair(p1, _), Pair(p2, inner)] -> and {
+        p1 == ada_policy_id,
+        check_inner(p2, inner),
+      }
+
+    [Pair(p, inner)] -> check_inner(p, inner)
+
+    _ -> False
+  }
+}
+
+/// Check whether a `Value` carries a specific NFT. Other assets are tolerated.
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///    |> assets.add("bar", "asset#2", 14)
+///
+/// assets.has_nft(value, "foo", "asset#1") == True
+/// assets.has_nft(value, "foo", "asset#2") == False
+/// assets.has_nft(value, "bar", "asset#2") == False
+/// assets.has_nft(value, "baz", "asset#3") == False
+/// ```
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///    |> assets.add("foo", "asset#2", 1)
+///
+/// assets.has_nft(value, "foo", "asset#1") == True
+/// assets.has_nft(value, "foo", "asset#2") == True
+/// assets.has_nft(value, "bar", "asset#2") == False
+/// ```
+pub fn has_nft(self: Value, policy: PolicyId, asset_name: AssetName) -> Bool {
+  quantity_of(self, policy, asset_name) == 1
+}
+
+/// Check whether a `Value` carries a specific NFT. Other assets (other than
+/// Ada) aren't tolerated. Said differently, the check succeeds if and only if
+/// the value contains no assets other than the expected NFT or Ada.
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///    |> assets.add("bar", "asset#2", 14)
+///
+/// assets.has_nft_strict(value1, "foo", "asset#1") == False
+/// assets.has_nft_strict(value1, "bar", "asset#2") == False
+/// assets.has_nft_strict(value1, "baz", "asset#3") == False
+/// ```
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///
+/// assets.has_nft_strict(value, "foo", "asset#1") == True
+/// assets.has_nft_strict(value, "foo", "asset#2") == False
+/// assets.has_nft_strict(value, "bar", "asset#2") == False
+/// ```
+///
+/// ```aiken
+/// let value = assets.from_lovelace(42)
+///    |> assets.add("foo", "asset#1", 1)
+///    |> assets.add("foo", "asset#2", 1)
+///
+/// assets.has_nft_strict(value3, "foo", "asset#1") == False
+/// assets.has_nft_strict(value3, "foo", "asset#2") == False
+/// ```
+pub fn has_nft_strict(
+  self: Value,
+  policy: PolicyId,
+  asset_name: AssetName,
+) -> Bool {
+  match(
+    self,
+    builtin.map_data(
+      [
+        builtin.new_pair(
+          policy,
+          builtin.map_data([builtin.new_pair(asset_name, 1)]),
+        ),
+      ],
+    ),
+    fn(_, _) { True },
+  )
+}
+
+const has_nft_fixture_1: Value =
+  from_lovelace(42)
+    |> add("foo", "asset#1", 1)
+    |> add("bar", "asset#2", 14)
+
+const has_nft_fixture_2: Value =
+  from_lovelace(42)
+    |> add("foo", "asset#1", 1)
+
+const has_nft_fixture_3: Value =
+  from_lovelace(42)
+    |> add("foo", "asset#1", 1)
+    |> add("foo", "asset#2", 1)
+    |> add("bar", "asset#2", 14)
+
+test has_nft_with_fixture_1() {
+  and {
+    // has_any_nft
+    has_any_nft(has_nft_fixture_1, "foo")?,
+    (!has_any_nft(has_nft_fixture_1, "bar"))?,
+    (!has_any_nft(has_nft_fixture_1, "baz"))?,
+    // has_any_nft_strict
+    (!has_any_nft_strict(has_nft_fixture_1, "foo"))?,
+    (!has_any_nft_strict(has_nft_fixture_1, "bar"))?,
+    (!has_any_nft_strict(has_nft_fixture_1, "baz"))?,
+    // has_nft
+    has_nft(has_nft_fixture_1, "foo", "asset#1")?,
+    (!has_nft(has_nft_fixture_1, "foo", "asset#2"))?,
+    (!has_nft(has_nft_fixture_1, "bar", "asset#2"))?,
+    (!has_nft(has_nft_fixture_1, "baz", "asset#1"))?,
+    // has_nft_strict
+    (!has_nft_strict(has_nft_fixture_1, "foo", "asset#1"))?,
+    (!has_nft_strict(has_nft_fixture_1, "foo", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_1, "bar", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_1, "baz", "asset#1"))?,
+  }
+}
+
+test has_nft_with_fixture_1_without_lovelace() {
+  let has_nft_fixture_1 = without_lovelace(has_nft_fixture_1)
+  and {
+    // has_any_nft
+    has_any_nft(has_nft_fixture_1, "foo")?,
+    (!has_any_nft(has_nft_fixture_1, "bar"))?,
+    (!has_any_nft(has_nft_fixture_1, "baz"))?,
+    // has_any_nft_strict
+    (!has_any_nft_strict(has_nft_fixture_1, "foo"))?,
+    (!has_any_nft_strict(has_nft_fixture_1, "bar"))?,
+    (!has_any_nft_strict(has_nft_fixture_1, "baz"))?,
+    // has_nft
+    has_nft(has_nft_fixture_1, "foo", "asset#1")?,
+    (!has_nft(has_nft_fixture_1, "foo", "asset#2"))?,
+    (!has_nft(has_nft_fixture_1, "bar", "asset#2"))?,
+    (!has_nft(has_nft_fixture_1, "baz", "asset#1"))?,
+    // has_nft_strict
+    (!has_nft_strict(has_nft_fixture_1, "foo", "asset#1"))?,
+    (!has_nft_strict(has_nft_fixture_1, "foo", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_1, "bar", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_1, "baz", "asset#1"))?,
+  }
+}
+
+test has_nft_with_fixture_2() {
+  and {
+    // has_any_nft
+    has_any_nft(has_nft_fixture_2, "foo")?,
+    (!has_any_nft(has_nft_fixture_2, "bar"))?,
+    (!has_any_nft(has_nft_fixture_2, "baz"))?,
+    // has_any_nft_strict
+    has_any_nft_strict(has_nft_fixture_2, "foo")?,
+    (!has_any_nft_strict(has_nft_fixture_2, "bar"))?,
+    (!has_any_nft_strict(has_nft_fixture_2, "baz"))?,
+    // has_nft
+    has_nft(has_nft_fixture_2, "foo", "asset#1")?,
+    (!has_nft(has_nft_fixture_2, "foo", "asset#2"))?,
+    (!has_nft(has_nft_fixture_2, "bar", "asset#2"))?,
+    (!has_nft(has_nft_fixture_2, "baz", "asset#1"))?,
+    // has_nft_strict
+    has_nft_strict(has_nft_fixture_2, "foo", "asset#1")?,
+    (!has_nft_strict(has_nft_fixture_2, "foo", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_2, "bar", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_2, "baz", "asset#1"))?,
+  }
+}
+
+test has_nft_with_fixture_2_without_lovelace() {
+  let has_nft_fixture_2 = without_lovelace(has_nft_fixture_2)
+  and {
+    // has_any_nft
+    has_any_nft(has_nft_fixture_2, "foo")?,
+    (!has_any_nft(has_nft_fixture_2, "bar"))?,
+    (!has_any_nft(has_nft_fixture_2, "baz"))?,
+    // has_any_nft_strict
+    has_any_nft_strict(has_nft_fixture_2, "foo")?,
+    (!has_any_nft_strict(has_nft_fixture_2, "bar"))?,
+    (!has_any_nft_strict(has_nft_fixture_2, "baz"))?,
+    // has_nft
+    has_nft(has_nft_fixture_2, "foo", "asset#1")?,
+    (!has_nft(has_nft_fixture_2, "foo", "asset#2"))?,
+    (!has_nft(has_nft_fixture_2, "bar", "asset#2"))?,
+    (!has_nft(has_nft_fixture_2, "baz", "asset#1"))?,
+    // has_nft_strict
+    has_nft_strict(has_nft_fixture_2, "foo", "asset#1")?,
+    (!has_nft_strict(has_nft_fixture_2, "foo", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_2, "bar", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_2, "baz", "asset#1"))?,
+  }
+}
+
+test has_nft_with_fixture_3() {
+  and {
+    // has_any_nft
+    has_any_nft(has_nft_fixture_3, "foo")?,
+    (!has_any_nft(has_nft_fixture_3, "bar"))?,
+    (!has_any_nft(has_nft_fixture_3, "baz"))?,
+    // has_any_nft_strict
+    (!has_any_nft_strict(has_nft_fixture_3, "foo"))?,
+    (!has_any_nft_strict(has_nft_fixture_3, "bar"))?,
+    (!has_any_nft_strict(has_nft_fixture_3, "baz"))?,
+    // has_nft
+    has_nft(has_nft_fixture_3, "foo", "asset#1")?,
+    has_nft(has_nft_fixture_3, "foo", "asset#2")?,
+    (!has_nft(has_nft_fixture_3, "bar", "asset#2"))?,
+    (!has_nft(has_nft_fixture_3, "baz", "asset#1"))?,
+    // has_nft_strict
+    (!has_nft_strict(has_nft_fixture_3, "foo", "asset#1"))?,
+    (!has_nft_strict(has_nft_fixture_3, "foo", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_3, "bar", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_3, "baz", "asset#1"))?,
+  }
+}
+
+test has_nft_with_fixture_3_without_lovelace() {
+  let has_nft_fixture_3 = without_lovelace(has_nft_fixture_3)
+  and {
+    // has_any_nft
+    has_any_nft(has_nft_fixture_3, "foo")?,
+    (!has_any_nft(has_nft_fixture_3, "bar"))?,
+    (!has_any_nft(has_nft_fixture_3, "baz"))?,
+    // has_any_nft_strict
+    (!has_any_nft_strict(has_nft_fixture_3, "foo"))?,
+    (!has_any_nft_strict(has_nft_fixture_3, "bar"))?,
+    (!has_any_nft_strict(has_nft_fixture_3, "baz"))?,
+    // has_nft
+    has_nft(has_nft_fixture_3, "foo", "asset#1")?,
+    has_nft(has_nft_fixture_3, "foo", "asset#2")?,
+    (!has_nft(has_nft_fixture_3, "bar", "asset#2"))?,
+    (!has_nft(has_nft_fixture_3, "baz", "asset#1"))?,
+    // has_nft_strict
+    (!has_nft_strict(has_nft_fixture_3, "foo", "asset#1"))?,
+    (!has_nft_strict(has_nft_fixture_3, "foo", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_3, "bar", "asset#2"))?,
+    (!has_nft_strict(has_nft_fixture_3, "baz", "asset#1"))?,
+  }
+}
+
 /// Check is a `Value` is zero. That is, it has no assets and holds no Ada/Lovelace.
 pub fn is_zero(self: Value) -> Bool {
   self == zero

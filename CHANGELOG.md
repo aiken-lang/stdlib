@@ -4,19 +4,35 @@
 
 ### Added
 
+- [`aiken/collection/dict.{get_or_else}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#get_or_else): to lookup a value from a dict, with a fallback.
+
 - [`aiken/collection/list.{foldl2}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#foldl2): to left-fold over lists while accumulating two separate results. This is reasonably faster than constructing a list of pairs.
 
 - [`aiken/collection/list.{foldr2}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#foldr2): to right-fold over lists while accumulating two separate results. This is reasonably faster than constructing a list of pairs.
+
+- [`aiken/collection/list.{find_map}`](https://aiken-lang.github.io/stdlib/aiken/collection/list.html#find_map): to lookup and transform an element from a list in one go.
 
 - [`aiken/interval.{to_string}`](https://aiken-lang.github.io/stdlib/aiken/interval.html#to_string): to obtain a human-readable representations of intervals.
 
 - [`aiken/interval.{includes}`](https://aiken-lang.github.io/stdlib/aiken/interval.html#includes): to test whether an interval is included in another.
 
+- Four new functions to conveniently inspect assets in `Value`:
+  - [`cardano/assets.{has_any_nft}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#has_any_nft)
+  - [`cardano/assets.{has_any_nft_strict}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#has_any_nft_strict)
+  - [`cardano/assets.{has_nft}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#has_nft)
+  - [`cardano/assets.{has_nft_strict}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#has_nft_strict)
+
 ### Changed
 
-- <sup>⚠️ BREAKING-CHANGE ⚠️</sup> [`aiken/collection/dict.{insert_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#insert_with), [`aiken/collection/dict.{union_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#union_with) and [`cardano/assets.{flatten_with}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#flatten_with) have a reworked API using two callbacks instead of a single callback returning `Option`. These gives them better performances, alongside a few other functions using them internally. To ease the construction of the callbacks, new modules with callback strategies have been created:
-    - [`aiken/collection/dict/strategy`](https://aiken-lang.github.io/stdlib/aiken/collection/dict/strategy.html)
-    - [`cardano/assets/strategy`](https://aiken-lang.github.io/stdlib/cardano/assets/strategy.html)
+- <sup>⚠️ BREAKING-CHANGE ⚠️</sup>
+  - [`aiken/collection/dict.{insert_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#insert_with);
+  - [`aiken/collection/dict.{union_with}`](https://aiken-lang.github.io/stdlib/aiken/collection/dict.html#union_with); and
+  - [`cardano/assets.{flatten_with}`](https://aiken-lang.github.io/stdlib/cardano/assets.html#flatten_with)
+
+  have a reworked API using two callbacks instead of a single callback returning `Option`. These gives them better performances, alongside a few other functions using them internally. To ease the construction of the callbacks, new modules with callback strategies have been created:
+
+  - [`aiken/collection/dict/strategy`](https://aiken-lang.github.io/stdlib/aiken/collection/dict/strategy.html)
+  - [`cardano/assets/strategy`](https://aiken-lang.github.io/stdlib/cardano/assets/strategy.html)
 
 - <sup>⚠️ BREAKING-CHANGE ⚠️</sup> [`aiken/interval.{Interval}`](https://aiken-lang.github.io/stdlib/aiken/interval.html#Interval) no longer takes a generic parameter and now defaults to `Int` internally.
 
