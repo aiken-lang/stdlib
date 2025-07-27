@@ -151,7 +151,10 @@ pub fn find_input(
 ///   }
 /// }
 /// ```
-pub fn resolve_input(inputs: List<Input>, output_reference: OutputReference) -> Output {
+pub fn resolve_input(
+  inputs: List<Input>,
+  output_reference: OutputReference,
+) -> Output {
   when inputs is {
     [] -> fail
     [head, ..tail] ->
@@ -176,7 +179,7 @@ pub fn find_datum(
     |> option.or_try(
         fn() {
           outputs
-            |> list.filter_map(
+            |> list.find_map(
                 fn(output) {
                   when output.datum is {
                     InlineDatum(data) ->
@@ -189,7 +192,6 @@ pub fn find_datum(
                   }
                 },
               )
-            |> list.head
         },
       )
 }

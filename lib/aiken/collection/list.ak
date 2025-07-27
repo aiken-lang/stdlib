@@ -238,6 +238,65 @@ test find_3() {
   find([], fn(_) { True }) == None
 }
 
+/// Like [`find`](#find), but maps the found element to something else. This
+/// provides an efficient way to access and transform an element in a list.
+///
+/// ```aiken
+/// list.find_map(["a", "bb", "ccc"], fn(x) {
+///   let len = bytearray.length(x)
+///   if len > 1 {
+///     Some(len)
+///   } else {
+///     None
+///   }
+/// })
+pub fn find_map(
+  self: List<a>,
+  predicate: fn(a) -> Option<result>,
+) -> Option<result> {
+  when self is {
+    [] -> None
+    [x, ..xs] -> {
+      let result = predicate(x)
+      if result != None {
+        result
+      } else {
+        find_map(xs, predicate)
+      }
+    }
+  }
+}
+
+test find_map_1() {
+  find_map(
+    [1, 2, 3],
+    fn(x) {
+      if x == 1 {
+        Some(x - 1)
+      } else {
+        None
+      }
+    },
+  ) == Some(0)
+}
+
+test find_map_2() {
+  find_map(
+    [1, 2, 3],
+    fn(x) {
+      if x > 42 {
+        Some(x)
+      } else {
+        None
+      }
+    },
+  ) == None
+}
+
+test find_map_3() {
+  find_map([], fn(_) { Some(True) }) == None
+}
+
 /// Figures out whether a list contain the given element.
 ///
 /// ```aiken
