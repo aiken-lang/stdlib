@@ -11,7 +11,7 @@
 ## Getting started
 
 ```
-aiken add aiken-lang/stdlib --version v3
+aiken add aiken-lang/stdlib --version v2
 ```
 
 ## Compatibility
