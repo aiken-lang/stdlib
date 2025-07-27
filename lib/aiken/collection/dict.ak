@@ -269,27 +269,56 @@ test find_4() {
 ///  result == Some("Aiken")
 /// ```
 pub fn get(self: Dict<key, value>, key: ByteArray) -> Option<value> {
-  do_get(self.inner, key)
+  do_get(self.inner, key, Some, fn() { None })
 }
 
-fn do_get(self: Pairs<ByteArray, value>, key k: ByteArray) -> Option<value> {
+/// Get a value from the dict by its key, or fallback to a default one.
+///
+/// ```aiken
+/// let kvs =
+///   dict.empty
+///     |> dict.insert(key: "a", value: 42)
+///     |> dict.insert(key: "b", value: 14)
+///
+/// dict.get_or_else(kvs, "a", fn() { 0 }) == 42
+/// dict.get_or_else(kvs, "b", fn() { 0 }) == 14
+/// dict.get_or_else(kvs, "c", fn() { 0 }) == 0
+/// ```
+pub fn get_or_else(
+  self: Dict<key, value>,
+  key: ByteArray,
+  or_else: fn() -> value,
+) -> value {
+  do_get(self.inner, key, identity, or_else)
+}
+
+fn do_get(
+  self: Pairs<ByteArray, value>,
+  key k: ByteArray,
+  return: fn(value) -> result,
+  or_else: fn() -> result,
+) -> result {
   when self is {
-    [] -> None
+    [] -> or_else()
     [Pair(k2, v), ..rest] ->
       if builtin.less_than_equals_bytearray(k, k2) {
         if k == k2 {
-          Some(v)
+          return(v)
         } else {
-          None
+          or_else()
         }
       } else {
-        do_get(rest, k)
+        do_get(rest, k, return, or_else)
       }
   }
 }
 
 test get_1() {
   get(empty, foo) == None
+}
+
+test get_or_else_1() {
+  get_or_else(empty, foo, fn() { 0 }) == 0
 }
 
 test get_2() {
@@ -300,12 +329,28 @@ test get_2() {
   get(m, key: foo) == Some("Aiken")
 }
 
+test get_or_else_2() {
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
+  get_or_else(m, key: foo, or_else: fn() { "" }) == "Aiken"
+}
+
 test get_3() {
   let m =
     empty
       |> insert(foo, "Aiken")
       |> insert(bar, "awesome")
   get(m, key: baz) == None
+}
+
+test get_or_else_3() {
+  let m =
+    empty
+      |> insert(foo, "Aiken")
+      |> insert(bar, "awesome")
+  get_or_else(m, key: baz, or_else: fn() { "missing?" }) == "missing?"
 }
 
 test get_4() {
@@ -325,6 +370,23 @@ test get_4() {
   get(m, "bcd") == None
 }
 
+test get_or_else_4() {
+  let m =
+    empty
+      |> insert("aaa", "1")
+      |> insert("bbb", "2")
+      |> insert("ccc", "3")
+      |> insert("ddd", "4")
+      |> insert("eee", "5")
+      |> insert("fff", "6")
+      |> insert("ggg", "7")
+      |> insert("hhh", "8")
+      |> insert("iii", "9")
+      |> insert("jjj", "10")
+
+  get_or_else(m, "bcd", fn() { "0" }) == "0"
+}
+
 test get_5() {
   let m =
     empty
@@ -340,6 +402,23 @@ test get_5() {
       |> insert("jjj", "10")
 
   get(m, "kkk") == None
+}
+
+test get_or_else_5() {
+  let m =
+    empty
+      |> insert("aaa", "1")
+      |> insert("bbb", "2")
+      |> insert("ccc", "3")
+      |> insert("ddd", "4")
+      |> insert("eee", "5")
+      |> insert("fff", "6")
+      |> insert("ggg", "7")
+      |> insert("hhh", "8")
+      |> insert("iii", "9")
+      |> insert("jjj", "10")
+
+  get_or_else(m, "kkk", fn() { "" }) == ""
 }
 
 /// Check if a key exists in the dictionary.

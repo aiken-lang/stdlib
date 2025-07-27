@@ -3,7 +3,6 @@ use aiken/collection/dict.{Dict, from_ascending_pairs_with}
 use aiken/collection/dict/strategy as dict_strategy
 use aiken/collection/list
 use aiken/crypto.{Blake2b_224, Hash, Script}
-use aiken/option
 use cardano/assets/strategy.{FlattenStrategy}
 
 /// Lovelace is now a type wrapper for Int.
@@ -523,17 +522,14 @@ pub fn quantity_of(
   policy_id: PolicyId,
   asset_name: AssetName,
 ) -> Int {
-  self.inner
-    |> dict.get(policy_id)
-    |> option.and_then(dict.get(_, asset_name))
-    |> option.or_else(0)
+  tokens(self, policy_id)
+    |> dict.get_or_else(asset_name, fn() { 0 })
 }
 
 /// Get all tokens associated with a given policy.
 pub fn tokens(self: Value, policy_id: PolicyId) -> Dict<AssetName, Int> {
   self.inner
-    |> dict.get(policy_id)
-    |> option.or_else(dict.empty)
+    |> dict.get_or_else(policy_id, fn() { dict.empty })
 }
 
 // ## Combining
