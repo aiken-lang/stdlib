@@ -407,25 +407,33 @@ test contains_12() {
 /// iv1 != iv2
 /// ```
 pub fn is_empty(self: Interval) -> Bool {
-  compare_bound_type(
-    self.lower_bound.bound_type,
-    self.upper_bound.bound_type,
-    fn() {
-      let is_open_interval =
-        !self.lower_bound.is_inclusive && !self.upper_bound.is_inclusive
-      if is_open_interval {
-        when (self.lower_bound.bound_type, self.upper_bound.bound_type) is {
-          (Finite(lower_bound), Finite(upper_bound)) ->
-            lower_bound + 1 == upper_bound
-          _ -> False
-        }
-      } else {
-        False
-      }
-    },
-    fn(_) { !(self.lower_bound.is_inclusive && self.upper_bound.is_inclusive) },
+  compare_bound(
+    self.lower_bound,
+    self.upper_bound,
+    False,
+    fn() { False },
+    fn(_) { False },
     fn() { True },
   )
+  //  compare_bound(
+  //    self.lower_bound.bound_type,
+  //    self.upper_bound.bound_type,
+  //    fn() {
+  //      let is_open_interval =
+  //        !self.lower_bound.is_inclusive && !self.upper_bound.is_inclusive
+  //      if is_open_interval {
+  //        when (self.lower_bound.bound_type, self.upper_bound.bound_type) is {
+  //          (Finite(lower_bound), Finite(upper_bound)) ->
+  //            lower_bound + 1 == upper_bound
+  //          _ -> False
+  //        }
+  //      } else {
+  //        False
+  //      }
+  //    },
+  //    fn(_) { !(self.lower_bound.is_inclusive && self.upper_bound.is_inclusive) },
+  //    fn() { True },
+  //  )
 }
 
 /// Check whether the interval is entirely after a given point.
@@ -630,8 +638,8 @@ fn bound_type_to_string(self: IntervalBoundType) -> String {
 /// ```
 pub fn hull(iv1: Interval, iv2: Interval) -> Interval {
   Interval {
-    lower_bound: min(iv1.lower_bound, iv2.lower_bound),
-    upper_bound: max(iv1.upper_bound, iv2.upper_bound),
+    lower_bound: min(iv1.lower_bound, iv2.lower_bound, True),
+    upper_bound: max(iv1.upper_bound, iv2.upper_bound, False),
   }
 }
 
@@ -674,18 +682,20 @@ pub fn includes(self: Interval, other: Interval) -> Bool {
     or {
       is_empty(other),
       and {
-        compare_bound_type(
-          other.lower_bound.bound_type,
-          self.lower_bound.bound_type,
+        compare_bound(
+          other.lower_bound,
+          self.lower_bound,
+          True,
           fn() { False },
           fn(_) {
             self.lower_bound.is_inclusive || !other.lower_bound.is_inclusive
           },
           fn() { True },
         ),
-        compare_bound_type(
-          other.upper_bound.bound_type,
-          self.upper_bound.bound_type,
+        compare_bound(
+          other.upper_bound,
+          self.upper_bound,
+          False,
           fn() { True },
           fn(_) {
             self.upper_bound.is_inclusive || !other.upper_bound.is_inclusive
@@ -758,8 +768,8 @@ test includes_8() {
 /// ```
 pub fn intersection(iv1: Interval, iv2: Interval) -> Interval {
   Interval {
-    lower_bound: max(iv1.lower_bound, iv2.lower_bound),
-    upper_bound: min(iv1.upper_bound, iv2.upper_bound),
+    lower_bound: max(iv1.lower_bound, iv2.lower_bound, True),
+    upper_bound: min(iv1.upper_bound, iv2.upper_bound, False),
   }
 }
 
@@ -810,28 +820,17 @@ test intersection_6() {
 ///
 /// interval.max(ib1, ib2) == ib2
 /// ```
-pub fn max(left: IntervalBound, right: IntervalBound) -> IntervalBound {
-  compare_bound_type(
-    left.bound_type,
-    right.bound_type,
+fn max(
+  left: IntervalBound,
+  right: IntervalBound,
+  is_lower_bound: Bool,
+) -> IntervalBound {
+  compare_bound(
+    left,
+    right,
+    is_lower_bound,
     fn() { right },
-    fn(is_negative) {
-      if left.is_inclusive == right.is_inclusive {
-        left
-      } else if is_negative {
-        if left.is_inclusive {
-          right
-        } else {
-          left
-        }
-      } else {
-        if left.is_inclusive {
-          left
-        } else {
-          right
-        }
-      }
-    },
+    fn(_) { right },
     fn() { left },
   )
 }
@@ -845,62 +844,94 @@ pub fn max(left: IntervalBound, right: IntervalBound) -> IntervalBound {
 ///
 /// interval.min(ib1, ib2) == ib1
 /// ```
-pub fn min(left: IntervalBound, right: IntervalBound) -> IntervalBound {
-  compare_bound_type(
-    left.bound_type,
-    right.bound_type,
+fn min(
+  left: IntervalBound,
+  right: IntervalBound,
+  is_lower_bound: Bool,
+) -> IntervalBound {
+  compare_bound(
+    left,
+    right,
+    is_lower_bound,
     fn() { left },
-    fn(is_negative) {
-      if left.is_inclusive == right.is_inclusive {
-        left
-      } else if is_negative {
-        if left.is_inclusive {
-          left
-        } else {
-          right
-        }
-      } else {
-        if left.is_inclusive {
-          right
-        } else {
-          left
-        }
-      }
-    },
+    fn(_) { left },
     fn() { right },
   )
 }
 
-fn compare_bound_type(
-  left: IntervalBoundType,
-  right: IntervalBoundType,
+fn compare_bound(
+  IntervalBound { bound_type: left_type, is_inclusive: left_inclusive }: IntervalBound,
+  IntervalBound { bound_type: right_type, is_inclusive: right_inclusive }: IntervalBound,
+  is_lower_bound: Bool,
   less: fn() -> a,
   equal: fn(Bool) -> a,
   greater: fn() -> a,
 ) -> a {
-  when left is {
+  when left_type is {
     NegativeInfinity ->
-      when right is {
+      when right_type is {
         NegativeInfinity -> equal(True)
         _ -> less()
       }
     PositiveInfinity ->
-      when right is {
+      when right_type is {
         PositiveInfinity -> equal(False)
         _ -> greater()
       }
     Finite(left) ->
-      when right is {
+      when right_type is {
         NegativeInfinity -> greater()
         PositiveInfinity -> less()
         Finite(right) ->
-          if left < right {
-            less()
-          } else if left == right {
-            equal(left < 0)
+          if is_lower_bound {
+            compare_finite(
+              if left_inclusive {
+                left
+              } else {
+                left + 1
+              },
+              if right_inclusive {
+                right
+              } else {
+                right + 1
+              },
+              less,
+              equal,
+              greater,
+            )
           } else {
-            greater()
+            compare_finite(
+              if left_inclusive {
+                left
+              } else {
+                left - 1
+              },
+              if right_inclusive {
+                right
+              } else {
+                right - 1
+              },
+              less,
+              equal,
+              greater,
+            )
           }
       }
+  }
+}
+
+fn compare_finite(
+  left: Int,
+  right: Int,
+  less: fn() -> a,
+  equal: fn(Bool) -> a,
+  greater: fn() -> a,
+) -> a {
+  if left < right {
+    less()
+  } else if left == right {
+    equal(left < 0)
+  } else {
+    greater()
   }
 }
