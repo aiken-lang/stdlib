@@ -19,8 +19,7 @@ test simple_miller_loop_with_final_exponentiation() {
   // prove e(q^x, p^m) == e(q^m*x, p)
   let x: State<Scalar> = scalar.from_int(44203)
   let u: G1Element = g1.generator |> g1.scale(x)
-  let mb: ByteArray = #"acab"
-  let m: State<Scalar> = scalar.from_bytes(mb)
+  let m: State<Scalar> = scalar.from_bytes(#"acab")
   let qmx: G2Element = g2.generator |> g2.scale(x) |> g2.scale(m)
   let qm: G2Element = g2.scale(g2.generator, m)
   let left: MillerLoopResult = miller_loop(u, qm)
