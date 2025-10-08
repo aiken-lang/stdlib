@@ -18,7 +18,7 @@ aiken add aiken-lang/stdlib --version v2
 
 aiken's version            | stdlib's version(s)     | Plutus version
 ---                        | ---                     | ---
-`v1.1.{3..17}`             | `>= 2.1.0`              | `V3`
+`v1.1.{3..19}`             | `>= 2.1.0`              | `V3`
 `v1.1.{1..2}`              | `>= 2.0.0` && `< 2.1.0` | `V3`
 `v1.0.{28-alpha..29-alpha}`| `>= 1.9.0` && `< 2.0.0` | `V2`
 `v1.0.26-alpha`            | `<= 1.8.0` && `< 1.9.0` | `V2`
