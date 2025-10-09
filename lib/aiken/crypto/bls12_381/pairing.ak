@@ -16,13 +16,15 @@ pub fn final_exponentiation(
 }
 
 test simple_miller_loop_with_final_exponentiation() {
-  // prove e(q^x, p^m) == e(q^m*x, p)
-  let x: State<Scalar> = scalar.from_int(44203)
-  let u: G1Element = g1.generator |> g1.scale(x)
-  let m: State<Scalar> = scalar.from_bytes(#"acab")
-  let qmx: G2Element = g2.generator |> g2.scale(x) |> g2.scale(m)
-  let qm: G2Element = g2.scale(g2.generator, m)
-  let left: MillerLoopResult = miller_loop(u, qm)
-  let right: MillerLoopResult = miller_loop(g1.generator, qmx)
+  // prove: e(q^x, p^m) == e(q, p^m*x)
+  let secret: State<Scalar> = scalar.from_int(44203)
+  let public_value: G1Element = g1.generator |> g1.scale(secret)
+  let message: ByteArray = #"acab"
+  let domain_tag: ByteArray = "BLS-TEST"
+  let challenge: G2Element = g2.hash_to_group(message, domain_tag)
+  let witness: G2Element =
+    g2.hash_to_group(message, domain_tag) |> g2.scale(secret)
+  let left: MillerLoopResult = miller_loop(public_value, challenge)
+  let right: MillerLoopResult = miller_loop(g1.generator, witness)
   final_exponentiation(left, right)
 }
