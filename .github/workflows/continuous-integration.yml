@@ -87,7 +87,7 @@ jobs:
       - name: 📘 Generate documentation
         shell: bash
         working-directory: .
-        run: aiken docs -o docs/${{ matrix.stdlib_version || 'latest' }}
+        run: aiken docs -o docs/${{ matrix.stdlib_version }}
 
       - name: 🏠 Redirection page for v-less sub-directories
         if: ${{ matrix.stdlib_version }}
@@ -125,22 +125,6 @@ jobs:
         with:
           pattern: aiken-docs-*
           merge-multiple: true
-
-      - name: 🏠 Landing page
-        shell: bash
-        run: |
-          cat > index.html <<HTML
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <title>Aiken StdLib API reference</title>
-                <link rel="canonical" href="https://aiken-lang.github.io/stdlib"/>
-                <meta name="robots" content="noindex">
-                <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-                <meta http-equiv="refresh" content="0; url=/stdlib/latest"/>
-              </head>
-            </html>
-          HTML
 
       - name: 📦 Upload artifact
         uses: actions/upload-pages-artifact@v4
