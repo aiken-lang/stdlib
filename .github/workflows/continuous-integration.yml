@@ -57,6 +57,8 @@ jobs:
 
           - stdlib_version: v2.2.0
 
+          - stdlib_version: v3.0.0
+
           - stdlib_version: ""
 
     runs-on: ${{ matrix.runner || 'ubuntu-latest' }}
