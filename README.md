@@ -11,17 +11,18 @@
 ## Getting started
 
 ```
-aiken add aiken-lang/stdlib --version v2
+aiken add aiken-lang/stdlib --version v3
 ```
 
 ## Compatibility
 
-aiken's version            | stdlib's version(s)     | Plutus version
----                        | ---                     | ---
-`v1.1.{3..19}`             | `>= 2.1.0`              | `V3`
-`v1.1.{1..2}`              | `>= 2.0.0` && `< 2.1.0` | `V3`
-`v1.0.{28-alpha..29-alpha}`| `>= 1.9.0` && `< 2.0.0` | `V2`
-`v1.0.26-alpha`            | `<= 1.8.0` && `< 1.9.0` | `V2`
+stdlib's version(s)   | aiken's version                  | Plutus version
+---                   | ---                              | ---
+`>= 3.0.0`            | `>= v1.1.17`                     | `V3`
+`>= 2.1.0 && < 3.0.0` | `>= v1.1.3`                      | `V3`
+`>= 2.0.0 && < 2.1.0` | `v1.1.1`, `v1.1.2`               | `V3`
+`>= 1.9.0 && < 2.0.0` | `v1.0.28-alpha`, `v1.0.29-alpha` | `V2`
+`>= 1.8.0 && < 1.9.0` | `v1.0.26-alpha`                  | `V2`
 
 ## Overview
 
