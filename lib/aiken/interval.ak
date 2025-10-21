@@ -64,7 +64,16 @@
 ////    validity_range |> interval.is_entirely_after(end_bid)
 ////    ```
 
+use aiken/primitive/int
 use aiken/primitive/string
+
+// By convention, infinites are inclusive
+const positive_infinity: IntervalBound =
+  IntervalBound { bound_type: PositiveInfinity, is_inclusive: True }
+
+// By convention, infinites are inclusive
+const negative_infinity: IntervalBound =
+  IntervalBound { bound_type: NegativeInfinity, is_inclusive: True }
 
 ///
 /// A type to represent intervals of values. Interval are inhabited by an
@@ -126,10 +135,7 @@ pub fn after(lower_bound: Int) -> Interval {
       bound_type: Finite(lower_bound),
       is_inclusive: True,
     },
-    upper_bound: IntervalBound {
-      bound_type: PositiveInfinity,
-      is_inclusive: True,
-    },
+    upper_bound: positive_infinity,
   }
 }
 
@@ -147,10 +153,7 @@ pub fn entirely_after(lower_bound: Int) -> Interval {
       bound_type: Finite(lower_bound),
       is_inclusive: False,
     },
-    upper_bound: IntervalBound {
-      bound_type: PositiveInfinity,
-      is_inclusive: True,
-    },
+    upper_bound: positive_infinity,
   }
 }
 
@@ -164,10 +167,7 @@ pub fn entirely_after(lower_bound: Int) -> Interval {
 /// ```
 pub fn before(upper_bound: Int) -> Interval {
   Interval {
-    lower_bound: IntervalBound {
-      bound_type: NegativeInfinity,
-      is_inclusive: True,
-    },
+    lower_bound: negative_infinity,
     upper_bound: IntervalBound {
       bound_type: Finite(upper_bound),
       is_inclusive: True,
@@ -185,10 +185,7 @@ pub fn before(upper_bound: Int) -> Interval {
 /// ```
 pub fn entirely_before(upper_bound: Int) -> Interval {
   Interval {
-    lower_bound: IntervalBound {
-      bound_type: NegativeInfinity,
-      is_inclusive: True,
-    },
+    lower_bound: negative_infinity,
     upper_bound: IntervalBound {
       bound_type: Finite(upper_bound),
       is_inclusive: False,
@@ -245,16 +242,7 @@ pub fn entirely_between(lower_bound: Int, upper_bound: Int) -> Interval {
 /// interval.contains(empty, 1000) == False
 /// ```
 pub const empty: Interval =
-  Interval {
-    lower_bound: IntervalBound {
-      bound_type: PositiveInfinity,
-      is_inclusive: True,
-    },
-    upper_bound: IntervalBound {
-      bound_type: NegativeInfinity,
-      is_inclusive: True,
-    },
-  }
+  Interval { lower_bound: positive_infinity, upper_bound: negative_infinity }
 
 /// Create an interval that contains every possible values. i.e. $(-∞, +∞)$
 ///
@@ -263,16 +251,7 @@ pub const empty: Interval =
 /// interval.contains(everything, 1000) == True
 /// ```
 pub const everything: Interval =
-  Interval {
-    lower_bound: IntervalBound {
-      bound_type: NegativeInfinity,
-      is_inclusive: True,
-    },
-    upper_bound: IntervalBound {
-      bound_type: PositiveInfinity,
-      is_inclusive: True,
-    },
-  }
+  Interval { lower_bound: negative_infinity, upper_bound: positive_infinity }
 
 // ## Inspecting
 
@@ -406,26 +385,29 @@ test contains_12() {
 /// // Note: Two empty intervals are not necessarily equal.
 /// iv1 != iv2
 /// ```
-pub fn is_empty(self: Interval) -> Bool {
-  compare_bound_type(
-    self.lower_bound.bound_type,
-    self.upper_bound.bound_type,
-    fn() {
-      let is_open_interval =
-        !self.lower_bound.is_inclusive && !self.upper_bound.is_inclusive
-      if is_open_interval {
-        when (self.lower_bound.bound_type, self.upper_bound.bound_type) is {
-          (Finite(lower_bound), Finite(upper_bound)) ->
-            lower_bound + 1 == upper_bound
-          _ -> False
+pub fn is_empty(Interval { lower_bound, upper_bound }: Interval) -> Bool {
+  when lower_bound.bound_type is {
+    NegativeInfinity -> False
+    PositiveInfinity -> upper_bound.bound_type != PositiveInfinity
+    Finite(l) ->
+      when upper_bound.bound_type is {
+        NegativeInfinity -> True
+        Finite(r) -> {
+          let l =
+            if lower_bound.is_inclusive {
+              l
+            } else {
+              l + 1
+            }
+          if upper_bound.is_inclusive {
+            l > r
+          } else {
+            l >= r
+          }
         }
-      } else {
-        False
+        PositiveInfinity -> False
       }
-    },
-    fn(_) { !(self.lower_bound.is_inclusive && self.upper_bound.is_inclusive) },
-    fn() { True },
-  )
+  }
 }
 
 /// Check whether the interval is entirely after a given point.
@@ -630,8 +612,8 @@ fn bound_type_to_string(self: IntervalBoundType) -> String {
 /// ```
 pub fn hull(iv1: Interval, iv2: Interval) -> Interval {
   Interval {
-    lower_bound: min(iv1.lower_bound, iv2.lower_bound),
-    upper_bound: max(iv1.upper_bound, iv2.upper_bound),
+    lower_bound: min(iv1.lower_bound, iv2.lower_bound, inclusive_lower_bound),
+    upper_bound: max(iv1.upper_bound, iv2.upper_bound, inclusive_upper_bound),
   }
 }
 
@@ -669,33 +651,28 @@ test hull_3() {
 ///   |> includes(entirely_before(-1)) // [-∞, -1)
 /// ```
 pub fn includes(self: Interval, other: Interval) -> Bool {
-  and {
-    !is_empty(self),
-    or {
-      is_empty(other),
-      and {
-        compare_bound_type(
-          other.lower_bound.bound_type,
-          self.lower_bound.bound_type,
-          fn() { False },
-          fn(_) {
-            self.lower_bound.is_inclusive || !other.lower_bound.is_inclusive
-          },
-          fn() { True },
-        ),
-        compare_bound_type(
-          other.upper_bound.bound_type,
-          self.upper_bound.bound_type,
-          fn() { True },
-          fn(_) {
-            self.upper_bound.is_inclusive || !other.upper_bound.is_inclusive
-          },
-          fn() { False },
-        ),
-      },
-    },
+  if is_empty(other) {
+    True
+  } else if is_empty(self) {
+    False
+  } else {
+    and {
+      compare_bound(self.lower_bound, other.lower_bound, inclusive_lower_bound) != Greater,
+      compare_bound(self.upper_bound, other.upper_bound, inclusive_upper_bound) != Less,
+    }
   }
 }
+
+// contains :: (Enum a, Ord a) => Interval a -> Interval a -> Bool
+// -- Everything contains the empty interval
+// contains _ i2 | isEmpty i2 = True
+// -- Nothing is contained in the empty interval (except the empty interval,
+// -- which is already handled)
+// contains i1 _ | isEmpty i1 = False
+// -- Otherwise we check the endpoints. This doesn't work for empty intervals,
+// -- hence the cases above.
+// contains (Interval l1 h1) (Interval l2 h2) = l1 <= l2 && h2 <= h1
+// {-# INLINABLE contains #-}
 
 test includes_1() {
   between(-5, 5) |> includes(between(-5, 5))
@@ -758,8 +735,8 @@ test includes_8() {
 /// ```
 pub fn intersection(iv1: Interval, iv2: Interval) -> Interval {
   Interval {
-    lower_bound: max(iv1.lower_bound, iv2.lower_bound),
-    upper_bound: min(iv1.upper_bound, iv2.upper_bound),
+    lower_bound: max(iv1.lower_bound, iv2.lower_bound, inclusive_lower_bound),
+    upper_bound: min(iv1.upper_bound, iv2.upper_bound, inclusive_upper_bound),
   }
 }
 
@@ -810,30 +787,16 @@ test intersection_6() {
 ///
 /// interval.max(ib1, ib2) == ib2
 /// ```
-pub fn max(left: IntervalBound, right: IntervalBound) -> IntervalBound {
-  compare_bound_type(
-    left.bound_type,
-    right.bound_type,
-    fn() { right },
-    fn(is_negative) {
-      if left.is_inclusive == right.is_inclusive {
-        left
-      } else if is_negative {
-        if left.is_inclusive {
-          right
-        } else {
-          left
-        }
-      } else {
-        if left.is_inclusive {
-          left
-        } else {
-          right
-        }
-      }
-    },
-    fn() { left },
-  )
+fn max(
+  left: IntervalBound,
+  right: IntervalBound,
+  to_inclusive: fn(IntervalBound) -> IntervalBoundType,
+) -> IntervalBound {
+  let ord = compare_bound_type(to_inclusive(left), to_inclusive(right))
+  when ord is {
+    Greater | Equal -> left
+    Less -> right
+  }
 }
 
 /// Return the smallest bound of the two. For equal `IntervalBoundType`,
@@ -845,62 +808,72 @@ pub fn max(left: IntervalBound, right: IntervalBound) -> IntervalBound {
 ///
 /// interval.min(ib1, ib2) == ib1
 /// ```
-pub fn min(left: IntervalBound, right: IntervalBound) -> IntervalBound {
-  compare_bound_type(
-    left.bound_type,
-    right.bound_type,
-    fn() { left },
-    fn(is_negative) {
-      if left.is_inclusive == right.is_inclusive {
-        left
-      } else if is_negative {
-        if left.is_inclusive {
-          left
-        } else {
-          right
-        }
-      } else {
-        if left.is_inclusive {
-          right
-        } else {
-          left
-        }
-      }
-    },
-    fn() { right },
-  )
+fn min(
+  left: IntervalBound,
+  right: IntervalBound,
+  to_inclusive: fn(IntervalBound) -> IntervalBoundType,
+) -> IntervalBound {
+  let ord = compare_bound_type(to_inclusive(left), to_inclusive(right))
+  when ord is {
+    Less | Equal -> left
+    Greater -> right
+  }
+}
+
+fn compare_bound(
+  left: IntervalBound,
+  right: IntervalBound,
+  to_inclusive: fn(IntervalBound) -> IntervalBoundType,
+) -> Ordering {
+  compare_bound_type(to_inclusive(left), to_inclusive(right))
 }
 
 fn compare_bound_type(
   left: IntervalBoundType,
   right: IntervalBoundType,
-  less: fn() -> a,
-  equal: fn(Bool) -> a,
-  greater: fn() -> a,
-) -> a {
+) -> Ordering {
   when left is {
     NegativeInfinity ->
       when right is {
-        NegativeInfinity -> equal(True)
-        _ -> less()
+        NegativeInfinity -> Equal
+        _ -> Less
       }
     PositiveInfinity ->
       when right is {
-        PositiveInfinity -> equal(False)
-        _ -> greater()
+        PositiveInfinity -> Equal
+        _ -> Greater
       }
-    Finite(left) ->
+    Finite(l) ->
       when right is {
-        NegativeInfinity -> greater()
-        PositiveInfinity -> less()
-        Finite(right) ->
-          if left < right {
-            less()
-          } else if left == right {
-            equal(left < 0)
-          } else {
-            greater()
-          }
+        NegativeInfinity -> Greater
+        Finite(r) -> int.compare(l, r)
+        PositiveInfinity -> Less
       }
+  }
+}
+
+fn inclusive_lower_bound(
+  IntervalBound { bound_type, is_inclusive }: IntervalBound,
+) -> IntervalBoundType {
+  if is_inclusive {
+    bound_type
+  } else {
+    when bound_type is {
+      Finite(x) -> Finite(x + 1)
+      NegativeInfinity | PositiveInfinity -> bound_type
+    }
+  }
+}
+
+fn inclusive_upper_bound(
+  IntervalBound { bound_type, is_inclusive }: IntervalBound,
+) -> IntervalBoundType {
+  if is_inclusive {
+    bound_type
+  } else {
+    when bound_type is {
+      Finite(x) -> Finite(x - 1)
+      NegativeInfinity | PositiveInfinity -> bound_type
+    }
   }
 }

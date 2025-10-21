@@ -38,7 +38,7 @@
   - [`aiken/collection/dict/strategy`](https://aiken-lang.github.io/stdlib/aiken/collection/dict/strategy.html)
   - [`cardano/assets/strategy`](https://aiken-lang.github.io/stdlib/cardano/assets/strategy.html)
 
-- <sup>⚠️ BREAKING-CHANGE ⚠️</sup> [`aiken/interval.{Interval}`](https://aiken-lang.github.io/stdlib/aiken/interval.html#Interval) no longer takes a generic parameter and now defaults to `Int` internally.
+- <sup>⚠️ BREAKING-CHANGE ⚠️</sup> [`aiken/interval.{Interval}`](https://aiken-lang.github.io/stdlib/aiken/interval.html#Interval) no longer takes a generic parameter and now defaults to `Int` internally. The implementation was fully revised and re-tested, as edge-cases and optimisation paths were found during development.
 
 ## v2.2.0 - 2024-12-13
 

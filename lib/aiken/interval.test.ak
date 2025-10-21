@@ -1,5 +1,8 @@
 use aiken/fuzz.{and_then, both, constant, either}
-use aiken/interval.{Interval, IntervalBound, IntervalBoundType}
+use aiken/interval.{
+  Finite, Interval, IntervalBound, IntervalBoundType, NegativeInfinity,
+  PositiveInfinity,
+}
 
 const bound_type: Fuzzer<IntervalBoundType> =
   fuzz.either(
@@ -24,7 +27,16 @@ const interval: Fuzzer<Interval> = {
   }
 
 test prop_intersection_symmetric((a, b) via both(interval, interval)) {
-  interval.intersection(a, b) == interval.intersection(b, a)
+  let it1 = interval.intersection(a, b)
+  let it2 = interval.intersection(b, a)
+  and {
+    inclusive_lower_bound(it1.lower_bound) == inclusive_lower_bound(
+      it2.lower_bound,
+    ),
+    inclusive_upper_bound(it1.upper_bound) == inclusive_upper_bound(
+      it2.upper_bound,
+    ),
+  }
 }
 
 test prop_intersection_idempotent((a, b) via both(interval, interval)) {
@@ -42,13 +54,39 @@ test prop_intersection_empty_is_empty(itv via interval) {
 
 test prop_includes_intersection((a, b) via both(interval, interval)) {
   let intersection = interval.intersection(a, b)
-  if interval.includes(a, b) {
-    fuzz.label(@"includes")
-    intersection == b || interval.is_empty(intersection)
-  } else {
-    fuzz.label(@"excludes")
-    True
+  and {
+    interval.includes(a, intersection),
+    interval.includes(b, intersection),
   }
+}
+
+test prop_includes_intersection_reg() {
+  let a =
+    Interval {
+      lower_bound: IntervalBound {
+        bound_type: interval.Finite(41),
+        is_inclusive: True,
+      },
+      upper_bound: IntervalBound {
+        bound_type: interval.PositiveInfinity,
+        is_inclusive: True,
+      },
+    }
+  let b =
+    Interval {
+      lower_bound: IntervalBound {
+        bound_type: interval.Finite(41),
+        is_inclusive: False,
+      },
+      upper_bound: IntervalBound {
+        bound_type: interval.Finite(42),
+        is_inclusive: True,
+      },
+    }
+
+  let intersection = interval.intersection(a, b)
+
+  (intersection == b)? || interval.is_empty(intersection)?
 }
 
 const fixture_intersection_contains: Fuzzer<(Interval, Interval, Int)> = {
@@ -80,4 +118,30 @@ test prop_includes_empty(itv via interval) {
   let is_empty = interval.is_empty(itv)
   fuzz.label_when(is_empty, @"empty", @"non-empty")
   is_empty || interval.includes(itv, interval.empty)
+}
+
+fn inclusive_lower_bound(
+  IntervalBound { bound_type, is_inclusive }: IntervalBound,
+) -> IntervalBoundType {
+  if is_inclusive {
+    bound_type
+  } else {
+    when bound_type is {
+      Finite(x) -> Finite(x + 1)
+      NegativeInfinity | PositiveInfinity -> bound_type
+    }
+  }
+}
+
+fn inclusive_upper_bound(
+  IntervalBound { bound_type, is_inclusive }: IntervalBound,
+) -> IntervalBoundType {
+  if is_inclusive {
+    bound_type
+  } else {
+    when bound_type is {
+      Finite(x) -> Finite(x - 1)
+      NegativeInfinity | PositiveInfinity -> bound_type
+    }
+  }
 }
