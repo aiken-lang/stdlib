@@ -21,6 +21,10 @@ use aiken/crypto/bls12_381/scalar.{Scalar}
 pub const generator: G2Element =
   #<Bls12_381, G2>"93e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8"
 
+/// Basic Domain Separation Tag as per the [IETF](https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#section-4.2.1).
+pub const domain_separation_tag_basic =
+  "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_"
+
 test generator_1() {
   builtin.bls12_381_g2_scalar_mul(scalar.field_prime, generator) == #<Bls12_381, G2>"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 }
