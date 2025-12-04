@@ -6,10 +6,10 @@ use aiken/interval.{
 
 const bound_type: Fuzzer<IntervalBoundType> =
   fuzz.either(
-    fuzz.map(fuzz.int(), IntervalBoundType.Finite),
+    fuzz.map(fuzz.int(), Finite),
     either(
-      constant(IntervalBoundType.NegativeInfinity),
-      constant(IntervalBoundType.PositiveInfinity),
+      constant(NegativeInfinity),
+      constant(PositiveInfinity),
     ),
   )
 
