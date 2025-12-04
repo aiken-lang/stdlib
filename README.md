@@ -65,7 +65,3 @@ validator hello_world {
   }
 }
 ```
-
-## Stats
-
-![Alt](https://repobeats.axiom.co/api/embed/f0a17e7f6133630e165b9e56ec5447bef32fe831.svg "Repobeats analytics image")
