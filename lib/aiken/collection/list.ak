@@ -1203,9 +1203,15 @@ pub fn foldl(self: List<a>, zero: b, with: fn(a, b) -> b) -> b {
   }
 }
 
-type Fold2<a, b, result> =
+pub type Fold2<a, b, result> =
   fn(a, b) -> result
 
+/// > [!CAUTION]
+/// > This function was released by mistake as part of the v2 series of updates. However, unlike the name suggests, it isn't a left-fold but a right-fold.
+/// >
+/// > It cannot be removed without changing its semantic and possibly breaking existing code that relies on it. Sorry for the inconvenience.
+/// >
+/// > Be also aware that starting from `v3.0.0`, this has been fixed. So be careful if you've been using `foldl2` when upgrading to `v3.0.0`; you very likely want to use v3's `foldr2` instead.
 pub fn foldl2(
   self: List<elem>,
   zero_a: a,

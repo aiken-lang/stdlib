@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.2.1 - 2025-12-16
+
+### Fixed
+
+- Add warning comment to `foldl2`.
+- Expose `Foldl2` as a public type.
+
 ## v2.2.0 - 2024-12-13
 
 ### Added
