@@ -57,6 +57,8 @@ jobs:
 
           - stdlib_version: v2.2.0
 
+          - stdlib_version: v2.2.1
+
           - stdlib_version: v3.0.0
 
           - stdlib_version: ""
@@ -89,8 +91,43 @@ jobs:
         working-directory: .
         run: aiken docs -o docs/${{ matrix.stdlib_version }}
 
+        # Make sure that the documentation for v2.2.0 points to v2.2.1 with the
+        # warning comment about foldl2.
       - name: 🏠 Redirection page for v-less sub-directories
-        if: ${{ matrix.stdlib_version }}
+        if: ${{ matrix.stdlib_version == 'v2.2.0' }}
+        shell: bash
+        working-directory: docs
+        run: |
+          mkdir -p v2.2.0
+          cat > v2.2.0/index.html <<HTML
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>Aiken StdLib API reference</title>
+                <link rel="canonical" href="https://aiken-lang.github.io/stdlib"/>
+                <meta name="robots" content="noindex">
+                <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+                <meta http-equiv="refresh" content="0; url=/stdlib/v2.2.1"/>
+              </head>
+            </html>
+          HTML
+
+          mkdir -p 2.2.0
+          cat > 2.2.0/index.html <<HTML
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>Aiken StdLib API reference</title>
+                <link rel="canonical" href="https://aiken-lang.github.io/stdlib"/>
+                <meta name="robots" content="noindex">
+                <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+                <meta http-equiv="refresh" content="0; url=/stdlib/v2.2.1"/>
+              </head>
+            </html>
+          HTML
+
+      - name: 🏠 Redirection page for v-less sub-directories
+        if: ${{ matrix.stdlib_version && matrix.stdlib_version != 'v2.2.0' }}
         shell: bash
         working-directory: docs
         run: |
