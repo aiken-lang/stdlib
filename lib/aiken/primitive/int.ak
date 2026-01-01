@@ -50,9 +50,9 @@ test from_bytearray_big_endian_3() {
 /// Interpret a Little-Endian (least-significant bytes first) `ByteArray` as an `Int`.
 ///
 /// ```aiken
-/// int.from_bytearray_big_endian(#"40420f") == 1_000_000
-/// int.from_bytearray_big_endian(#"40420f0000") == 1_000_000
-/// int.from_bytearray_big_endian(#"0000000000000000") == 0
+/// int.from_bytearray_little_endian(#"40420f") == 1_000_000
+/// int.from_bytearray_little_endian(#"40420f0000") == 1_000_000
+/// int.from_bytearray_little_endian(#"0000000000000000") == 0
 /// ```
 pub fn from_bytearray_little_endian(self: ByteArray) -> Int {
   bytearray_to_integer(False, self)
