@@ -61,7 +61,7 @@ pub fn all(self: List<a>, predicate: fn(a) -> Bool) -> Bool {
 /// Determine if at least one element of the list satisfies the given predicate.
 ///
 /// > [!NOTE]
-/// > An empty list never satisfies the predicate.
+/// > An empty list NEVER satisfies the predicate.
 ///
 /// ```aiken
 /// list.any([], fn(n) { n > 2 }) == False
@@ -267,7 +267,7 @@ pub fn length(self: List<a>) -> Int {
 /// More efficient version of [`any`](#any), but fails if no element satisfies the predicate.
 ///
 /// > [!NOTE]
-/// > An empty list always satisfies the predicate.
+/// > An empty list NEVER satisfies the predicate.
 ///
 /// ```aiken
 /// list.any([], fn(n) { n > 2 }) → 💥
