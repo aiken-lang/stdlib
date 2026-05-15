@@ -270,10 +270,10 @@ pub fn length(self: List<a>) -> Int {
 /// > An empty list NEVER satisfies the predicate.
 ///
 /// ```aiken
-/// list.any([], fn(n) { n > 2 }) → 💥
-/// list.any([1, 2, 3], fn(n) { n > 0 }) == True
-/// list.any([1, 2, 3], fn(n) { n == 2 }) == True
-/// list.any([1, 2, 3], fn(n) { n < 0 }) → 💥
+/// list.expect_any([], fn(n) { n > 2 }) → 💥
+/// list.expect_any([1, 2, 3], fn(n) { n > 0 }) == True
+/// list.expect_any([1, 2, 3], fn(n) { n == 2 }) == True
+/// list.expect_any([1, 2, 3], fn(n) { n < 0 }) → 💥
 /// ```
 pub fn expect_any(self: List<a>, predicate: fn(a) -> Bool) -> Void {
   if predicate(builtin.head_list(self)) {
