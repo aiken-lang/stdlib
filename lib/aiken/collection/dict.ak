@@ -379,10 +379,7 @@ fn do_has_key(self: Pairs<ByteArray, value>, key k: ByteArray) -> Bool {
 /// dict.is_empty(dict.empty) == True
 /// ```
 pub fn is_empty(self: Dict<key, value>) -> Bool {
-  when self.inner is {
-    [] -> True
-    _ -> False
-  }
+  self.inner == []
 }
 
 /// Extract all the keys present in a given `Dict`.
