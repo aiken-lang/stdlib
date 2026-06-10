@@ -1,5 +1,13 @@
 # Changelog
 
+## vNEXT
+
+### Added
+
+- New primitives for [`aiken/crypto/bls12_381`](https://aiken-lang.github.io/stdlib/aiken/crypto/bls12_381.html), completing coverage of the BLS12-381 builtins:
+  - [`g1.neg`](https://aiken-lang.github.io/stdlib/aiken/crypto/bls12_381/g1.html#neg) / [`g2.neg`](https://aiken-lang.github.io/stdlib/aiken/crypto/bls12_381/g2.html#neg): to compute the additive inverse of a curve point.
+  - [`pairing.mul`](https://aiken-lang.github.io/stdlib/aiken/crypto/bls12_381/pairing.html#mul): to multiply two `MillerLoopResult` together, aggregating pairings before a final verification.
+
 ## v3.1.0 - 2026-04-25
 
 ### Added

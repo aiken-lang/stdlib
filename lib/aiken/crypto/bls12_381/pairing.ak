@@ -1,8 +1,24 @@
-use aiken/builtin.{bls12_381_final_verify, bls12_381_miller_loop}
+use aiken/builtin.{
+  bls12_381_final_verify, bls12_381_miller_loop,
+  bls12_381_mul_miller_loop_result,
+}
 
 /// Computes a MillerLoop over the elements `q` and `p`
 pub fn miller_loop(q: G1Element, p: G2Element) -> MillerLoopResult {
   bls12_381_miller_loop(q, p)
+}
+
+/// Multiplies two `MillerLoopResult` together.
+///
+/// This aggregates several pairings into a single `MillerLoopResult` before a
+/// final verification, relying on the bilinearity of the pairing `e`:
+///
+/// ```aiken
+/// // e(q1, p1) * e(q2, p2)
+/// mul(miller_loop(q1, p1), miller_loop(q2, p2))
+/// ```
+pub fn mul(left: MillerLoopResult, right: MillerLoopResult) -> MillerLoopResult {
+  bls12_381_mul_miller_loop_result(left, right)
 }
 
 /// Final exponentiation against two `MillerLoopResult`.
