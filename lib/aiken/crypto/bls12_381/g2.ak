@@ -66,9 +66,15 @@ pub fn add(left: G2Element, right: G2Element) {
   builtin.bls12_381_g2_add(left, right)
 }
 
+/// Negates a point in the G2 group, returning its additive inverse.
+/// That is, `add(point, neg(point))` yields the [`zero`](#zero) point.
+pub fn neg(point: G2Element) -> G2Element {
+  builtin.bls12_381_g2_neg(point)
+}
+
 /// Subtracts one point in the G2 group from another.
 pub fn sub(left: G2Element, right: G2Element) {
-  builtin.bls12_381_g2_add(left, builtin.bls12_381_g2_neg(right))
+  add(left, neg(right))
 }
 
 /// Exponentiates a point in the G2 group with a `scalar`.

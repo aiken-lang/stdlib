@@ -58,9 +58,15 @@ pub fn add(left, right) {
   builtin.bls12_381_g1_add(left, right)
 }
 
+/// Negates a point in the G1 group, returning its additive inverse.
+/// That is, `add(point, neg(point))` yields the [`zero`](#zero) point.
+pub fn neg(point) {
+  builtin.bls12_381_g1_neg(point)
+}
+
 /// Subtracts one point in the G1 group from another.
 pub fn sub(left, right) {
-  builtin.bls12_381_g1_add(left, builtin.bls12_381_g1_neg(right))
+  add(left, neg(right))
 }
 
 /// Exponentiates a point in the G1 group with a `scalar`.

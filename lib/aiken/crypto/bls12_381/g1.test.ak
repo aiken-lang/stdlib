@@ -1,6 +1,6 @@
 use aiken/builtin
 use aiken/crypto/bls12_381/g1.{
-  add, compress, equal, generator, hash_to_group, scale, sub, zero,
+  add, compress, equal, generator, hash_to_group, neg, scale, sub, zero,
 }
 use aiken/crypto/bls12_381/scalar
 
@@ -18,10 +18,27 @@ test equal_1() {
   equal(generator, generator)
 }
 
+// ------------------------------------------------------------------------- neg
+
+test neg_1() {
+  // A point added to its negation yields the identity (zero) point.
+  add(generator, neg(generator)) == zero
+}
+
+test neg_2() {
+  // Negation matches subtraction from the identity (zero) point.
+  neg(generator) == sub(zero, generator)
+}
+
 // ------------------------------------------------------------------------- sub
 
 test sub_1() {
   generator == sub(add(generator, generator), generator)
+}
+
+test sub_2() {
+  // A point subtracted from itself yields the identity (zero) point.
+  sub(generator, generator) == zero
 }
 
 // ----------------------------------------------------------------------- scale
