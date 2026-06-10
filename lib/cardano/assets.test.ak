@@ -6,7 +6,8 @@ use cardano/assets.{
   AssetName, PolicyId, Value, ada_asset_name, ada_policy_id, add, difference,
   expect_lovelace_of, expect_match, expect_match_assets, flatten, flatten_with,
   from_ascending_pairs, from_asset, from_asset_list, from_lovelace, has_any_nft,
-  has_any_nft_strict, has_nft, has_nft_strict, lovelace_of, match, match_assets,
+  has_any_nft_strict, has_any_unique, has_any_unique_strict, has_nft, has_nft_strict,
+  has_unique, has_unique_strict, lovelace_of, match, match_assets,
   merge, negate, reduce, restricted_to, without_lovelace, zero,
 }
 use cardano/assets/strategy
@@ -516,24 +517,38 @@ test prop_contains_superset_mutation(
 
 test has_nft_with_fixture_1() {
   and {
-    // has_any_nft
+    // has_any_nft / has_any_unique
     has_any_nft(has_nft_fixture_1, "foo")?,
+    has_any_unique(has_nft_fixture_1, "foo")?,
     (!has_any_nft(has_nft_fixture_1, "bar"))?,
+    (!has_any_unique(has_nft_fixture_1, "bar"))?,
     (!has_any_nft(has_nft_fixture_1, "baz"))?,
-    // has_any_nft_strict
+    (!has_any_unique(has_nft_fixture_1, "baz"))?,
+    // has_any_nft_strict / has_any_unique_strict
     (!has_any_nft_strict(has_nft_fixture_1, "foo"))?,
+    (!has_any_unique_strict(has_nft_fixture_1, "foo"))?,
     (!has_any_nft_strict(has_nft_fixture_1, "bar"))?,
+    (!has_any_unique_strict(has_nft_fixture_1, "bar"))?,
     (!has_any_nft_strict(has_nft_fixture_1, "baz"))?,
-    // has_nft
+    (!has_any_unique_strict(has_nft_fixture_1, "baz"))?,
+    // has_nft / has_unique
     has_nft(has_nft_fixture_1, "foo", "asset#1")?,
+    has_unique(has_nft_fixture_1, "foo", "asset#1")?,
     (!has_nft(has_nft_fixture_1, "foo", "asset#2"))?,
+    (!has_unique(has_nft_fixture_1, "foo", "asset#2"))?,
     (!has_nft(has_nft_fixture_1, "bar", "asset#2"))?,
+    (!has_unique(has_nft_fixture_1, "bar", "asset#2"))?,
     (!has_nft(has_nft_fixture_1, "baz", "asset#1"))?,
-    // has_nft_strict
+    (!has_unique(has_nft_fixture_1, "baz", "asset#1"))?,
+    // has_nft_strict / has_unique_strict
     (!has_nft_strict(has_nft_fixture_1, "foo", "asset#1"))?,
+    (!has_unique_strict(has_nft_fixture_1, "foo", "asset#1"))?,
     (!has_nft_strict(has_nft_fixture_1, "foo", "asset#2"))?,
+    (!has_unique_strict(has_nft_fixture_1, "foo", "asset#2"))?,
     (!has_nft_strict(has_nft_fixture_1, "bar", "asset#2"))?,
+    (!has_unique_strict(has_nft_fixture_1, "bar", "asset#2"))?,
     (!has_nft_strict(has_nft_fixture_1, "baz", "asset#1"))?,
+    (!has_unique_strict(has_nft_fixture_1, "baz", "asset#1"))?,
   }
 }
 
@@ -563,24 +578,38 @@ test has_nft_with_fixture_1_without_lovelace() {
 
 test has_nft_with_fixture_2() {
   and {
-    // has_any_nft
+    // has_any_nft / has_any_unique
     has_any_nft(has_nft_fixture_2, "foo")?,
+    has_any_unique(has_nft_fixture_2, "foo")?,
     (!has_any_nft(has_nft_fixture_2, "bar"))?,
+    (!has_any_unique(has_nft_fixture_2, "bar"))?,
     (!has_any_nft(has_nft_fixture_2, "baz"))?,
-    // has_any_nft_strict
+    (!has_any_unique(has_nft_fixture_2, "baz"))?,
+    // has_any_nft_strict / has_any_unique_strict
     has_any_nft_strict(has_nft_fixture_2, "foo")?,
+    has_any_unique_strict(has_nft_fixture_2, "foo")?,
     (!has_any_nft_strict(has_nft_fixture_2, "bar"))?,
+    (!has_any_unique_strict(has_nft_fixture_2, "bar"))?,
     (!has_any_nft_strict(has_nft_fixture_2, "baz"))?,
-    // has_nft
+    (!has_any_unique_strict(has_nft_fixture_2, "baz"))?,
+    // has_nft / has_unique
     has_nft(has_nft_fixture_2, "foo", "asset#1")?,
+    has_unique(has_nft_fixture_2, "foo", "asset#1")?,
     (!has_nft(has_nft_fixture_2, "foo", "asset#2"))?,
+    (!has_unique(has_nft_fixture_2, "foo", "asset#2"))?,
     (!has_nft(has_nft_fixture_2, "bar", "asset#2"))?,
+    (!has_unique(has_nft_fixture_2, "bar", "asset#2"))?,
     (!has_nft(has_nft_fixture_2, "baz", "asset#1"))?,
-    // has_nft_strict
+    (!has_unique(has_nft_fixture_2, "baz", "asset#1"))?,
+    // has_nft_strict / has_unique_strict
     has_nft_strict(has_nft_fixture_2, "foo", "asset#1")?,
+    has_unique_strict(has_nft_fixture_2, "foo", "asset#1")?,
     (!has_nft_strict(has_nft_fixture_2, "foo", "asset#2"))?,
+    (!has_unique_strict(has_nft_fixture_2, "foo", "asset#2"))?,
     (!has_nft_strict(has_nft_fixture_2, "bar", "asset#2"))?,
+    (!has_unique_strict(has_nft_fixture_2, "bar", "asset#2"))?,
     (!has_nft_strict(has_nft_fixture_2, "baz", "asset#1"))?,
+    (!has_unique_strict(has_nft_fixture_2, "baz", "asset#1"))?,
   }
 }
 
