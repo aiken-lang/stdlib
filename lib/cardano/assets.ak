@@ -149,42 +149,54 @@ fn do_contains(
   }
 }
 
-/// Check whether a `Value` carries any NFT from the given policy. Other assets are tolerated.
+/// Check whether a `Value` contains any token under the given policy whose
+/// quantity is exactly `1`. Other assets are tolerated.
+///
+/// This only speaks about uniqueness *within the given `Value`*.
 ///
 /// ```aiken
 /// let value = assets.from_lovelace(42)
 ///    |> assets.add("foo", "asset#1", 1)
 ///    |> assets.add("bar", "asset#2", 14)
 ///
-/// assets.has_any_nft(value, "foo") == True
-/// assets.has_any_nft(value, "bar") == False
-/// assets.has_any_nft(value, "baz") == False
+/// assets.has_any_unique(value, "foo") == True
+/// assets.has_any_unique(value, "bar") == False
+/// assets.has_any_unique(value, "baz") == False
 /// ```
-pub fn has_any_nft(self: Value, policy: PolicyId) -> Bool {
+pub fn has_any_unique(self: Value, policy: PolicyId) -> Bool {
   tokens(self, policy)
     |> dict.foldr(False, fn(_, quantity, result) { result || 1 == quantity })
 }
 
-/// Check whether a `Value` carries any NFT from the given policy. Other assets (other than
-/// Ada) aren't tolerated. Said differently, the check succeeds if and only if
-/// the value contains no assets other than the expected NFT or Ada.
+/// Backward-compatible alias for [`has_any_unique`](#has_any_unique).
+///
+/// This checks whether a token is unique within the given `Value`; it does not
+/// prove any blockchain-wide NFT property.
+pub fn has_any_nft(self: Value, policy: PolicyId) -> Bool {
+  has_any_unique(self, policy)
+}
+
+/// Check whether a `Value` contains exactly one token under the given policy,
+/// optionally alongside Ada.
+///
+/// This only speaks about uniqueness *within the given `Value`*.
 ///
 /// ```aiken
 /// let value = assets.from_lovelace(42)
 ///    |> assets.add("foo", "asset#1", 1)
 ///    |> assets.add("bar", "asset#2", 14)
 ///
-/// assets.has_any_nft_strict(value, "foo") == False
-/// assets.has_any_nft_strict(value, "bar") == False
-/// assets.has_any_nft_strict(value, "baz") == False
+/// assets.has_any_unique_strict(value, "foo") == False
+/// assets.has_any_unique_strict(value, "bar") == False
+/// assets.has_any_unique_strict(value, "baz") == False
 /// ```
 ///
 /// ```aiken
 /// let value = assets.from_lovelace(42)
 ///    |> assets.add("foo", "asset#1", 1)
 ///
-/// assets.has_any_nft_strict(value, "foo") == True
-/// assets.has_any_nft_strict(value, "bar") == False
+/// assets.has_any_unique_strict(value, "foo") == True
+/// assets.has_any_unique_strict(value, "bar") == False
 /// ```
 ///
 /// ```aiken
@@ -192,10 +204,10 @@ pub fn has_any_nft(self: Value, policy: PolicyId) -> Bool {
 ///    |> assets.add("foo", "asset#1", 1)
 ///    |> assets.add("foo", "asset#2", 1)
 ///
-/// assets.has_any_nft_strict(value, "foo") == False
-/// assets.has_any_nft_strict(value, "bar") == False
+/// assets.has_any_unique_strict(value, "foo") == False
+/// assets.has_any_unique_strict(value, "bar") == False
 /// ```
-pub fn has_any_nft_strict(self: Value, policy: PolicyId) -> Bool {
+pub fn has_any_unique_strict(self: Value, policy: PolicyId) -> Bool {
   let check_inner = fn(p, inner) {
     and {
       policy == p,
@@ -218,17 +230,28 @@ pub fn has_any_nft_strict(self: Value, policy: PolicyId) -> Bool {
   }
 }
 
-/// Check whether a `Value` carries a specific NFT. Other assets are tolerated.
+/// Backward-compatible alias for [`has_any_unique_strict`](#has_any_unique_strict).
+///
+/// This checks whether a token is unique within the given `Value`; it does not
+/// prove any blockchain-wide NFT property.
+pub fn has_any_nft_strict(self: Value, policy: PolicyId) -> Bool {
+  has_any_unique_strict(self, policy)
+}
+
+/// Check whether a `Value` contains exactly one unit of a specific token. Other
+/// assets are tolerated.
+///
+/// This only speaks about uniqueness *within the given `Value`*.
 ///
 /// ```aiken
 /// let value = assets.from_lovelace(42)
 ///    |> assets.add("foo", "asset#1", 1)
 ///    |> assets.add("bar", "asset#2", 14)
 ///
-/// assets.has_nft(value, "foo", "asset#1") == True
-/// assets.has_nft(value, "foo", "asset#2") == False
-/// assets.has_nft(value, "bar", "asset#2") == False
-/// assets.has_nft(value, "baz", "asset#3") == False
+/// assets.has_unique(value, "foo", "asset#1") == True
+/// assets.has_unique(value, "foo", "asset#2") == False
+/// assets.has_unique(value, "bar", "asset#2") == False
+/// assets.has_unique(value, "baz", "asset#3") == False
 /// ```
 ///
 /// ```aiken
@@ -236,35 +259,44 @@ pub fn has_any_nft_strict(self: Value, policy: PolicyId) -> Bool {
 ///    |> assets.add("foo", "asset#1", 1)
 ///    |> assets.add("foo", "asset#2", 1)
 ///
-/// assets.has_nft(value, "foo", "asset#1") == True
-/// assets.has_nft(value, "foo", "asset#2") == True
-/// assets.has_nft(value, "bar", "asset#2") == False
+/// assets.has_unique(value, "foo", "asset#1") == True
+/// assets.has_unique(value, "foo", "asset#2") == True
+/// assets.has_unique(value, "bar", "asset#2") == False
 /// ```
-pub fn has_nft(self: Value, policy: PolicyId, asset_name: AssetName) -> Bool {
+pub fn has_unique(self: Value, policy: PolicyId, asset_name: AssetName) -> Bool {
   1 == quantity_of(self, policy, asset_name)
 }
 
-/// Check whether a `Value` carries a specific NFT. Other assets (other than
-/// Ada) aren't tolerated. Said differently, the check succeeds if and only if
-/// the value contains no assets other than the expected NFT or Ada.
+/// Backward-compatible alias for [`has_unique`](#has_unique).
+///
+/// This checks whether a token is unique within the given `Value`; it does not
+/// prove any blockchain-wide NFT property.
+pub fn has_nft(self: Value, policy: PolicyId, asset_name: AssetName) -> Bool {
+  has_unique(self, policy, asset_name)
+}
+
+/// Check whether a `Value` contains no assets other than exactly one unit of a
+/// specific token and optional Ada.
+///
+/// This only speaks about uniqueness *within the given `Value`*.
 ///
 /// ```aiken
 /// let value = assets.from_lovelace(42)
 ///    |> assets.add("foo", "asset#1", 1)
 ///    |> assets.add("bar", "asset#2", 14)
 ///
-/// assets.has_nft_strict(value1, "foo", "asset#1") == False
-/// assets.has_nft_strict(value1, "bar", "asset#2") == False
-/// assets.has_nft_strict(value1, "baz", "asset#3") == False
+/// assets.has_unique_strict(value1, "foo", "asset#1") == False
+/// assets.has_unique_strict(value1, "bar", "asset#2") == False
+/// assets.has_unique_strict(value1, "baz", "asset#3") == False
 /// ```
 ///
 /// ```aiken
 /// let value = assets.from_lovelace(42)
 ///    |> assets.add("foo", "asset#1", 1)
 ///
-/// assets.has_nft_strict(value, "foo", "asset#1") == True
-/// assets.has_nft_strict(value, "foo", "asset#2") == False
-/// assets.has_nft_strict(value, "bar", "asset#2") == False
+/// assets.has_unique_strict(value, "foo", "asset#1") == True
+/// assets.has_unique_strict(value, "foo", "asset#2") == False
+/// assets.has_unique_strict(value, "bar", "asset#2") == False
 /// ```
 ///
 /// ```aiken
@@ -272,10 +304,10 @@ pub fn has_nft(self: Value, policy: PolicyId, asset_name: AssetName) -> Bool {
 ///    |> assets.add("foo", "asset#1", 1)
 ///    |> assets.add("foo", "asset#2", 1)
 ///
-/// assets.has_nft_strict(value3, "foo", "asset#1") == False
-/// assets.has_nft_strict(value3, "foo", "asset#2") == False
+/// assets.has_unique_strict(value3, "foo", "asset#1") == False
+/// assets.has_unique_strict(value3, "foo", "asset#2") == False
 /// ```
-pub fn has_nft_strict(
+pub fn has_unique_strict(
   self: Value,
   policy: PolicyId,
   asset_name: AssetName,
@@ -292,6 +324,18 @@ pub fn has_nft_strict(
     ),
     fn(_, _) { True },
   )
+}
+
+/// Backward-compatible alias for [`has_unique_strict`](#has_unique_strict).
+///
+/// This checks whether a token is unique within the given `Value`; it does not
+/// prove any blockchain-wide NFT property.
+pub fn has_nft_strict(
+  self: Value,
+  policy: PolicyId,
+  asset_name: AssetName,
+) -> Bool {
+  has_unique_strict(self, policy, asset_name)
 }
 
 /// Check is a `Value` is zero. That is, it has no assets and holds no Ada/Lovelace.
