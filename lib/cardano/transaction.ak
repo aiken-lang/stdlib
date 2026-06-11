@@ -65,7 +65,8 @@ pub type Transaction {
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   /// > [!IMPORTANT]
-  /// > Redeemers are ordered by ascending [ScriptPurpose](./transaction.html#ScriptPurpose).
+  /// > Redeemers are ordered by ascending [ScriptPurpose](./transaction.html#ScriptPurpose),
+  /// > following ledger ordering: `Spend < Mint < Publish < Withdraw < Vote < Propose`.
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<DataHash, Data>,
   id: TransactionId,

@@ -9,30 +9,30 @@ use cardano/transaction/output_reference
 
 pub fn compare(left: ScriptPurpose, right: ScriptPurpose) -> Ordering {
   when left is {
-    Mint(left) ->
-      when right is {
-        Mint(right) -> bytearray.compare(left, right)
-        _ -> Less
-      }
-
     Spend(left) ->
       when right is {
         Spend(right) -> output_reference.compare(left, right)
-        Mint(_) -> Greater
         _ -> Less
       }
 
-    Withdraw(left) ->
+    Mint(left) ->
       when right is {
-        Withdraw(right) -> credential.compare(left, right)
-        Spend(_) | Mint(_) -> Greater
+        Spend(_) -> Greater
+        Mint(right) -> bytearray.compare(left, right)
         _ -> Less
       }
 
     Publish { at: left, .. } ->
       when right is {
+        Spend(_) | Mint(_) -> Greater
         Publish { at: right, .. } -> int.compare(left, right)
-        Spend(_) | Mint(_) | Withdraw(_) -> Greater
+        _ -> Less
+      }
+
+    Withdraw(left) ->
+      when right is {
+        Spend(_) | Mint(_) | Publish { .. } -> Greater
+        Withdraw(right) -> credential.compare(left, right)
         _ -> Less
       }
 
