@@ -1,7 +1,8 @@
 use aiken/primitive/bytearray.{
   concat, drop, foldl, foldr, from_int_big_endian, from_int_little_endian,
-  from_string, index_of, is_empty, length, push, reduce, slice, starts_with,
-  take, test_bit, to_hex, to_int_big_endian, to_int_little_endian, to_string,
+  from_string, index_of, is_empty, length, push, reduce, replicate, slice,
+  starts_with, take, test_bit, to_hex, to_int_big_endian, to_int_little_endian,
+  to_string,
 }
 
 // --------------------------------------------------------- from_int_big_endian
@@ -50,19 +51,26 @@ test from_string_2() {
   from_string(@"ABC") == #"414243"
 }
 
-// ------------------------------------------------------------------------ push
+// ----------------------------------------------------------------- replicate
 
-test push_1() {
-  push(#[], 0) == #[0]
+test replicate_1() {
+  and {
+    replicate(10, 0) == #"00000000000000000000",
+    replicate(1, 255) == #"ff",
+    replicate(0, 128) == #"",
+  }
 }
 
-test push_2() {
-  push(#[2, 3], 1) == #[1, 2, 3]
+test replicate_2() fail {
+  replicate(8193, 0) |> tautology
 }
 
-test push_3() fail {
-  let x = 257
-  push(#[2, 3], x) == #[1, 2, 3]
+test replicate_3() fail {
+  replicate(2, 256) |> tautology
+}
+
+test replicate_4() fail {
+  replicate(2, -1) |> tautology
 }
 
 // -------------------------------------------------------------------- index_of
@@ -162,6 +170,21 @@ test drop_3() {
 test drop_4() {
   let x = #""
   drop(x, 2) == #""
+}
+
+// ------------------------------------------------------------------------ push
+
+test push_1() {
+  push(#[], 0) == #[0]
+}
+
+test push_2() {
+  push(#[2, 3], 1) == #[1, 2, 3]
+}
+
+test push_3() fail {
+  let x = 257
+  push(#[2, 3], x) == #[1, 2, 3]
 }
 
 // ----------------------------------------------------------------------- slice

@@ -813,6 +813,21 @@ pub fn foldr(
   }
 }
 
+/// Upcast a `Data` into a `Pairs<Data, Data>`
+pub fn from_data(data: Data) -> Option<Pairs<Data, Data>> {
+  if data is Pairs<Data, Data> {
+    Some(data)
+  } else {
+    None
+  }
+}
+
+/// Like [`from_data`](#from_data) but fails if the given Data is not a CBOR map.
+pub fn expect_from_data(data: Data) -> Pairs<Data, Data> {
+  expect self: Pairs<Data, Data> = data
+  self
+}
+
 fn as_tuple(a: a, b: b) -> (a, b) {
   (a, b)
 }

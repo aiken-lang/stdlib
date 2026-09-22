@@ -32,12 +32,10 @@ jobs:
       - name: 🧰 Install Aiken
         uses: aiken-lang/setup-aiken@v1
         with:
-          version: v1.1.21
+          version: v1.1.24
 
-      # FIXME: Temporary, re-enable once v1.1.22 is available.
-      #
-      # - name: 📝 Run fmt
-      #   run: aiken fmt --check
+      - name: 📝 Run fmt
+        run: aiken fmt --check
 
       - name: 🔬 Run tests (verbose)
         run: aiken check -t verbose

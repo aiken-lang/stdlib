@@ -50,25 +50,26 @@ pub fn from_string(str: String) -> ByteArray {
   builtin.encode_utf8(str)
 }
 
-/// Add a byte element in front of a `ByteArray`. When the given byte is
-/// greater than 255, it wraps-around. **PlutusV2 behavior** So 256 is mapped to 0, 257 to 1, and so
-/// forth.
-/// In PlutusV3 this will error instead of wrapping around.
+/// Replicate a byte a certain number of times.
 ///
 /// ```aiken
-/// bytearray.push(#"", 0) == #"00"
-/// bytearray.push(#"0203", 1) == #"010203"
-/// bytearray.push(#"0203", 257) == #"010203"
+/// bytearray.replicate(10, 0) == #"00000000000000000000"
+/// bytearray.replicate(8193, 0) → 💥
+/// bytearray.replicate(3, 256) → 💥
 /// ```
-pub fn push(self: ByteArray, byte: Byte) -> ByteArray {
-  builtin.cons_bytearray(byte, self)
+///
+/// > [!CAUTION]
+/// > This function fails (i.e. halts the program) the given 'byte' is out of
+/// > bounds $[0, 255]$ or if the length is greater than $2^{13} = 8192$.
+pub fn replicate(length: Int, byte: Int) -> ByteArray {
+  builtin.replicate_byte(length, byte)
 }
 
 // ## Inspecting
 
 /// Get the `Byte` at the given index, or crash.
 ///
-/// > [!WARNING]
+/// > [!CAUTION]
 /// > This function fails (i.e. halts the program) if there's no byte at the given index.
 pub fn at(self: ByteArray, index: Int) -> Byte {
   builtin.index_bytearray(self, index)
@@ -169,6 +170,20 @@ pub fn test_bit(self: ByteArray, ix: Int) -> Bool {
 /// ```
 pub fn drop(self: ByteArray, n: Int) -> ByteArray {
   builtin.slice_bytearray(n, builtin.length_of_bytearray(self) - n, self)
+}
+
+/// Add a byte element in front of a `ByteArray`. When the given byte is
+/// greater than 255, it wraps-around. **PlutusV2 behavior** So 256 is mapped to 0, 257 to 1, and so
+/// forth.
+/// In PlutusV3 this will error instead of wrapping around.
+///
+/// ```aiken
+/// bytearray.push(#"", 0) == #"00"
+/// bytearray.push(#"0203", 1) == #"010203"
+/// bytearray.push(#"0203", 257) == #"010203"
+/// ```
+pub fn push(self: ByteArray, byte: Byte) -> ByteArray {
+  builtin.cons_bytearray(byte, self)
 }
 
 /// Extract a `ByteArray` as a slice of another `ByteArray`.
@@ -325,7 +340,7 @@ pub fn to_int_little_endian(self: ByteArray) -> Int {
 
 /// Convert a `ByteArray` into a `String`.
 ///
-/// > [!WARNING]
+/// > [!CAUTION]
 /// > This function fails (i.e. halts the program) if the underlying `ByteArray` isn't UTF-8-encoded. In particular, you cannot convert arbitrary hash digests using this function.
 /// >
 /// > For converting arbitrary `ByteArray`s, use [bytearray.to_hex](#to_hex).
