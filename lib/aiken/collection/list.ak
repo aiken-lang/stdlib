@@ -205,10 +205,7 @@ pub fn head(self: List<a>) -> Option<a> {
 /// list.is_empty([1, 2, 3]) == False
 /// ```
 pub fn is_empty(self: List<a>) -> Bool {
-  when self is {
-    [] -> True
-    _ -> False
-  }
+  self == []
 }
 
 /// Gets the index of an element of a list, if any. Otherwise, returns None.
