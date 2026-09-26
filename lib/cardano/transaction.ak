@@ -65,7 +65,7 @@ pub type Transaction {
   validity_range: ValidityRange,
   extra_signatories: List<VerificationKeyHash>,
   /// > [!IMPORTANT]
-  /// > Redeemers are ordered by ascending [ScriptPurpose](./transaction.html#ScriptPurpose).
+  /// > Redeemers are ordered by ascending [ScriptPurpose](./transaction.html#ScriptPurpose), following the internal ledger's ordering of script purposes: [`Spend`](./transaction.html#ScriptPurpose) < [`Mint`](./transaction.html#ScriptPurpose) < [`Publish`](./transaction.html#ScriptPurpose) < [`Withdraw`](./transaction.html#ScriptPurpose) < [`Vote`](./transaction.html#ScriptPurpose) < [`Propose`](./transaction.html#ScriptPurpose). Note that this ordering **differs from the constructor order** of [ScriptPurpose](./transaction.html#ScriptPurpose); see [script_purpose.compare](./transaction/script_purpose.html#compare).
   redeemers: Pairs<ScriptPurpose, Redeemer>,
   datums: Dict<DataHash, Data>,
   id: TransactionId,
