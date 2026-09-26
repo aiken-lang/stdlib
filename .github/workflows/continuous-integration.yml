@@ -71,6 +71,9 @@ jobs:
           - stdlib_version: v3.1.0
             aiken_version: v1.1.23
 
+          - stdlib_version: v4.0.0
+            aiken_version: v1.1.24
+
           - stdlib_version: ""
 
     runs-on: ${{ matrix.runner || 'ubuntu-latest' }}
