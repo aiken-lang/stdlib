@@ -45,7 +45,13 @@
 
 ### Changed
 
-- `Value` has been renamed to `Assets`, to leave room to the new builtin-`Value`.
+- <strong>⚠️ BREAKING-CHANGE ⚠️</strong><br/><hr/> `Value` has been renamed to `Assets`, to leave room to the new builtin-`Value`.
+
+- <strong>⚠️ BREAKING-CHANGE ⚠️</strong><br/><hr/>[`cardano/transaction/script_purpose.{compare}`](https://aiken-lang.github.io/stdlib/cardano/transaction/script_purpose.html#compare) now follows the ledger's ordering of script purposes, which is the ordering of the `redeemers` list in the script context:
+
+  - `Spend` < `Mint` < `Publish` < `Withdraw` < `Vote` < `Propose`.
+
+  It previously followed the constructor order of `ScriptPurpose` (`Mint` first, `Withdraw` before `Publish`), which does not match the on-chain ordering. See [#125](https://github.com/aiken-lang/stdlib/issues/125).
 
 ## v3.1.0 - 2026-04-25
 
