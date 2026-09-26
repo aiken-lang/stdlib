@@ -11,14 +11,15 @@
 ## Getting started
 
 ```
-aiken add aiken-lang/stdlib --version v3
+aiken add aiken-lang/stdlib --version v4
 ```
 
 ## Compatibility
 
 stdlib's version(s)   | aiken's version                  | Plutus version
 ---                   | ---                              | ---
-`>= 3.0.0`            | `>= v1.1.17`                     | `V3`
+`>= 4.0.0`            | `>= v1.1.24`                     | `V3`
+`>= 3.0.0 && < 4.0.0` | `>= v1.1.17`                     | `V3`
 `>= 2.1.0 && < 3.0.0` | `>= v1.1.3`                      | `V3`
 `>= 2.0.0 && < 2.1.0` | `v1.1.1`, `v1.1.2`               | `V3`
 `>= 1.9.0 && < 2.0.0` | `v1.0.28-alpha`, `v1.0.29-alpha` | `V2`
@@ -27,13 +28,15 @@ stdlib's version(s)   | aiken's version                  | Plutus version
 ## Documentation
 
 - [latest / main](https://aiken-lang.github.io/stdlib)
-- [v3.1.0](https://aiken-lang.github.io/stdlib/v3.1.0)
-- [v3.0.0](https://aiken-lang.github.io/stdlib/v3.0.0)
-- [v2.2.1](https://aiken-lang.github.io/stdlib/v2.2.1)
-- [v2.2.0](https://aiken-lang.github.io/stdlib/v2.2.0)
-- [v2.1.0](https://aiken-lang.github.io/stdlib/v2.1.0)
-- [v2.0.0](https://aiken-lang.github.io/stdlib/v2.0.0)
-- [v1.9.0](https://aiken-lang.github.io/stdlib/v1.9.0)
+- [v4.0.0](https://aiken-lang.github.io/stdlib/v4.0.0)
+- [v3.1.0](https://aiken-lang.github.io/stdlib/v3.1.0) <sup>(deprecated)</sup>
+- [v3.1.0](https://aiken-lang.github.io/stdlib/v3.1.0) <sup>(deprecated)</sup>
+- [v3.0.0](https://aiken-lang.github.io/stdlib/v3.0.0) <sup>(deprecated)</sup>
+- [v2.2.1](https://aiken-lang.github.io/stdlib/v2.2.1) <sup>(deprecated)</sup>
+- [v2.2.0](https://aiken-lang.github.io/stdlib/v2.2.0) <sup>(deprecated)</sup>
+- [v2.1.0](https://aiken-lang.github.io/stdlib/v2.1.0) <sup>(deprecated)</sup>
+- [v2.0.0](https://aiken-lang.github.io/stdlib/v2.0.0) <sup>(deprecated)</sup>
+- [v1.9.0](https://aiken-lang.github.io/stdlib/v1.9.0) <sup>(deprecated)</sup>
 
 ## Overview
 
