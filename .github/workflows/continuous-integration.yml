@@ -57,14 +57,19 @@ jobs:
             aiken_version: v1.1.2
 
           - stdlib_version: v2.1.0
+            aiken_version: v1.1.23
 
           - stdlib_version: v2.2.0
+            aiken_version: v1.1.23
 
           - stdlib_version: v2.2.1
+            aiken_version: v1.1.23
 
           - stdlib_version: v3.0.0
+            aiken_version: v1.1.23
 
           - stdlib_version: v3.1.0
+            aiken_version: v1.1.23
 
           - stdlib_version: ""
 
