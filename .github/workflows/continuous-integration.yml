@@ -89,7 +89,7 @@ jobs:
         if: ${{ !matrix.legacy_aiken_setup }}
         uses: aiken-lang/setup-aiken@v1
         with:
-          version: ${{ matrix.aiken_version || 'v1.1.21' }}
+          version: ${{ matrix.aiken_version || 'v1.1.24' }}
 
       - name: 📘 Generate documentation
         shell: bash
