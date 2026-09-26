@@ -158,7 +158,13 @@ fn do_contains(
   }
 }
 
-/// Check whether `Assets` carry any NFT from the given policy. Other assets are tolerated.
+/// Check whether local `Assets` carry a quantity of exactly 1 of at least one asset
+/// of the given policy, as expected of an NFT. Other assets are tolerated.
+///
+/// > [!IMPORTANT]
+/// > The check is local to the given `Value`. A quantity of 1 does not prove
+/// > that the asset is a genuine NFT, unique across the whole chain. A fungible
+/// > token present with a quantity of 1 also satisfies the check.
 ///
 /// ```aiken
 /// let my_assets = assets.from_lovelace(42)
@@ -174,9 +180,14 @@ pub fn has_any_nft(self: Assets, policy: PolicyId) -> Bool {
     |> dict.foldr(False, fn(_, quantity, result) { result || 1 == quantity })
 }
 
-/// Check whether `Assets` carry any NFT from the given policy. Other assets (other than
+/// Check whether `Assets` carry a quantity of exactly 1 of a single asset of
+/// the given policy, as expected of an NFT. Other assets (other than
 /// Ada) aren't tolerated. Said differently, the check succeeds if and only if
 /// the assets contain no assets other than the expected NFT or Ada.
+///
+/// > [!IMPORTANT]
+/// > See [`has_any_nft`](#has_any_nft): the check is local to the given `Value`
+/// > and does not prove chain-level uniqueness.
 ///
 /// ```aiken
 /// let my_assets = assets.from_lovelace(42)
@@ -227,7 +238,12 @@ pub fn has_any_nft_strict(self: Assets, policy: PolicyId) -> Bool {
   }
 }
 
-/// Check whether `Assets` carry a specific NFT. Other assets are tolerated.
+/// Check whether `Assets` carry a quantity of exactly 1 of the given asset,
+/// as expected of an NFT. Other assets are tolerated.
+///
+/// > [!IMPORTANT]
+/// > See [`has_any_nft`](#has_any_nft): the check is local to the given `Value`
+/// > and does not prove chain-level uniqueness.
 ///
 /// ```aiken
 /// let my_assets = assets.from_lovelace(42)
@@ -253,18 +269,23 @@ pub fn has_nft(self: Assets, policy: PolicyId, asset_name: AssetName) -> Bool {
   1 == quantity_of(self, policy, asset_name)
 }
 
-/// Check whether `Assets` carry a specific NFT. Other assets (other than
+/// Check whether a `Assets` carry a quantity of exactly 1 of the given asset,
+/// as expected of an NFT. Other assets (other than
 /// Ada) aren't tolerated. Said differently, the check succeeds if and only if
 /// assets contain no assets other than the expected NFT or Ada.
+///
+/// > [!IMPORTANT]
+/// > See [`has_any_nft`](#has_any_nft): the check is local to the given `Value`
+/// > and does not prove chain-level uniqueness.
 ///
 /// ```aiken
 /// let my_assets = assets.from_lovelace(42)
 ///    |> assets.add("foo", "token#1", 1)
 ///    |> assets.add("bar", "token#2", 14)
 ///
-/// assets.has_nft_strict(my_assets, "foo", "token#1") == False
-/// assets.has_nft_strict(my_assets, "bar", "token#2") == False
-/// assets.has_nft_strict(my_assets, "baz", "token#3") == False
+/// assets.has_nft_strict(my_assets, "foo", "asset#1") == False
+/// assets.has_nft_strict(my_assets, "bar", "asset#2") == False
+/// assets.has_nft_strict(my_assets, "baz", "asset#3") == False
 /// ```
 ///
 /// ```aiken
@@ -281,8 +302,8 @@ pub fn has_nft(self: Assets, policy: PolicyId, asset_name: AssetName) -> Bool {
 ///    |> assets.add("foo", "token#1", 1)
 ///    |> assets.add("foo", "token#2", 1)
 ///
-/// assets.has_nft_strict(my_assets, "foo", "token#1") == False
-/// assets.has_nft_strict(my_assets, "foo", "token#2") == False
+/// assets.has_nft_strict(my_assets, "foo", "asset#1") == False
+/// assets.has_nft_strict(my_assets, "foo", "asset#2") == False
 /// ```
 pub fn has_nft_strict(
   self: Assets,
