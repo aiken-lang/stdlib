@@ -3,7 +3,7 @@ use aiken/collection/dict/strategy as dict_strategy
 use aiken/collection/list
 use aiken/fuzz
 use cardano/assets.{
-  AssetName, PolicyId, Value, ada_asset_name, ada_policy_id, add, difference,
+  AssetName, Assets, PolicyId, ada_asset_name, ada_policy_id, add, difference,
   expect_lovelace_of, expect_match, expect_match_assets, flatten, flatten_with,
   from_ascending_pairs, from_asset, from_asset_list, from_lovelace, has_any_nft,
   has_any_nft_strict, has_nft, has_nft_strict, lovelace_of, match, match_assets,
@@ -58,22 +58,22 @@ const fixture_superset_with_ada: Tokens =
 
 const fixture_subset: Tokens = dict.singleton(fixture_asset_name, 50)
 
-const has_nft_fixture_1: Value =
+const has_nft_fixture_1: Assets =
   from_lovelace(42)
     |> add("foo", "asset#1", 1)
     |> add("bar", "asset#2", 14)
 
-const has_nft_fixture_2: Value =
+const has_nft_fixture_2: Assets =
   from_lovelace(42)
     |> add("foo", "asset#1", 1)
 
-const has_nft_fixture_3: Value =
+const has_nft_fixture_3: Assets =
   from_lovelace(42)
     |> add("foo", "asset#1", 1)
     |> add("foo", "asset#2", 1)
     |> add("bar", "asset#2", 14)
 
-const fixture_match_value: Value =
+const fixture_match_value: Assets =
   zero
     |> add(ada_policy_id, ada_asset_name, 42)
     |> add("foo", "01", 1)
@@ -126,7 +126,7 @@ const fixture_match_data_no_assets: Data =
   zero
     |> add(ada_policy_id, ada_asset_name, 14)
 
-const fixture_match_benchmark_left: Value =
+const fixture_match_benchmark_left: Assets =
   zero
     |> add(ada_policy_id, ada_asset_name, 1337)
     |> add(
@@ -232,11 +232,11 @@ const fixture_match_benchmark_left: Value =
 
 const fixture_match_benchmark_right: Data = fixture_match_benchmark_left
 
-const fixture_lovelace_of_1: Value =
+const fixture_lovelace_of_1: Assets =
   zero
     |> add("", "", 42)
 
-const fixture_lovelace_of_2: Value =
+const fixture_lovelace_of_2: Assets =
   zero
     |> add("foo", "bar", 42)
 

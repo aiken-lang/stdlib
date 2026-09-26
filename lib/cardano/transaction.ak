@@ -8,7 +8,7 @@ use aiken/crypto.{
 use aiken/interval.{Interval}
 use aiken/option
 use cardano/address.{Address, Credential, Script, VerificationKey}
-use cardano/assets.{Lovelace, PolicyId, Value}
+use cardano/assets.{Assets, Lovelace, PolicyId}
 use cardano/certificate.{Certificate}
 use cardano/governance.{GovernanceActionId, ProposalProcedure, Vote, Voter}
 
@@ -57,7 +57,7 @@ pub type Transaction {
   reference_inputs: List<Input>,
   outputs: List<Output>,
   fee: Lovelace,
-  mint: Value,
+  mint: Assets,
   certificates: List<Certificate>,
   /// > [!IMPORTANT]
   /// > Withdrawals are ordered by ascending [Credential](./credential.html#Credential). Yet, note that [`Script`](./credential.html#Credential) credentials are treated as **lower values** than [`VerificationKey`](./credential.html#Credential) credentials.
@@ -98,7 +98,7 @@ pub type OutputReference {
 /// A transaction `Output`, with an address, a value and optional datums and script references.
 pub type Output {
   address: Address,
-  value: Value,
+  value: Assets,
   datum: Datum,
   reference_script: Option<ScriptHash>,
 }

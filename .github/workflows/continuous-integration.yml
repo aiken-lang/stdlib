@@ -32,12 +32,10 @@ jobs:
       - name: 🧰 Install Aiken
         uses: aiken-lang/setup-aiken@v1
         with:
-          version: v1.1.21
+          version: v1.1.24
 
-      # FIXME: Temporary, re-enable once v1.1.22 is available.
-      #
-      # - name: 📝 Run fmt
-      #   run: aiken fmt --check
+      - name: 📝 Run fmt
+        run: aiken fmt --check
 
       - name: 🔬 Run tests (verbose)
         run: aiken check -t verbose
@@ -59,14 +57,19 @@ jobs:
             aiken_version: v1.1.2
 
           - stdlib_version: v2.1.0
+            aiken_version: v1.1.23
 
           - stdlib_version: v2.2.0
+            aiken_version: v1.1.23
 
           - stdlib_version: v2.2.1
+            aiken_version: v1.1.23
 
           - stdlib_version: v3.0.0
+            aiken_version: v1.1.23
 
           - stdlib_version: v3.1.0
+            aiken_version: v1.1.23
 
           - stdlib_version: ""
 
@@ -91,7 +94,7 @@ jobs:
         if: ${{ !matrix.legacy_aiken_setup }}
         uses: aiken-lang/setup-aiken@v1
         with:
-          version: ${{ matrix.aiken_version || 'v1.1.21' }}
+          version: ${{ matrix.aiken_version || 'v1.1.24' }}
 
       - name: 📘 Generate documentation
         shell: bash

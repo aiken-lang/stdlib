@@ -142,8 +142,14 @@ test diagnostic_3() {
   diagnostic([1, 2, 3]) == @"[_ 1, 2, 3]"
 }
 
-test diagnostic_4() {
-  diagnostic([]) == @"[]"
+test diagnostic_4_1() {
+  let empty_list: List<Data> = []
+  diagnostic(empty_list) == @"[]"
+}
+
+test diagnostic_4_2() {
+  let empty_map: Pairs<Data, Data> = []
+  diagnostic(empty_map) == @"{}"
 }
 
 test diagnostic_5() {
@@ -276,8 +282,14 @@ test serialise_2() {
   serialise(#"a1b2") == #"42a1b2"
 }
 
-test serialise_3() {
-  serialise([]) == #"80"
+test serialise_3_1() {
+  let empty_list: List<Data> = []
+  serialise(empty_list) == #"80"
+}
+
+test serialise_3_2() {
+  let empty_map: Pairs<Data, Data> = []
+  serialise(empty_map) == #"a0"
 }
 
 test serialise_4() {

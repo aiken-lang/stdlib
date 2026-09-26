@@ -1030,6 +1030,15 @@ fn do_foldr2(
   }
 }
 
+/// Upcast a `Data` into a `List<Data>`
+pub fn from_data(data: Data) -> Option<List<Data>> {
+  if data is List<Data> {
+    Some(data)
+  } else {
+    None
+  }
+}
+
 /// Like [`foldr`](#foldr), but also provides the position (0-based) of the elements when iterating.
 ///
 /// ```aiken
@@ -1069,4 +1078,12 @@ fn do_indexed_foldr(
 /// ```
 pub fn reduce(self: List<a>, zero: b, with: fn(b, a) -> b) -> b {
   foldl(self, zero, flip(with))
+}
+
+// ## Transforming Forcibly
+
+/// Like [`from_data`](#from_data) but fails if the given Data is not a CBOR array.
+pub fn expect_from_data(data: Data) -> List<Data> {
+  expect self: List<Data> = data
+  self
 }

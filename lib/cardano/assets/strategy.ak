@@ -1,4 +1,4 @@
-//// This module contains strategies used to transform [`Value`](../assets.html#Value). You can safely ignore this module if you aren't using [`flatten_with`](../assets.html#flatten_with).
+//// This module contains strategies used to transform [`Assets`](../assets.html#Assets). You can safely ignore this module if you aren't using [`flatten_with`](../assets.html#flatten_with).
 
 use aiken/crypto.{Blake2b_224, Hash, Script}
 
